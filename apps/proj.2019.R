@@ -2,7 +2,6 @@
 ####### Reason Foundation
 #### Data: Reason
 
-### 2019 Projections: https://github.com/ReasonFoundation/databaseR/blob/master/apps/proj.2019.R
 rm(list=ls())
 
 ###Load/install packages
@@ -35,9 +34,7 @@ library(plotly)
 library(dplyr)
 library(plyr)
 
-# Load Reason pension data ---------------------------------------------------------------
-### R code for 2019 projections: https://github.com/ReasonFoundation/databaseR/blob/master/apps/proj.2019.R
-#2019 projections saved in GitHub:
+# Load Reason pension data (state-level) ---------------------------------------------------------------
 urlfile="https://raw.githubusercontent.com/ANiraula/PensionModeling/master/Database/reason.data.state.csv"
 reason.data2 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
 reason.data2 <- data.table(reason.data2 %>% arrange(year, plan_name))
@@ -178,10 +175,12 @@ table(is.na(reason.data2[year == 2019]$mva))#any more missing values for 2019?
 #write.xlsx(PPD2.3, file = "/Users/anilniraula/Downloads/PPD_Avgpayroll.xlsx")
 reason.data2 <- data.table(reason.data2)
 
+#Update plan names with abbreviations
 urlfile2="https://raw.githubusercontent.com/ANiraula/PensionModeling/master/Database/Reason_State_Names_Mod.csv"
 plan.names <- data.table(read_csv(url(urlfile2), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
 #View(plan.names)
 for (i in 1:plan.names[,.N]){
   reason.data2[plan_name %in% plan.names[i,1]]$plan_name <- as.character(plan.names[i,2])
 }
+#Save end datat with 2019 projections
 #write.csv(reason.data2, file = "/Users/anilniraula/Downloads/reason.data.2019.csv")
