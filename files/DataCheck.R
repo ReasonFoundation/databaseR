@@ -5,13 +5,6 @@
 
 rm(list=ls())
 ###Load/install packages
-#R.Version()
-#https://github.com/ReasonFoundation/pensionviewr
-#Create token -> usethis::edit_r_environ() -> restart -> Sys.getenv("GITHUB_PAT")
-#install.packages('devtools')
-#library(devtools)
-#devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
-#devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
 library(reasontheme)
 library(pensionviewr)
 library(ggplot2)
@@ -24,12 +17,6 @@ library(openxlsx)
 library(readr)
 library(rsconnect)
 library(base64enc)
-#Shiny-----------
-library(shiny)
-library(shinyWidgets)
-#library(shinyFiles)
-library(DT)
-library(plotly)
 #devtools::install_github("ropensci/plotly")
 library(dplyr)
 library(plyr)
@@ -92,7 +79,8 @@ filteredData <- function(data, y, fy){
 
 plans <- c(pl$display_name)
 #View(plans)
-##Pull datat using a custom function
+
+##Pull data using a custom function
 Plan <- filteredData(pl, "Idaho Public Employee Retirement System", 1998)
 #######################
 ##########
