@@ -1,0 +1,59 @@
+---
+title: "Reason Database Project in R"
+author: "Anil"
+date: "7/9/2020"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+## R Markdown
+
+This is an R Markdown document. Pension Database Project (R + SQL):
+By Anil, Truong, Marc, Swaroop, Jordan
+Internal shiny app: <https://app.asana.com/0/450030537891393/1177895321496545>
+GitHub repository: <https://github.com/ReasonFoundation/databaseR>
+
+_________________________
+Functionality: 
+Search by state, by plan, by year,
+View & download pulled data table
+Filter data for state & some municipal plans
+View data sources
+Graph UAL/Inv.Returns
+_________________________
+Credentials to access database on postgreSQL: 
+               dbname = "d629vjn37pbl3l",
+    host = "ec2-3-209-200-73.compute-1.amazonaws.com",
+    port = 5432,
+    user = "reason_readonly",
+    password =     "p88088bd28ea68027ee96c65996f7ea3b56db0e27d7c9928c05edc6c23ef2bc27",
+    sslmode = "require"
+This file: https://github.com/ReasonFoundation/pensionviewr/blob/master/R/sysdata.rda
+
+## Functionality of `pensionviewr` package
+```{r }
+library(reasontheme)
+library(pensionviewr)
+lsf.str("package:pensionviewr")
+```
+
+## Raw format (pullData())
+
+```{r}
+pl <- planList()
+library(data.table)
+x <- data.table(pullData(pl, "New Mexico Educational Retirement Board"))
+colnames(x)
+
+#library(devtools)
+#library(roxygen2)
+#pullSourceData.test <- source_url("https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/PullSourceData.R")
+#pullSourceData.test
+#pullSourceData.test$value("New Mexico Educational Retirement Board")
+```
+
+## Data Filtering
+
+```{r}
+```
