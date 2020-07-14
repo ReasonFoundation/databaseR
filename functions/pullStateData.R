@@ -59,7 +59,3 @@ and attribute_name in ('1 Year Investment Return Percentage',
     janitor::clean_names()
   
 }
-
-##Try it out 
-View(pullStateData(state,2010))
-#####
