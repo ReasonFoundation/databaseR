@@ -11,7 +11,7 @@ pullStateData <- function(state, FY){
     password = "p88088bd28ea68027ee96c65996f7ea3b56db0e27d7c9928c05edc6c23ef2bc27",
     sslmode = "require")
   
-  if(str_count(state)==5){
+  if(str_count(paste0(state))<6){
     query <- paste("select * from pull_data_state_only()
 where year > '", paste(FY-1), "'
 and attribute_name in ('1 Year Investment Return Percentage',
