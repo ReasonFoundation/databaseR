@@ -36,10 +36,24 @@ library(dplyr)
 library(plyr)
 
 # Load Reason pension data ---------------------------------------------------------------
+####### Download the whole database   
+#pl <- planList()
+#reason.data <- data.table(pullData(pl, pl$display_name)) 
+#View(reason.data)
+#reason.data <- reason.data %>% 
+#               filter(administering_government_type == 0) %>% 
+#               arrange(display_name, year)
+#state.plans.nm <- unique(state.plans$display_name)
+#View(state.plans)
+#View(state.plans.nm)
+#write.csv(reason.data, file = "/Users/anilniraula/Downloads/reason.data.state.csv")
+
+#To filter for state-level plans
+##LAST UPDATED*: 07.15.20
 urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/reason.data.state.csv"
 reason.data2 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-reason.data2 <- data.table(reason.data2 %>% arrange(year, plan_name))
-
+reason.data2 <- data.table(reason.data2)
+#View(reason.data2)
 #Filter out variables
 reason.data2 <- reason.data2 %>%
   select(
@@ -128,7 +142,7 @@ reason.data2[plan_name == "Arkansas Public Employees System" & year == 2019]$mva
 reason.data2[plan_name == "Arkansas Teachers Retirement Plan" & year == 2019]$return_1yr <-c(0.0519)
 reason.data2[plan_name == "Arkansas Teachers Retirement Plan" & year == 2019]$mva <-c(17741621773)
 
-urlfile2="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/Reason_State_Names_Mod.csv"
+urlfile2="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/Reason_State_Names_Mod2.csv"
 plan.names <- data.table(read_csv(url(urlfile2), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
 #View(plan.names)
 for (i in 1:plan.names[,.N]){
@@ -158,10 +172,10 @@ for (i in 1:length(names)){
        (1 + gl(reason.data2[plan_name == names[i]]$payroll_growth_assumption))*
        (1 + gl(reason.data2[plan_name == names[i]]$arr)) ^ 0.5)
   reason.data1.n19[plan_name == names[i]]$mva <- 
-    (gl(reason.data2[plan_name == names[i]]$mva)*(1 + return2019/100) 
+    (gl(reason.data2[plan_name == names[i]]$mva)*(1 + return2019) 
      + (gl(reason.data2[plan_name == names[i]]$total_proj_adec_pct)*gl(reason.data2[plan_name == names[i]]$payroll) +
           gl(reason.data2[plan_name == names[i]]$total_benefit_payments))*
-       (1 + gl(reason.data2[plan_name == names[i]]$payroll_growth_assumption)) * (1 + return2019/100) ^ 0.5)
+       (1 + gl(reason.data2[plan_name == names[i]]$payroll_growth_assumption)) * (1 + return2019) ^ 0.5)
   
   reason.data1.n19[plan_name == names[i]]$payroll <- 
     (gl(reason.data2[plan_name == names[i]]$payroll)*
@@ -175,7 +189,7 @@ for (i in 1:length(names)){
   reason.data1.n19[plan_name == names[i]]$plan_name <- c(gl(reason.data2[plan_name == names[i]]$plan_name))
   reason.data1.n19[plan_name == names[i]]$state <- c(gl(reason.data2[plan_name == names[i]]$state))
   reason.data1.n19[plan_name == names[i]]$arr <- c(gl(reason.data2[plan_name == names[i]]$arr))
-  reason.data1.n19[plan_name == names[i]]$return_1yr <- return2019/100
+  reason.data1.n19[plan_name == names[i]]$return_1yr <- return2019
   reason.data1.n19[plan_name == names[i]]$total_nc_pct <- 
     (gl(reason.data2[plan_name == names[i]]$total_nc_pct))
   reason.data1.n19[plan_name == names[i]]$total_proj_adec_pct <- 
@@ -296,7 +310,7 @@ server <- function(input, output, session){
   output$text1 <- renderText({
     paste(HTML("<br>",
                "<b>Source</b>:"), tags$a(href="https://reason.org/topics/pension-reform/", "Pension Integrity Project at Reason Foundation"), 
-          "analysis of puplicly available data.", "<br>", 
+          "analysis of U.S. public pension actuarial valuation reports and CAFRs.", "<br>", 
           "Dotted lines for 2019/2020 fiscal years show Reason projections.", sep="\n")
   })
   
