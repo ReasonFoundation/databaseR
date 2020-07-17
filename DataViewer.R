@@ -1,122 +1,419 @@
 ### Reason Database Viewer ###
-#by Anil Niraula#
+#(by Anil Niraula)#
+
+#https://shiny.rstudio.com/tutorial/written-tutorial/lesson3/
+#****Create graph(s) tab showing Inv.Returns using BBC package: https://bbc.github.io/rcookbook/
 rm(list=ls())
-
-###Load/Install Packages ---------------------------------------------------
-
-###You would need to load "reasontheme" & "pensionviewr" pacjages from GitHub
-##Detailed instructions on how to do that: https://github.com/ReasonFoundation/pensionviewr
+###Load/install packages
+#R.Version()
+#https://github.com/ReasonFoundation/pensionviewr
+#Create token -> usethis::edit_r_environ() -> restart -> Sys.getenv("GITHUB_PAT")
 #install.packages('devtools')
 #library(devtools)
 #devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
 #devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
 library(reasontheme)
 library(pensionviewr)
+#library(janitor)
 library(tidyverse)
+#library(openxlsx)
 library(tseries)
-library(ggplot2)
+#library(ggplot2)
 library(data.table)
 library(openxlsx)
-library(readr)
+#library(readr)
 library(rsconnect)
+library(base64enc)
 #Shiny-----------
 library(shiny)
 library(shinyWidgets)
-library(shinyFiles)
+#library(shinyFiles)
 library(DT)
 library(plotly)
 #devtools::install_github("ropensci/plotly")
-library(dplyr)
-library(plyr)
-#########
 
-###Download Reason Data ----------------------------------------------------
+#DF <- data.table(Fiscal_Year = seq(2001, 2019, by =1))
+#DF <- DF[,var1 := data.table(rnorm(19, 30, 5))]
+#DF <- DF[,var2 := data.table(rnorm(19, 60, 10))]
+#DF <- data.frame(DF)
 
-##State-level data from ReasonGitHub
-urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/reason.data.state.csv"
-reason.data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-reason.data <- data.table(reason.data)
-#View(reason.data)
+#ggplot() +
+#  geom_col(data=DF %>% pivot_longer(starts_with("var")),
+#           mapping = aes(x=Fiscal_Year, y=value,group = 1, fill = "orangered1"),
+#           color = "black", position = "dodge2")+
+#  theme_bw()
 
-###Download the whole database of data for a specific plan in "R":
-#Need: 
-#library(pensionviewr) == more info: https://github.com/ReasonFoundation/pensionviewr
-#library(dplyr)
-#RUN THIS:
-pl <- planList() #Save list of all plans in the datatabse
+pl <- planList()
 states <- as.character(unique(pl[,3]))
 plans <- as.character(unique(pl[,2]))
-#reason.data  <- pullData(pl, pl$display_name) %>% arrange(state)
-#reason.data <- reason.data %>% filter(administering_government_type == 0) #To filter for state-level plans
+#View(pullData(pl[state=="New Mexico"], pl[state=="New Mexico"]$display_name))
+#View(pl)
+
+#palette_reason$categorical[[3]]
+#reason_color_pal("categorical")
+#palette
+
+pullSourceData <- function(plan_name){
+  
+  con <- RPostgres::dbConnect(
+    RPostgres::Postgres(),
+    dbname = "d629vjn37pbl3l",
+    host = "ec2-3-209-200-73.compute-1.amazonaws.com",
+    port = 5432,
+    user = "reason_readonly",
+    password = "p88088bd28ea68027ee96c65996f7ea3b56db0e27d7c9928c05edc6c23ef2bc27",
+    sslmode = "require")
+  # define the query to retrieve the plan data
+  
+  if(str_count(plan_name)<6){
+    query <- paste("select * from pull_data_state_only()
+where year > '2001'
+and attribute_name in ('1 Year Investment Return Percentage',
+'1 Year Investment Return Percentage',
+'Investment Return Assumption for GASB Reporting',
+'Actuarially Accrued Liabilities Dollar',
+'Total Normal Cost Percentage',
+'Covered Payroll Dollar',
+'Payroll Growth Assumption',
+'Total Benefits Paid Dollar')")}else{
+  
+  plan_id <- pl$id[pl$display_name == plan_name]
+  query <- paste("select * from pull_plan_data(",plan_id,")")
+  #paste0("select * from pull_plan_data('", str_replace(plan_name,"'", "''"), "')")
+}
+  
+  
+  ###################
+  
+  result <- RPostgres::dbSendQuery(con, query)
+  #RPostgres::dbBind(result, list(1))
+  all_data <- RPostgres::dbFetch(result) %>%
+    janitor::clean_names()
+  RPostgres::dbClearResult(result)
+  RPostgres::dbDisconnect(con)
+  
+  all_data %>%
+    dplyr::group_by_at(dplyr::vars(-.data$attribute_value)) %>%  # group by everything other than the value column.
+    dplyr::mutate(row_id = 1:dplyr::n()) %>%
+    dplyr::ungroup() %>%  # build group index
+    tidyr::spread(.data$attribute_name, .data$attribute_value, convert = TRUE) %>%    # spread
+    dplyr::select(-.data$row_id) %>%  # drop the index
+    janitor::clean_names()
+}
+
+#View(pullSourceData("Employee Retirement System of Hawaii"))
+##Pull state Data only
+
+pullStateData <- function(state, FY){
+  con <- RPostgres::dbConnect(
+    RPostgres::Postgres(),
+    dbname = "d629vjn37pbl3l",
+    host = "ec2-3-209-200-73.compute-1.amazonaws.com",
+    port = 5432,
+    user = "reason_readonly",
+    password = "p88088bd28ea68027ee96c65996f7ea3b56db0e27d7c9928c05edc6c23ef2bc27",
+    sslmode = "require")
+  
+  if(str_count(paste0(state))<6){
+    query <- paste("select * from pull_data_state_only()
+where year > '", paste(FY-1), "'
+and attribute_name in ('1 Year Investment Return Percentage',
+'Investment Return Assumption for GASB Reporting',
+'Market Value of Assets Dollar',
+'Actuarial Value of Assets GASB Dollar',
+'Actuarially Accrued Liabilities Dollar',
+'Actuarial Funded Ratio Percentage',
+'Unfunded Actuarially Accrued Liabilities Dollar',
+'Employee Contribution Dollar',
+'Employee Normal Cost Percentage',
+'Employer Normal Cost Dollar',
+'Employer Contribution Regular Dollar',
+'Total Contribution Dollar',
+'Total Normal Cost Percentage',
+'Total Amortization Payment Percentage',
+'Covered Payroll Dollar',
+'Actuarially Required Contribution Dollar',
+'Actuarially Required Contribution Paid Percentage',
+'Employers Projected Actuarial Required Contribution Percentage of Payroll',
+'Payroll Growth Assumption',
+'Type of Employees Covered',
+'Total Pension Liability Dollar',
+'Amortizaton Method',
+'Actuarial Cost Method in GASB Reporting',
+'Number of Years Remaining on Amortization Schedule',
+'Actuarial Cost Method in GASB Reporting',
+'Wage Inflation',
+'Total Benefits Paid Dollar')")}else{NULL}
+  
+  result <- RPostgres::dbSendQuery(con, query)
+  #RPostgres::dbBind(result, list(1))
+  all_data <- RPostgres::dbFetch(result) %>%
+    janitor::clean_names()
+  RPostgres::dbClearResult(result)
+  RPostgres::dbDisconnect(con)
+  
+  all_data %>%
+    dplyr::group_by_at(dplyr::vars(-.data$attribute_value)) %>%  # group by everything other than the value column.
+    dplyr::mutate(row_id = 1:dplyr::n()) %>%
+    dplyr::ungroup() %>%  # build group index
+    tidyr::pivot_wider(names_from = attribute_name, values_from = attribute_value) %>%# CHANGED to pivot
+    dplyr::select(-.data$row_id) %>%  # drop the index
+    dplyr::arrange(display_name, year) %>%
+    janitor::clean_names()
+  
+}
+#View(pullStateData(state,2010))
+str_count(paste0("\"",state,"\""))<6
+##Add columns
+##Convert to Wide format
+##Why 112 state plans (which 2 are missing?)
+#View(unique(all_data$display_name))
+
+#NMPERA.wide <- pullSourceData("New Mexico Educational Retirement Board")
+###Columns were some plans have no data for
+columns <- c("total_pension_liability_dollar", "wage_inflation",
+             "payroll_growth_assumption", "other_contribution_dollar",
+             "other_additions_dollar", "x1_year_investment_return_percentage",
+             "fiscal_year_of_contribution", "statutory_payment_dollar",
+             "statutory_payment_percentage")
+
+#Custom Function to filter for number of variables we commonly use in pension analysis (state plans*)
+filteredData <- function(plan, y, fy){
+  Plan <- data.table(pullData(plan, y))
+  ##Create missing columns for plans with no data for st 7 variable
+  for (i in (1:length(columns))){
+    if(sum((colnames(Plan) == columns[i]))==0) {
+      Plan[,columns[i] := NA] }
+  }
+  ####
+  Plan <- Plan %>%
+    filter(year > fy-1)
+  Plan <- Plan %>%
+    select(
+      year,
+      plan_name = display_name,
+      state,
+      return_1yr = x1_year_investment_return_percentage,
+      actuarial_cost_method_in_gasb_reporting,
+      funded_ratio = actuarial_funded_ratio_percentage,
+      actuarial_valuation_report_date,
+      ava = actuarial_value_of_assets_gasb_dollar,
+      mva = market_value_of_assets_dollar,
+      mva_smooth = market_assets_reported_for_asset_smoothing,#added
+      aal = actuarially_accrued_liabilities_dollar,
+      tpl = total_pension_liability_dollar,
+      adec = actuarially_required_contribution_dollar,
+      adec_paid_pct = actuarially_required_contribution_paid_percentage,
+      statutory = statutory_payment_dollar,#NEW
+      statutory_pct = statutory_payment_percentage,#NEW
+      amortizaton_method,
+      asset_valuation_method_for_gasb_reporting,
+      total_benefit_payments = total_benefits_paid_dollar,#added
+      benefit_payments = benefit_payments_dollar,
+      refunds = refunds_dollar,#added
+      admin_exp = administrative_expense_dollar,
+      cost_structure,
+      payroll = covered_payroll_dollar,
+      ee_contribution = employee_contribution_dollar,
+      ee_nc_pct = employee_normal_cost_percentage,
+      er_contribution = employer_contribution_regular_dollar,
+      er_nc_pct = employer_normal_cost_percentage,
+      er_state_contribution = employer_state_contribution_dollar,
+      er_proj_adec_pct = employers_projected_actuarial_required_contribution_percentage_of_payroll,
+      other_contribution = other_contribution_dollar,#added
+      other_additions = other_additions_dollar,#added
+      fy_contribution = fiscal_year_of_contribution,
+      inflation_assum = inflation_rate_assumption_for_gasb_reporting,
+      arr = investment_return_assumption_for_gasb_reporting,
+      number_of_years_remaining_on_amortization_schedule,
+      payroll_growth_assumption,
+      total_amortization_payment_pct = total_amortization_payment_percentage,
+      total_contribution = total_contribution_dollar,
+      total_nc_pct = total_normal_cost_percentage,
+      total_number_of_members,
+      total_proj_adec_pct = total_projected_actuarial_required_contribution_percentage_of_payroll,
+      type_of_employees_covered,
+      unfunded_actuarially_accrued_liabilities_dollar,
+      wage_inflation
+    )
+}
+#x <- filteredData(pl, "California State Teachers Retirement System", 2001)
+#View(x)
+#y <- filteredData(pl, "Employee Retirement System of Hawaii", 2001)
+
+filteredSourceData <- function(plan_name, fy){
+  Data <- data.table(
+    pullSourceData(plan_name))##Moved pullSourceData() inside this function
+  Data <- data.table(Data %>%
+                       filter(year > fy-1))
+  ##Create columns that don't have any data
+  for (i in (1:length(columns))){
+    if(sum((colnames(Data) == columns[i]))==0) {
+      Data[,columns[i] := NA] }
+  }
+  ####
+  Data <- Data %>%
+    select(
+      year,
+      plan_name = display_name,
+      state,
+      data_source_name,#Added
+      return_1yr = x1_year_investment_return_percentage,
+      actuarial_cost_method_in_gasb_reporting,
+      funded_ratio = actuarial_funded_ratio_percentage,
+      actuarial_valuation_report_date,
+      ava = actuarial_value_of_assets_gasb_dollar,
+      mva = market_value_of_assets_dollar,
+      mva_smooth = market_assets_reported_for_asset_smoothing,#added
+      aal = actuarially_accrued_liabilities_dollar,
+      tpl = total_pension_liability_dollar,
+      adec = actuarially_required_contribution_dollar,
+      adec_paid_pct = actuarially_required_contribution_paid_percentage,
+      statutory = statutory_payment_dollar,#NEW
+      statutory_pct = statutory_payment_percentage,#NEW
+      amortizaton_method,
+      asset_valuation_method_for_gasb_reporting,
+      total_benefit_payments = total_benefits_paid_dollar,#added
+      benefit_payments = benefit_payments_dollar,
+      refunds = refunds_dollar,#added
+      admin_exp = administrative_expense_dollar,
+      cost_structure,
+      payroll = covered_payroll_dollar,
+      ee_contribution = employee_contribution_dollar,
+      ee_nc_pct = employee_normal_cost_percentage,
+      er_contribution = employer_contribution_regular_dollar,
+      er_nc_pct = employer_normal_cost_percentage,
+      er_state_contribution = employer_state_contribution_dollar,
+      er_proj_adec_pct = employers_projected_actuarial_required_contribution_percentage_of_payroll,
+      other_contribution = other_contribution_dollar,#added
+      other_additions = other_additions_dollar,#added
+      fy_contribution = fiscal_year_of_contribution,
+      inflation_assum = inflation_rate_assumption_for_gasb_reporting,
+      arr = investment_return_assumption_for_gasb_reporting,
+      number_of_years_remaining_on_amortization_schedule,
+      payroll_growth_assumption,
+      total_amortization_payment_pct = total_amortization_payment_percentage,
+      total_contribution = total_contribution_dollar,
+      total_nc_pct = total_normal_cost_percentage,
+      total_number_of_members,
+      total_proj_adec_pct = total_projected_actuarial_required_contribution_percentage_of_payroll,
+      type_of_employees_covered,
+      unfunded_actuarially_accrued_liabilities_dollar,
+      wage_inflation
+    )
+}
+
+#NMPERA.wide <- pullSourceData("New Mexico Educational Retirement Board")
+#NMPERA.wide <- filteredSourceData(NMPERA.wide, 2001)
+#View(NMPERA.wide)
+#View(filteredData(pl, "CalPERS - California Public Employees Retirement Fund", 2001))
+#x <- data.table(filteredData(pl, "New Mexico Public Employees Retirement Association", 2001))
+#View(x)
+
+###For plan-by-plan data shiny app connects directly to the database
+###For aggregate (state/US level analysis) data it uses imported csv file.
+##Download Reason Data ----------------------------------------------------
+
+##State-level data from ReasonGitHub
+
+urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/reason.data.state.csv"
+reason.data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+
+##Load R scrip from GitHub
+#https://www.r-bloggers.com/reading-an-r-file-from-github/
+library(devtools)
+library(roxygen2)
+pullSourceData.test <- source_url("https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/PullSourceData.R")
+#class(pullSourceData.test$value)
+#View(pullSourceData.test$value("New Mexico Educational Retirement Board"))
+#NMPERA.wide <- pullSourceData("New Mexico Educational Retirement Board")
+
+library(devtools)
+library(roxygen2)
+pullStateData.test <- source_url("https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/functions/pullStateData.R")
+#View(pullStateData.test$value(state, 2004))
+
+#pullStateData.test <- source_url("https://github.com/ReasonFoundation/databaseR/blob/master/functions/pullStateData.R")
+#View(pullStateData)
+#View(pullStateData.test$value())
+
+#View(reason.data)
+###Download full database or data for a specific plan in "R":
+#RUN THIS:
+#reason.data <- pullData(pl, pl$display_name)
+#reason.data <- data.table(reason.data)
+#View(reason.data)
 
 #########
 # Filter Downloaded Data -------------------------------------------------------------
 
 ##Filter out reason data for variables we commonly use for pension analysis
+
 reason.data <- reason.data %>%
-  select(
-    year,
-    plan_name = display_name,
-    state,
-    return_1yr = x1_year_investment_return_percentage,
-    actuarial_cost_method_in_gasb_reporting,
-    funded_ratio = actuarial_funded_ratio_percentage,
-    actuarial_valuation_date_for_gasb_schedules,
-    actuarial_valuation_report_date,
-    ava = actuarial_value_of_assets_gasb_dollar,
-    mva = market_value_of_assets_dollar,
-    mva_smooth = market_assets_reported_for_asset_smoothing,#added
-    aal = actuarially_accrued_liabilities_dollar,
-    tpl = total_pension_liability_dollar,
-    adec = actuarially_required_contribution_dollar,
-    adec_paid_pct = actuarially_required_contribution_paid_percentage,
-    amortizaton_method,
-    asset_valuation_method_for_gasb_reporting,
-    total_benefit_payments = total_benefits_paid_dollar,#added
-    benefit_payments = benefit_payments_dollar,
-    refunds = refunds_dollar,#added
-    admin_exp = administrative_expense_dollar,
-    cost_structure,
-    payroll = covered_payroll_dollar,
-    ee_contribution = employee_contribution_dollar,
-    ee_nc_pct = employee_normal_cost_percentage,
-    er_contribution = employer_contribution_regular_dollar,
-    er_nc_pct = employer_normal_cost_percentage,
-    er_state_contribution = employer_state_contribution_dollar,
-    er_proj_adec_pct = employers_projected_actuarial_required_contribution_percentage_of_payroll,
-    other_contribution = other_contribution_dollar,#added
-    other_additions = other_additions_dollar,#added
-    fy = fiscal_year,
-    fy_contribution = fiscal_year_of_contribution,
-    inflation_assum = inflation_rate_assumption_for_gasb_reporting,
-    arr = investment_return_assumption_for_gasb_reporting,
-    number_of_years_remaining_on_amortization_schedule,
-    payroll_growth_assumption,
-    total_amortization_payment_pct = total_amortization_payment_percentage,
-    total_contribution = total_contribution_dollar,
-    total_nc_pct = total_normal_cost_percentage,
-    total_number_of_members,
-    total_proj_adec_pct = total_projected_actuarial_required_contribution_percentage_of_payroll,
-    type_of_employees_covered,
-    unfunded_actuarially_accrued_liabilities_dollar,
-    wage_inflation)
+  #########
+select(
+  year,
+  plan_name = display_name,
+  state,
+  return_1yr = x1_year_investment_return_percentage,
+  actuarial_cost_method_in_gasb_reporting,
+  funded_ratio = actuarial_funded_ratio_percentage,
+  actuarial_valuation_report_date,
+  ava = actuarial_value_of_assets_gasb_dollar,
+  mva = market_value_of_assets_dollar,
+  mva_smooth = market_assets_reported_for_asset_smoothing,#added
+  aal = actuarially_accrued_liabilities_dollar,
+  tpl = total_pension_liability_dollar,
+  adec = actuarially_required_contribution_dollar,
+  adec_paid_pct = actuarially_required_contribution_paid_percentage,
+  amortizaton_method,
+  asset_valuation_method_for_gasb_reporting,
+  total_benefit_payments = total_benefits_paid_dollar,#added
+  benefit_payments = benefit_payments_dollar,
+  refunds = refunds_dollar,#added
+  admin_exp = administrative_expense_dollar,
+  cost_structure,
+  payroll = covered_payroll_dollar,
+  ee_contribution = employee_contribution_dollar,
+  ee_nc_pct = employee_normal_cost_percentage,
+  er_contribution = employer_contribution_regular_dollar,
+  er_nc_pct = employer_normal_cost_percentage,
+  er_state_contribution = employer_state_contribution_dollar,
+  er_proj_adec_pct = employers_projected_actuarial_required_contribution_percentage_of_payroll,
+  other_contribution = other_contribution_dollar,#added
+  other_additions = other_additions_dollar,#added
+  fy_contribution = fiscal_year_of_contribution,
+  inflation_assum = inflation_rate_assumption_for_gasb_reporting,
+  arr = investment_return_assumption_for_gasb_reporting,
+  number_of_years_remaining_on_amortization_schedule,
+  payroll_growth_assumption,
+  total_amortization_payment_pct = total_amortization_payment_percentage,
+  total_contribution = total_contribution_dollar,
+  total_nc_pct = total_normal_cost_percentage,
+  total_number_of_members,
+  total_proj_adec_pct = total_projected_actuarial_required_contribution_percentage_of_payroll,
+  type_of_employees_covered,
+  unfunded_actuarially_accrued_liabilities_dollar,
+  wage_inflation)
 
 reason.data$arr <- as.numeric(reason.data$arr)
+reason.data$aal <- as.numeric(reason.data$aal)
 reason.data$return_1yr <- as.numeric(reason.data$return_1yr)
 reason.data$year <- as.numeric(reason.data$year)
 #View(reason.data)
 
-
 #Label state and local plans with*
-urlfile2="https://raw.githubusercontent.com/ANiraula/PensionModeling/master/Database/Reason_State_Names_Mod.csv"
+urlfile2="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/Reason_State_Names_Mod.csv"
 plan.names <- data.table(read_csv(url(urlfile2), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
 #View(plan.names)
+
 pl <- data.table(pl)
 for (i in 1:plan.names[,.N]){
   pl[display_name %in% plan.names[i,1]]$display_name <- as.character(plan.names[i,2])
 }
 
 ##Calculating quantiles for ARR
+reason.data <- data.table(reason.data)
 perc.return <- matrix(0,19,5)
 data <- reason.data[,quantile(na.omit(arr)), by=list(year)]$V1
 for (i in 1:19) {
@@ -151,61 +448,6 @@ first.nan <- function(x) {
 }
 #geomean(x)
 
-#Function to filter for number of variables we commonly use in pension analysis (state plans*)
-filteredData <- function(data, y, fy){
-  Plan <- pullData(data, y)
-  Plan <- Plan %>%
-    filter(year > fy-1)
-  Plan <- Plan %>%
-    select(
-      year,
-      plan_name = display_name,
-      state,
-      return_1yr = x1_year_investment_return_percentage,
-      actuarial_cost_method_in_gasb_reporting,
-      funded_ratio = actuarial_funded_ratio_percentage,
-      actuarial_valuation_date_for_gasb_schedules,
-      actuarial_valuation_report_date,
-      ava = actuarial_value_of_assets_gasb_dollar,
-      mva = market_value_of_assets_dollar,
-      mva_smooth = market_assets_reported_for_asset_smoothing,#added
-      aal = actuarially_accrued_liabilities_dollar,
-      tpl = total_pension_liability_dollar,
-      adec = actuarially_required_contribution_dollar,
-      adec_paid_pct = actuarially_required_contribution_paid_percentage,
-      amortizaton_method,
-      asset_valuation_method_for_gasb_reporting,
-      total_benefit_payments = total_benefits_paid_dollar,#added
-      benefit_payments = benefit_payments_dollar,
-      refunds = refunds_dollar,#added
-      admin_exp = administrative_expense_dollar,
-      cost_structure,
-      payroll = covered_payroll_dollar,
-      ee_contribution = employee_contribution_dollar,
-      ee_nc_pct = employee_normal_cost_percentage,
-      er_contribution = employer_contribution_regular_dollar,
-      er_nc_pct = employer_normal_cost_percentage,
-      er_state_contribution = employer_state_contribution_dollar,
-      er_proj_adec_pct = employers_projected_actuarial_required_contribution_percentage_of_payroll,
-      other_contribution = other_contribution_dollar,#added
-      other_additions = other_additions_dollar,#added
-      fy = fiscal_year,
-      fy_contribution = fiscal_year_of_contribution,
-      inflation_assum = inflation_rate_assumption_for_gasb_reporting,
-      arr = investment_return_assumption_for_gasb_reporting,
-      number_of_years_remaining_on_amortization_schedule,
-      payroll_growth_assumption,
-      total_amortization_payment_pct = total_amortization_payment_percentage,
-      total_contribution = total_contribution_dollar,
-      total_nc_pct = total_normal_cost_percentage,
-      total_number_of_members,
-      total_proj_adec_pct = total_projected_actuarial_required_contribution_percentage_of_payroll,
-      type_of_employees_covered,
-      unfunded_actuarially_accrued_liabilities_dollar,
-      wage_inflation)
-}
-
-
 ##Create separate theme() for ggplot
 plotTheme <- ggplot2::theme(   panel.grid.major = element_blank(),
                                panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),
@@ -221,28 +463,115 @@ reason.data$aal <- as.numeric(reason.data$aal)
 reason.data$arr <- as.numeric(reason.data$arr)
 reason.data$payroll <- as.numeric(reason.data$payroll)
 reason.data$payroll_growth_assumption <- as.numeric(reason.data$payroll_growth_assumption)
-reason.data$total_nc_pc <- as.numeric(reason.data$total_nc_pc)
+reason.data$total_nc_pct <- as.numeric(reason.data$total_nc_pct)
 reason.data$benefit_payments <- as.numeric(reason.data$benefit_payments)
 reason.data$refunds <- as.numeric(reason.data$refunds)
 reason.data$total_proj_adec_pct <- as.numeric(reason.data$total_proj_adec_pct)
+
+########
+##Compare Reason data to PPD for several variables after 2004
+##With t.test
+#urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/ppd-data-latest_06.27.20.csv"
+#PPD<-read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+#PPD <- setDT(PPD)
+#PPD$AdministeringGovt
+#Remove Colorado State and Shool plan
+#PPD <- PPD[PlanName != "Colorado State and School"]
+#PPD <- data.table(PPD[AdministeringGovt == 0] %>%
+#                    select(fy, PlanName, StateName, ActLiabilities_GASB, MktAssets_net,
+#                           InvestmentReturnAssumption_GASB, InvestmentReturn_1yr, payroll,
+#                           PayrollGrowthAssumption, NormCostRate_tot, ReqContRate_tot, PercentReqContPaid,
+#                           expense_TotBenefits) %>% arrange(PlanName))
+#View(PPD[PlanName == "Texas ERS"])
+
+#View(unique(PPD$PlanName))
+#View(unique(reason.data$plan_name))
+#test <- matrix(0,1,4)
+#colnames(test) <- c("aal", "mva", "arr", "payroll")
+#test <- data.table(test)
+#test$aal <- as.numeric(t.test(is.na(PPD[fy > 2004]$ActLiabilities_GASB), is.na(reason.data[year > 2004]$aal))$p.value)
+#test$mva <- t.test(is.na(PPD[fy > 2004]$MktAssets_net), is.na(reason.data[year > 2004]$mva))$p.value
+#test$arr <- t.test(is.na(PPD[fy > 2004]$InvestmentReturnAssumption_GASB), is.na(reason.data[year > 2004]$arr))$p.value
+#test$payroll <- t.test(is.na(PPD[fy > 2004]$payroll), is.na(reason.data[year > 2004]$payroll))$p.value
+#View(test)
+
+reason.data <- data.table(reason.data)
+payrollUS <- reason.data[, sum(na.omit(payroll)), by=list(year)] %>% arrange(year)
+aalUS <- reason.data[, sum(na.omit(aal)), by=list(year)] %>% arrange(year)
+payrollUS <- reason.data[, sum(na.omit(payroll)), by=list(year)] %>% arrange(year)
+#View(aalUS)
+years <- seq(2001, 2018, by = 1)
+aal.pct.ch <- matrix(0,1,17)
+#aal.pct.ch
+
+for(i in(1:17)){
+  aal.pct.ch[,i] <-  (aalUS[year == years[i+1]]$V1-aalUS[year == years[i]]$V1)/aalUS[year == years[i]]$V1
+}
+colnames(aal.pct.ch) <- seq(2002, 2018, by = 1)
+aal.pct.ch <- t(aal.pct.ch)
+colnames(aal.pct.ch) <- c("aal.pct.change")
+#View(aalUS$V1)
+
+urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/GDP.FRED.csv"
+#SOurce: https://fred.stlouisfed.org/series/GDP#0
+gdp.pct <- data.table(
+  read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
+gdp.pct <- gdp.pct[year>2001 & year < 2019]
+#View(gdp.pct)
+#View(aal.pct.ch)
+gdp.aal <- cbind(gdp.pct,round(aal.pct.ch*100,1))
+#View(gdp.aal)
+gdp.aal$gdp.pct.change <- as.numeric(gdp.aal$gdp.pct)
+gdp.aal[,avg.aal := mean(aal.pct.ch)*100]
+gdp.aal[,avg.gdp := mean(gdp.pct.change)]
+
+gdp.pct <- data.table(gdp.pct)
+
+urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/GDP.csv"
+#Source: https://fred.stlouisfed.org/series/GDP#0
+gdp.level <- data.table(
+  read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
+gdp.level <- gdp.level[DATE>2001 & DATE < 2019]
+#View(gdp.level)
+gdp.level$GDP <- as.numeric(gdp.level$GDP)
+gdp.level$GDP
+#View(aalUS)
+gdp.level$GDP/1000*30
+gdpvsaal.level <-(aalUS[year>2001 & year < 2019]$V1/1000000000000)/(gdp.level$GDP/1000)
+gdpvsaal.level <- data.table(gdpvsaal.level)
+gdpvsaal.level[,year := seq(2002, 2018, by = 1)]
+#View(gdpvsaal.level)
+gdpvsaal.30 <-(aalUS[year>2001 & year < 2019]$V1/1000000000000)/((gdp.level$GDP/1000)*30)
+gdpvsaal.30 <- data.table(gdpvsaal.30)
+gdpvsaal.30[,year := seq(2002, 2018, by = 1)]
+#View(gdpvsaal.30)
+#gdp.pct
+#View(payrollUS)
+#View(unique(reason.data$plan_name))
+#TxERS <- data.table(reason.data[plan_name == "Texas Employees Retirement System"])
+#TxERS[year == 2010]$payroll
+#TxERS[year == 2012]$payroll
+
+#1-(TxERS[year == 2012]$payroll/TxERS[year == 2010]$payroll)
+#(TxERS[year == 2012]$payroll-TxERS[year == 2010]$payroll)/TxERS[year == 2010]$payroll
+#View(TxERS)
 
 ######Shiny app[interface] ----------------------------------------------
 
 ui <- fluidPage(
   titlePanel("Reason Database Viewer (V2.0)"),
-  # CODE BELOW: Add select input named "PlanName" to choose between different pension plans in PPD database
+  # CODE BELOW: Add select inputs on state and plan_names to choose between different pension plans in Reason database
   theme = shinythemes::shinytheme("spacelab"),
   sidebarLayout(
-    #wellPanel( #~~ Sidebar ~~#
-    #style = "overflow-y: auto; position:fixed; width:900px; top:1; bottom:0;; right:0",                       
-    sidebarPanel(#fluidRow(column(width = 8,
+    sidebarPanel(
       selectInput("x", "Select State", choices = states),
-      #ADD slider input to choose year range
       uiOutput("secondSelection"),
+      #ADD slider input to choose year range
       sliderInput('year', 'Select Starting Year', min = 1990, max = 2019, value = 2001, sep = ""),
       uiOutput("thirdSelection"),
-      em("Filtered data is available for state (labeled*) & some municpal plans."),
+      em("Filtered data is available for major state plans (under `state` in dropdown menue)."),
       em("These plans are graphed in the UAL, Inv.Returns & Contributions tabs."),
+      em("Updated* Data sources are displayed in Source tab."),
       br(),
       br(),
       textOutput('plot_2019Updates'),
@@ -250,7 +579,7 @@ ui <- fluidPage(
       downloadButton("downloadData", "Download"),#, width = 3
       actionButton("show_note", "Note")
     ),
-      mainPanel(
+    mainPanel(
       ###Remove error messages
       tags$style(type="text/css",
                  ".shiny-output-error { visibility: hidden; }",
@@ -260,12 +589,17 @@ ui <- fluidPage(
         tabPanel('Table', DT::DTOutput('plot_DataPull')),
         tabPanel('Columns', DT::DTOutput('plot_Variables'),
                  tableOutput("meta_table")),
+        tabPanel('Source', DT::DTOutput('plot_SourceDataPull')),
         tabPanel("UAL",plotly::plotlyOutput("plot_Filtered"), 
                  plotly::plotlyOutput("plot_Filtered_UAL")),
         tabPanel("Inv.Returns", plotly::plotlyOutput("plot_Filtered_Returns"),
                  plotly::plotlyOutput("plot_Filtered_ARR")),
         tabPanel("Contributions", plotly::plotlyOutput("plot_Filtered_Contr"),
-                 plotly::plotlyOutput("plot_Filtered_CashFlow"))
+                 plotly::plotlyOutput("plot_Filtered_CashFlow")),
+        tabPanel("Payroll",plotly::plotlyOutput("plot_payroll"),
+                 plotly::plotlyOutput("plot_payrollUS")),
+        tabPanel("AALvsGDP",plotly::plotlyOutput("plot_GDPvsAAL"),
+                 plotly::plotlyOutput("plot_GDPlevel"))    
       )
     )
   )
@@ -274,7 +608,6 @@ ui <- fluidPage(
 ######Shiny app[server] -------------------------------------------------
 
 server <- function(input, output, session){
-  
   note_text <- paste0("This shiny app allows you to browse through Reason database by", sep="\n", "\n",
                       "selecting a state & pension plan.", sep="\n",
                       "Go to 'Table' & 'Columns' tabs to see data for chosen plan (to save use download button). ", sep="\n",
@@ -285,7 +618,7 @@ server <- function(input, output, session){
   observeEvent(input$show_note,{
     showModal(modalDialog(note_text))
   })
-
+  
   output$secondSelection <- renderUI({
     pl1 <- data.table(pl %>% filter(state == input$x))
     state <- data.table(pl1[display_name %in% plan.names$state.plans.nm.rev]$display_name)
@@ -307,6 +640,7 @@ server <- function(input, output, session){
   })
   
   ##Create a reactive datapull object to use for shiny graphics later
+  
   PlanData <- reactive({
     if(input$filter == "Filtered"){
       UAL <- data.table(filteredData(pl, input$y, input$year))
@@ -321,6 +655,22 @@ server <- function(input, output, session){
   output$plot_DataPull <- DT::renderDT({
     ###Specify data to show (Filter out variables)
     PlanData() 
+  })
+  
+  ##Create a reactive source data table
+  PlanSourceData <- reactive({
+    
+    if(input$filter == "Filtered"){
+      Plan <- data.table(
+        filteredSourceData(input$y, input$year))
+    } else {
+      Plan <- data.table(pullSourceData(input$y)) %>%
+        filter(year >= input$year)
+    } 
+  })
+  
+  output$plot_SourceDataPull <- DT::renderDT({
+    PlanSourceData() 
   })
   
   output$plot_Variables <- DT::renderDT({
@@ -566,6 +916,85 @@ server <- function(input, output, session){
     k
   })
   
+  output$plot_GDPvsAAL <- plotly::renderPlotly({
+    Data <- data.frame(gdp.aal)
+    Data[,1] <- as.numeric(Data[,1])
+    Data[,2] <- as.numeric(Data[,2])
+    Data[,3] <- as.numeric(Data[,3])
+    #View(gdp.aal)
+    
+    #View(UAL)
+    k <- ggplot() +
+      ggtitle(label = paste0("State AAL vs GDP Change (Y%)"))+
+      geom_line(data=Data, aes(x=Data[,1], y=Data[,2], 
+                               color="US GDP Change", group =1,
+                               text = paste0("Fiscal Year: ", Data[,1],
+                                             "<br>Annual US GDP Change: ",Data[,2], "%")),
+                size = 1.00, fill="royalblue")+
+      geom_line(data=Data, aes(x=Data[,1], y=Data[,3], 
+                               color="State-Level AAL Change", group =1,
+                               text = paste0("Fiscal Year: ", Data[,1],
+                                             "<br>Annual State-Level AAL Change: ",Data[,3], "%")),
+                size = 1.00)+
+      geom_line(data=Data, aes(x=Data[,1], y=Data[,4], 
+                               color="Average AAL Change", group =1,
+                               text = paste0("Fiscal Year: ", Data[,1],
+                                             "<br>Average AAL Change: ",round(Data[,4],1), "%")),
+                size = 1.00)+
+      geom_line(data=Data, aes(x=Data[,1], y=Data[,5], 
+                               color="Average GDP Change", group =1,
+                               text = paste0("Fiscal Year: ", Data[,1],
+                                             "<br>Average GDP Change: ",round(Data[,5],1), "%")),
+                size = 1.00)+
+      scale_colour_manual(values=c("orangered1", "royalblue2", "orangered3", "royalblue4"))+
+      scale_y_continuous(labels = function(x) paste0(x,"%"), name = "",
+                         breaks = seq(-3, 10, by = 1), limits = c(-3, 10))+
+      scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
+                         breaks = seq(2002, 2018, by = 1), limits = c(2002, 2018))+
+      theme_bw()+
+      plotTheme#+
+    
+    k <- ggplotly(k, tooltip = c("text"))
+    k <- k %>% layout(autosize = TRUE, legend = list(orientation = "v", x=0.01, y = 0.01))
+    k
+  })
+  
+  output$plot_GDPlevel <- plotly::renderPlotly({
+    Data <- data.frame(gdpvsaal.level)
+    Data[,1] <- as.numeric(Data[,1])
+    
+    Data2 <- data.frame(gdpvsaal.30)
+    Data2[,1] <- as.numeric(Data2[,1])
+    #View(Data)
+    #View(Data2)
+    #View(gdp.aal)
+    
+    #View(UAL)
+    k <- ggplot() +
+      ggtitle(label = paste0("State AAL-to-GDP Level Ratio"))+
+      geom_line(data=Data, aes(x=Data[,2], y=Data[,1], 
+                               color="AAL-to-GDP Ratio", group =1,
+                               text = paste0("Fiscal Year: ", Data[,2],
+                                             "<br>AAL-to-GDP Ratio: ",round(Data[,1],4))),
+                size = 1.00, fill="royalblue")+
+      geom_line(data=Data2, aes(x=Data2[,2], y=Data2[,1], 
+                                color="AAL-to-GDP(x30) Ratio", group =1,
+                                text = paste0("Fiscal Year: ", Data2[,2],
+                                              "<br>AAL-to-GDP(x30) Ratio: ",round(Data2[,1],4))),
+                size = 1.00, fill="royalblue4")+
+      scale_colour_manual(values=c("orangered1", "orangered4"))+
+      scale_y_continuous(labels = function(x) paste0(round(x,3)), name = "",
+                         breaks = seq(0, 0.3, by = 0.03), limits = c(0, 0.3))+
+      scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
+                         breaks = seq(2002, 2018, by = 1), limits = c(2002, 2018))+
+      theme_bw()+
+      plotTheme#+
+    
+    k <- ggplotly(k, tooltip = c("text"))
+    k <- k %>% layout(autosize = TRUE, legend = list(orientation = "v", x=0.01, y = 1))
+    k
+  })
+  
   output$plot_Filtered_Contr <- plotly::renderPlotly({
     UAL5 <- data.table(PlanData()) 
     #View(state.plans[plan_name == "Alabama Employees' Retirement System (ERS)"]$return_1y) 
@@ -718,9 +1147,7 @@ server <- function(input, output, session){
     
     UAL7 <- data.table("Total_Benefits"= (as.numeric(UAL7$total_benefit_payments)), 
                        "Total_Contributions"= (  as.numeric(UAL7$ee_contribution)+
-                                                   as.numeric(UAL7$er_contribution)+
-                                                   as.numeric(UAL7$other_contribution)+
-                                                   as.numeric(UAL7$other_additions)),
+                                                   as.numeric(UAL7$er_contribution)),
                        "Fiscal_Year"= as.numeric(UAL7$year)
     )
     UAL7[, Net_Cash_Flow := (UAL7$Total_Contributions+UAL7$Total_Benefits)]
@@ -728,27 +1155,28 @@ server <- function(input, output, session){
     UAL7 <- data.frame(UAL7)
     #View(UAL5)
     m <- ggplot() +
+      geom_col(position = "dodge2")+
       geom_col(data=UAL7, aes(x=Fiscal_Year, y=-(Total_Benefits),
                               color="Total Benefit Payments & Expenses", group =1,
                               text = paste0("Fiscal Year: ", Fiscal_Year,
-                                            "<br>Total Expenses: $",round(-(Total_Benefits/1000000),2), " $Millions"),position = "dodge"), 
+                                            "<br>Total Expenses: $",round(-(Total_Benefits/1000000),2), " $Millions")),position = "dodge", 
                width = 0.7, 
                fill = "orangered1"
       )+
       geom_col(data=UAL7, aes(x=Fiscal_Year, y=Total_Contributions,
                               color="Total Contributions", group = 1,
                               text = paste0("Fiscal Year: ", Fiscal_Year,
-                                            "<br>Total Contributions: $",round(Total_Contributions/1000000,2), " $Millions"),position = "dodge"), 
+                                            "<br>Total Contributions: $",round(Total_Contributions/1000000,2), " $Millions")),position = "dodge", 
                width = 0.7,
-               fill = "royalblue4"
+               fill = "royalblue3"
       )+
       
       geom_col(data=UAL7, aes(x=Fiscal_Year, y=Net_Cash_Flow,
                               color="Net Cash Flow", group =1,
                               text = paste0("Fiscal Year: ", Fiscal_Year,
-                                            "<br>Net Cash Flow: $",round(Net_Cash_Flow/1000000,2), " $Millions"),position = "dodge"), 
+                                            "<br>Net Cash Flow: $",round(Net_Cash_Flow/1000000,2), " $Millions")),position = "dodge", 
                width = 0.7,
-               fill = "royalblue2"
+               fill = "deepskyblue2"
       )+
       #geom_col(data=UAL5, aes(x=Fiscal_Year, y=ifelse(ADEC_NotPaid>0, ADEC_NotPaid,NA),
       #                        color="ADEC OverPaid", group =1,
@@ -766,7 +1194,7 @@ server <- function(input, output, session){
       scale_y_continuous(labels = function(x) paste0("$", round((x/1000000),2), "M"), name = "Annual Cash Flow",
       )+
       scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
-                         breaks = seq(min(UAL7$Fiscal_Year), 2019, by = 1), limits = c(min(UAL7$Fiscal_Year), 2019))+
+                         breaks = seq(input$year, 2019, by = 1), limits = c(input$year, 2019))+
       theme_bw()+
       ###Adding custom theme
       #https://departmentfortransport.github.io/R-cookbook/plots.html
@@ -776,10 +1204,79 @@ server <- function(input, output, session){
     m <- m %>% layout(autosize = TRUE, legend = list(orientation = "v", x=0.01, y = 1))
     m
   })
+  
+  output$plot_payroll <- plotly::renderPlotly({
+    #ggtitle(label = paste0("Plan: ", input$y))+
+    #View(payrollUS
+    UAL <- data.table(PlanData())
+    #View(UAL$payroll)
+    UAL <- data.table("Payroll"= (UAL$payroll/1000000000), 
+                      "Fiscal_Year"= (UAL$year)
+    )
+    
+    #View(UAL)
+    UAL$Fiscal_Year <-as.numeric(UAL$Fiscal_Year)
+    UAL <- data.frame(UAL)
+    #View(UAL)
+    u <- ggplot() +
+      ggtitle(label = paste0("Plan: ", input$y))+
+      geom_line(data=UAL, aes(x=Fiscal_Year, y=Payroll, 
+                              color="Payroll", group =1,
+                              text = paste0("Fiscal Year: ", Fiscal_Year,
+                                            "<br>Payroll: $",round(Payroll,2), " Billions")),
+                color = "orangered4", size = 1
+      )+
+      
+      scale_colour_manual(values=c("orangered2", "royalblue"))+
+      
+      scale_y_continuous(labels = function(x) paste0("$", x), name = "Payroll in $Billions")+
+      scale_x_continuous(labels = function(x) paste0(x, ""), name = "",
+                         breaks = seq(min(UAL$Fiscal_Year), 2019, by = 1), limits = c(min(UAL$Fiscal_Year), 2019))+
+      theme_bw()+
+      plotTheme#+
+    
+    u <- ggplotly(u, tooltip = c("text"))
+    u <- u %>% layout(autosize = TRUE, legend = list(orientation = "v", x=0.01, y = 0.1))
+    u
+  })
+  
+  output$plot_payrollUS <- plotly::renderPlotly({
+    #ggtitle(label = paste0("State Plan Payroll Growth"))
+    #View(payrollUS
+    UAL <- data.table(PlanData())
+    #View(UAL$payroll)
+    UAL <- data.table("PayrollUS"=(payrollUS$V1/1000000000),
+                      "Fiscal_Year"= (UAL$year)
+    )
+    
+    #View(UAL)
+    UAL$Fiscal_Year <-as.numeric(UAL$Fiscal_Year)
+    UAL <- data.frame(UAL)
+    #View(UAL)
+    u <- ggplot() +
+      geom_line(data=UAL, aes(x=Fiscal_Year, y=PayrollUS, 
+                              color="Payroll US", group =1,
+                              text = paste0("Fiscal Year: ", Fiscal_Year,
+                                            "<br>Payroll US: $",round(PayrollUS,2), " Billions")),
+                color = "royalblue2", size = 1
+      )+
+      
+      
+      scale_y_continuous(labels = function(x) paste0("$", x), name = "Payroll in $Billions (State Plans)")+
+      scale_x_continuous(labels = function(x) paste0(x, ""), name = "",
+                         breaks = seq(min(UAL$Fiscal_Year), 2019, by = 1), limits = c(min(UAL$Fiscal_Year), 2019))+
+      theme_bw()+
+      plotTheme#+
+    
+    u <- ggplotly(u, tooltip = c("text"))
+    u <- u %>% layout(autosize = TRUE, legend = list(orientation = "v", x=0.01, y = 0.1))
+    u
+  })
   ###Specify data to Download
   datasetInput <- reactive({
     PlanData()
   })
+  
   output$downloadData <- downloadHandler(
     filename = function() {
       paste(input$y,"_",input$filter, ".csv", sep = "")
