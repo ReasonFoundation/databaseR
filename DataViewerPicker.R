@@ -574,6 +574,7 @@ ui <- fluidPage(
       #ADD slider input to choose year range
       sliderInput('year', 'Select Starting Year', min = 1990, max = 2019, value = 2001, sep = ""),
       uiOutput("thirdSelection"),
+      uiOutput("forthSelection"),
       em("Filtered data is available for major state plans (under `state` in dropdown menue)."),
       em("These plans are graphed in the UAL, Inv.Returns & Contributions tabs."),
       br(),
@@ -648,11 +649,10 @@ server <- function(input, output, session){
     }
   })
   
-  ##Create a reactive datapull object to use for shiny graphics later
-  
   PlanData <- reactive({
     if(input$filter == "Filtered"){
       UAL <- data.table(filteredData(pl, input$y, input$year))
+      UAL %>% select(columns())
     } else {
       UAL <- pullData(pl, input$y)
       UAL <- UAL %>%
@@ -661,6 +661,34 @@ server <- function(input, output, session){
     
   })
   
+  output$forthSelection <- renderUI({
+    pickerInput(
+      label = "Choose Columns",
+      choices = colnames(PlanData()),
+      selected = c(colnames(PlanData())),
+      multiple = T#,
+      #options = list(),
+      #choicesOpt = NULL,
+      #width = NULL,
+      #inline = FALSE
+    )
+  })
+  
+  
+  Columns <- reactive({
+    pickerInput(
+      label = "Choose Columns",
+      choices = colnames(PlanData()),
+      selected = c(colnames(PlanData())),
+      multiple = T#,
+      #options = list(),
+      #choicesOpt = NULL,
+      #width = NULL,
+      #inline = FALSE
+    )
+  })
+  ##Create a reactive datapull object to use for shiny graphics later
+
   output$plot_DataPull <- DT::renderDT({
     ###Specify data to show (Filter out variables)
     PlanData() 
