@@ -54,7 +54,6 @@ plans <- as.character(unique(pl[,2]))
 #palette
 
 pullSourceData <- function(plan_name){
-  
   con <- RPostgres::dbConnect(
     RPostgres::Postgres(),
     dbname = "d629vjn37pbl3l",
@@ -81,7 +80,6 @@ and attribute_name in ('1 Year Investment Return Percentage',
   query <- paste("select * from pull_plan_data(",plan_id,")")
   #paste0("select * from pull_plan_data('", str_replace(plan_name,"'", "''"), "')")
 }
-  
   
   ###################
   
@@ -175,7 +173,7 @@ columns <- c("total_pension_liability_dollar", "wage_inflation",
              "payroll_growth_assumption", "other_contribution_dollar",
              "other_additions_dollar", "x1_year_investment_return_percentage",
              "fiscal_year_of_contribution", "statutory_payment_dollar",
-             "statutory_payment_percentage")
+             "statutory_payment_percentage", "discount_rate_assumption", "multiple_discount_rates")
 
 #Custom Function to filter for number of variables we commonly use in pension analysis (state plans*)
 filteredData <- function(plan, y, fy){
@@ -183,8 +181,11 @@ filteredData <- function(plan, y, fy){
   ##Create missing columns for plans with no data for st 7 variable
   for (i in (1:length(columns))){
     if(sum((colnames(Plan) == columns[i]))==0) {
-      Plan[,columns[i] := NA] }
+      Plan[,columns[i] := NA]}
   }
+  
+  if(is.na(Plan$discount_rate_assumption)){ 
+    Plan$discount_rate_assumption <- Plan$investment_return_assumption_for_gasb_reporting}
   ####
   Plan <- Plan %>%
     filter(year > fy-1)
@@ -225,6 +226,8 @@ filteredData <- function(plan, y, fy){
       fy_contribution = fiscal_year_of_contribution,
       inflation_assum = inflation_rate_assumption_for_gasb_reporting,
       arr = investment_return_assumption_for_gasb_reporting,
+      dr = discount_rate_assumption,#NEW
+      multidr = multiple_discount_rates,#NEW
       number_of_years_remaining_on_amortization_schedule,
       payroll_growth_assumption,
       total_amortization_payment_pct = total_amortization_payment_percentage,
@@ -248,9 +251,11 @@ filteredSourceData <- function(plan_name, fy){
                        filter(year > fy-1))
   ##Create columns that don't have any data
   for (i in (1:length(columns))){
-    if(sum((colnames(Data) == columns[i]))==0) {
-      Data[,columns[i] := NA] }
+    if(sum((colnames(Plan) == columns[i]))==0) {
+      Plan[,columns[i] := NA]}
   }
+  if(is.na(Plan$discount_rate_assumption)){ 
+    Plan$discount_rate_assumption <- Plan$investment_return_assumption_for_gasb_reporting}
   ####
   Data <- Data %>%
     select(
@@ -290,6 +295,8 @@ filteredSourceData <- function(plan_name, fy){
       fy_contribution = fiscal_year_of_contribution,
       inflation_assum = inflation_rate_assumption_for_gasb_reporting,
       arr = investment_return_assumption_for_gasb_reporting,
+      dr = discount_rate_assumption,#NEW
+      multidr = multiple_discount_rates,#NEW
       number_of_years_remaining_on_amortization_schedule,
       payroll_growth_assumption,
       total_amortization_payment_pct = total_amortization_payment_percentage,
@@ -324,7 +331,6 @@ reason.data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_r
 library(devtools)
 library(roxygen2)
 pullSourceData.test <- source_url("https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/PullSourceData.R")
-#class(pullSourceData.test$value)
 #View(pullSourceData.test$value("New Mexico Educational Retirement Board"))
 #NMPERA.wide <- pullSourceData("New Mexico Educational Retirement Board")
 
@@ -572,6 +578,7 @@ ui <- fluidPage(
       em("Filtered data is available for major state plans (under `state` in dropdown menue)."),
       em("These plans are graphed in the UAL, Inv.Returns & Contributions tabs."),
       em("Updated* Data sources are displayed in Source tab."),
+      em("Updated* Discount rate assumption data added to Filtered option."),
       br(),
       br(),
       textOutput('plot_2019Updates'),
