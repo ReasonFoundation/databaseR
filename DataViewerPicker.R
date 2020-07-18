@@ -166,6 +166,53 @@ and attribute_name in ('1 Year Investment Return Percentage',
 ##Why 112 state plans (which 2 are missing?)
 #View(unique(all_data$display_name))
 
+
+variables <- c(
+"return_1yr",
+"actuarial_cost_method_in_gasb_reporting",
+"funded_ratio",
+"actuarial_valuation_report_date",
+"ava",
+"mva",
+"mva_smooth",#added
+"aal",
+"tpl",
+"adec",
+"adec_paid_pct",
+"statutory",#NEW
+"statutory_pct",#NEW
+"amortizaton_method",
+"asset_valuation_method_for_gasb_reporting",
+"total_benefit_payments",#added
+"benefit_payments",
+"refunds",
+"admin_exp",
+"cost_structure",
+"payroll",
+"ee_contribution",
+"ee_nc_pct",
+"er_contribution",
+"er_nc_pct",
+"er_state_contribution",
+"er_proj_adec_pct",
+"other_contribution",#added
+"other_additions",#added
+"fy_contribution",
+"inflation_assum",
+"arr",
+"dr",#NEW
+"multidr",#NEW
+"number_of_years_remaining_on_amortization_schedule",
+"payroll_growth_assumption",
+"total_amortization_payment_pct",
+"total_contribution",
+"total_nc_pct",
+"total_number_of_members",
+"total_proj_adec_pct",
+"type_of_employees_covered",
+"unfunded_actuarially_accrued_liabilities_dollar",
+"wage_inflation")
+
 #NMPERA.wide <- pullSourceData("New Mexico Educational Retirement Board")
 ###Columns were some plans have no data for
 columns <- c("total_pension_liability_dollar", "wage_inflation",
@@ -564,7 +611,7 @@ gdpvsaal.30[,year := seq(2002, 2018, by = 1)]
 ######Shiny app[interface] ----------------------------------------------
 
 ui <- fluidPage(
-  titlePanel("Reason Database Viewer (V2.0)"),
+  titlePanel("Reason Database Viewer (V3.0)"),
   # CODE BELOW: Add select inputs on state and plan_names to choose between different pension plans in Reason database
   theme = shinythemes::shinytheme("spacelab"),
   sidebarLayout(
@@ -574,7 +621,14 @@ ui <- fluidPage(
       #ADD slider input to choose year range
       sliderInput('year', 'Select Starting Year', min = 1990, max = 2019, value = 2001, sep = ""),
       uiOutput("thirdSelection"),
-      uiOutput("forthSelection"),
+      pickerInput("pk", "Choose Columns (Filtered data only)", 
+        choices = c(variables),
+        selected = c(variables),
+        multiple = T,
+        options = list(`actions-box` = TRUE)
+          ),
+      em("NOTES: "),
+      br(),
       em("Filtered data is available for major state plans (under `state` in dropdown menue)."),
       em("These plans are graphed in the UAL, Inv.Returns & Contributions tabs."),
       br(),
@@ -652,7 +706,6 @@ server <- function(input, output, session){
   PlanData <- reactive({
     if(input$filter == "Filtered"){
       UAL <- data.table(filteredData(pl, input$y, input$year))
-      UAL %>% select(columns())
     } else {
       UAL <- pullData(pl, input$y)
       UAL <- UAL %>%
@@ -660,38 +713,15 @@ server <- function(input, output, session){
     } 
     
   })
-  
-  output$forthSelection <- renderUI({
-    pickerInput(
-      label = "Choose Columns",
-      choices = colnames(PlanData()),
-      selected = c(colnames(PlanData())),
-      multiple = T#,
-      #options = list(),
-      #choicesOpt = NULL,
-      #width = NULL,
-      #inline = FALSE
-    )
-  })
-  
-  
-  Columns <- reactive({
-    pickerInput(
-      label = "Choose Columns",
-      choices = colnames(PlanData()),
-      selected = c(colnames(PlanData())),
-      multiple = T#,
-      #options = list(),
-      #choicesOpt = NULL,
-      #width = NULL,
-      #inline = FALSE
-    )
-  })
+
   ##Create a reactive datapull object to use for shiny graphics later
 
   output$plot_DataPull <- DT::renderDT({
     ###Specify data to show (Filter out variables)
-    PlanData() 
+    x <- data.table(PlanData())
+    if(input$filter == "Filtered"){
+    x <- x %>% select(year, plan_name, state, input$pk)}
+    x
   })
   
   ##Create a reactive source data table
@@ -707,16 +737,20 @@ server <- function(input, output, session){
   })
   
   output$plot_SourceDataPull <- DT::renderDT({
-    PlanSourceData() 
+    x <- data.table(PlanSourceData())
+    if(input$filter == "Filtered"){
+    x <- x %>% select(year, plan_name, state, data_source_name, input$pk)}
+    x
   })
   
   output$plot_Variables <- DT::renderDT({
     #Load reactive datapull
-    Plan <- data.table(PlanData())
-    x <- data.table(colnames(Plan))
+    x <- data.table(PlanData())
+    if(input$filter == "Filtered"){
+    x <- x %>% select(year, plan_name, state, input$pk)}
+    x <- data.table(colnames(x))
     colnames(x) <- c("Variables")
     x
-    
   })
   
   output$plot_2019Updates <- renderText({
@@ -1311,7 +1345,10 @@ server <- function(input, output, session){
   })
   ###Specify data to Download
   datasetInput <- reactive({
-    PlanData()
+    x <- data.table(PlanData())
+    if(input$filter == "Filtered"){
+    x <- x %>% select(year, plan_name, state, input$pk)}
+    x
   })
   
   output$downloadData <- downloadHandler(
