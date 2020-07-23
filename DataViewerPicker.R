@@ -102,7 +102,8 @@ and attribute_name in ('1 Year Investment Return Percentage',
 #View(pullSourceData("Employee Retirement System of Hawaii"))
 ##Pull state Data only
 
-pullStateData <- function(state, FY){
+pullStateData <- function(year){
+  
   con <- RPostgres::dbConnect(
     RPostgres::Postgres(),
     dbname = "d629vjn37pbl3l",
@@ -112,9 +113,9 @@ pullStateData <- function(state, FY){
     password = "p88088bd28ea68027ee96c65996f7ea3b56db0e27d7c9928c05edc6c23ef2bc27",
     sslmode = "require")
   
-  if(str_count(paste0(state))<6){
-    query <- paste("select * from pull_data_state_only()
-where year > '", paste(FY-1), "'
+  
+  query <- paste("select * from pull_data_state_only()
+where year > '", paste(year-1), "'
 and attribute_name in ('1 Year Investment Return Percentage',
 'Investment Return Assumption for GASB Reporting',
 'Market Value of Assets Dollar',
@@ -141,7 +142,7 @@ and attribute_name in ('1 Year Investment Return Percentage',
 'Number of Years Remaining on Amortization Schedule',
 'Actuarial Cost Method in GASB Reporting',
 'Wage Inflation',
-'Total Benefits Paid Dollar')")}else{NULL}
+'Total Benefits Paid Dollar')")
   
   result <- RPostgres::dbSendQuery(con, query)
   #RPostgres::dbBind(result, list(1))
@@ -158,9 +159,10 @@ and attribute_name in ('1 Year Investment Return Percentage',
     dplyr::select(-.data$row_id) %>%  # drop the index
     dplyr::arrange(display_name, year) %>%
     janitor::clean_names()
-  
+    
 }
-#View(pullStateData(state,2010))
+
+#View(pullStateData(2010))
 ##Add columns
 ##Convert to Wide format
 ##Why 112 state plans (which 2 are missing?)
@@ -382,11 +384,8 @@ pullSourceData.test <- source_url("https://raw.githubusercontent.com/ReasonFound
 
 library(devtools)
 library(roxygen2)
-pullStateData.test <- source_url("https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/functions/pullStateData.R")
-#View(pullStateData.test$value(state, 2004))
-
-#pullStateData.test <- source_url("https://github.com/ReasonFoundation/databaseR/blob/master/functions/pullStateData.R")
-#View(pullStateData)
+pullStateData.test <- source_url("https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/pullStateData.R")
+#View(pullStateData.test$value(2001))
 #View(pullStateData.test$value())
 
 #View(reason.data)

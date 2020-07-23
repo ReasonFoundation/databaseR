@@ -18,6 +18,7 @@ library(pensionviewr)
 library(tidyverse)
 #library(openxlsx)
 library(tseries)
+library(plyr)
 #library(ggplot2)
 library(data.table)
 library(openxlsx)
@@ -99,10 +100,9 @@ and attribute_name in ('1 Year Investment Return Percentage',
     janitor::clean_names()
 }
 
-#View(pullSourceData("Employee Retirement System of Hawaii"))
 ##Pull state Data only
 
-pullStateData <- function(state, FY){
+pullStateData <- function(FY){
   con <- RPostgres::dbConnect(
     RPostgres::Postgres(),
     dbname = "d629vjn37pbl3l",
@@ -112,8 +112,8 @@ pullStateData <- function(state, FY){
     password = "p88088bd28ea68027ee96c65996f7ea3b56db0e27d7c9928c05edc6c23ef2bc27",
     sslmode = "require")
   
-  if(str_count(paste0(state))<6){
-    query <- paste("select * from pull_data_state_only()
+  
+  query <- paste("select * from pull_data_state_only()
 where year > '", paste(FY-1), "'
 and attribute_name in ('1 Year Investment Return Percentage',
 'Investment Return Assumption for GASB Reporting',
@@ -141,7 +141,7 @@ and attribute_name in ('1 Year Investment Return Percentage',
 'Number of Years Remaining on Amortization Schedule',
 'Actuarial Cost Method in GASB Reporting',
 'Wage Inflation',
-'Total Benefits Paid Dollar')")}else{NULL}
+'Total Benefits Paid Dollar')")
   
   result <- RPostgres::dbSendQuery(con, query)
   #RPostgres::dbBind(result, list(1))
@@ -160,7 +160,10 @@ and attribute_name in ('1 Year Investment Return Percentage',
     janitor::clean_names()
   
 }
-#View(pullStateData(state,2010))
+
+#pl <- planList()
+#View(pullStateData(2010))
+#str_count(paste0("\"",state,"\""))<6
 ##Add columns
 ##Convert to Wide format
 ##Why 112 state plans (which 2 are missing?)
@@ -171,8 +174,9 @@ and attribute_name in ('1 Year Investment Return Percentage',
 columns <- c("total_pension_liability_dollar", "wage_inflation",
              "payroll_growth_assumption", "other_contribution_dollar",
              "other_additions_dollar", "x1_year_investment_return_percentage",
+             "amortizaton_method", "number_of_years_remaining_on_amortization_schedule",
              "fiscal_year_of_contribution", "statutory_payment_dollar",
-             "statutory_payment_percentage", "discount_rate_assumption", "multiple_discount_rates")
+             "statutory_payment_percentage", "discount_rate_assumption")
 
 #Custom Function to filter for number of variables we commonly use in pension analysis (state plans*)
 filteredData <- function(plan, y, fy){
@@ -226,7 +230,6 @@ filteredData <- function(plan, y, fy){
       inflation_assum = inflation_rate_assumption_for_gasb_reporting,
       arr = investment_return_assumption_for_gasb_reporting,
       dr = discount_rate_assumption,#NEW
-      multidr = multiple_discount_rates,#NEW
       number_of_years_remaining_on_amortization_schedule,
       payroll_growth_assumption,
       total_amortization_payment_pct = total_amortization_payment_percentage,
@@ -244,19 +247,19 @@ filteredData <- function(plan, y, fy){
 #y <- filteredData(pl, "Employee Retirement System of Hawaii", 2001)
 
 filteredSourceData <- function(plan_name, fy){
-  Plan <- data.table(
+  Data <- data.table(
     pullSourceData(plan_name))##Moved pullSourceData() inside this function
-  Plan <- data.table(Plan %>%
+  Data <- data.table(Data %>%
                        filter(year > fy-1))
   ##Create columns that don't have any data
   for (i in (1:length(columns))){
-    if(sum((colnames(Plan) == columns[i]))==0) {
-      Plan[,columns[i] := NA]}
+    if(sum((colnames(Data) == columns[i]))==0) {
+      Data[,columns[i] := NA]}
   }
-  if(is.na(Plan$discount_rate_assumption)){ 
-    Plan$discount_rate_assumption <- Plan$investment_return_assumption_for_gasb_reporting}
+  if(is.na(Data$discount_rate_assumption)){ 
+    Data$discount_rate_assumption <- Data$investment_return_assumption_for_gasb_reporting}
   ####
-  Plan <- Plan %>%
+  Data <- Data %>%
     select(
       year,
       plan_name = display_name,
@@ -295,7 +298,6 @@ filteredSourceData <- function(plan_name, fy){
       inflation_assum = inflation_rate_assumption_for_gasb_reporting,
       arr = investment_return_assumption_for_gasb_reporting,
       dr = discount_rate_assumption,#NEW
-      multidr = multiple_discount_rates,#NEW
       number_of_years_remaining_on_amortization_schedule,
       payroll_growth_assumption,
       total_amortization_payment_pct = total_amortization_payment_percentage,
@@ -407,6 +409,18 @@ reason.data$return_1yr <- as.numeric(reason.data$return_1yr)
 reason.data$year <- as.numeric(reason.data$year)
 #View(reason.data)
 
+palette_reason <- data.table(
+  Orange = "#FF6633", 
+  DarkGrey = "#333333", 
+  SpaceGrey = "#A69FA1",
+  DarkBlue = "#1696d2",
+  GreyBlue = "#6699CC", 
+  Yellow = "#FFCC33", 
+  LightBlue = "#3399CC", 
+  SatBlue = "#3366CC", 
+  Green = "#669900", 
+  Red = "#CC0000")
+
 #Label state and local plans with*
 urlfile2="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/Reason_State_Names_Mod.csv"
 plan.names <- data.table(read_csv(url(urlfile2), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
@@ -488,18 +502,29 @@ reason.data$total_proj_adec_pct <- as.numeric(reason.data$total_proj_adec_pct)
 #                           PayrollGrowthAssumption, NormCostRate_tot, ReqContRate_tot, PercentReqContPaid,
 #                           expense_TotBenefits) %>% arrange(PlanName))
 #View(PPD[PlanName == "Texas ERS"])
-
 #View(unique(PPD$PlanName))
 #View(unique(reason.data$plan_name))
-#test <- matrix(0,1,4)
-#colnames(test) <- c("aal", "mva", "arr", "payroll")
+#test <- matrix(0,1,6)
+#colnames(test) <- c("aal", "mva", "arr", "return", "payroll", "adec_paid")
 #test <- data.table(test)
-#test$aal <- as.numeric(t.test(is.na(PPD[fy > 2004]$ActLiabilities_GASB), is.na(reason.data[year > 2004]$aal))$p.value)
-#test$mva <- t.test(is.na(PPD[fy > 2004]$MktAssets_net), is.na(reason.data[year > 2004]$mva))$p.value
-#test$arr <- t.test(is.na(PPD[fy > 2004]$InvestmentReturnAssumption_GASB), is.na(reason.data[year > 2004]$arr))$p.value
-#test$payroll <- t.test(is.na(PPD[fy > 2004]$payroll), is.na(reason.data[year > 2004]$payroll))$p.value
+#point <- 2010
+#test$aal <- as.numeric(t.test(is.na(PPD[fy > point]$ActLiabilities_GASB), is.na(reason.data[year > point]$aal))$p.value)
+#test$mva <- t.test(is.na(PPD[fy > point]$MktAssets_net), is.na(reason.data[year > point]$mva))$p.value
+#test$arr <- t.test(is.na(PPD[fy > point]$InvestmentReturnAssumption_GASB), is.na(reason.data[year > point]$arr))$p.value
+#test$return <- t.test(is.na(PPD[fy > point]$InvestmentReturn_1yr), is.na(reason.data[year > point]$return_1yr))$p.value
+#test$payroll <- t.test(is.na(PPD[fy > point]$payroll), is.na(reason.data[year > point]$payroll))$p.value
+#test$adec_paid <- as.numeric(t.test(is.na(PPD[fy > point]$PercentReqContPaid), is.na(reason.data[year > point]$adec_paid_pct))$p.value)
 #View(test)
 
+
+#fundedUS <- reason.data[, sum(na.omit(funded_ratio)), by=list(plan_name, year)] %>% arrange(year,plan_name) %>% filter(year>2000)
+#reason.data$adec_paid_pct <- as.numeric(reason.data$adec_paid_pct)
+#paidUS <- reason.data[, mean(na.omit(adec_paid_pct)), by=list(plan_name, year)] %>% arrange(plan_name,year) %>% filter(year>2000)
+#combined <- cbind(fundedUS, paidUS$V1)
+#colnames(combined[,3:4])<- c("funded_status", "avg_adec_paid")
+#View(combined)
+#write.csv(fundedUS, file, row.names = FALSE)
+#write.xlsx(combined, file = "/Users/anilniraula/Downloads/combined.xlsx")
 reason.data <- data.table(reason.data)
 payrollUS <- reason.data[, sum(na.omit(payroll)), by=list(year)] %>% arrange(year)
 aalUS <- reason.data[, sum(na.omit(aal)), by=list(year)] %>% arrange(year)
@@ -576,10 +601,8 @@ ui <- fluidPage(
       uiOutput("thirdSelection"),
       em("Filtered data is available for major state plans (under `state` in dropdown menue)."),
       em("These plans are graphed in the UAL, Inv.Returns & Contributions tabs."),
-      br(),
-      em("Update#1 Data sources are displayed in Source tab."),
-      br(),
-      em("Update#2 Discount rate assumption data added to Filtered option."),
+      em("Updated* Data sources are displayed in Source tab."),
+      em("Updated* Discount rate assumption data added to Filtered option."),
       br(),
       br(),
       textOutput('plot_2019Updates'),
@@ -628,7 +651,6 @@ server <- function(input, output, session){
   })
   
   output$secondSelection <- renderUI({
-    pl <- data.table(pl)
     pl1 <- data.table(pl %>% filter(state == input$x))
     state <- data.table(pl1[display_name %in% plan.names$state.plans.nm.rev]$display_name)
     local <- data.table(pl1[!display_name %in% plan.names$state.plans.nm.rev]$display_name)
@@ -1154,52 +1176,28 @@ server <- function(input, output, session){
     UAL7 <- data.table(PlanData()) 
     #View(state.plans[plan_name == "Alabama Employees' Retirement System (ERS)"]$return_1y) 
     
-    UAL7 <- data.table("Total_Benefits"= (as.numeric(UAL7$total_benefit_payments)), 
+    UAL7 <- data.table("Total_Benefits"= -(as.numeric(UAL7$total_benefit_payments)), 
                        "Total_Contributions"= (  as.numeric(UAL7$ee_contribution)+
                                                    as.numeric(UAL7$er_contribution)),
+                       "Net_Cash_Flow" = (as.numeric(UAL7$ee_contribution)+
+                                            as.numeric(UAL7$er_contribution))+
+                         (as.numeric(UAL7$total_benefit_payments)),
                        "Fiscal_Year"= as.numeric(UAL7$year)
     )
-    UAL7[, Net_Cash_Flow := (UAL7$Total_Contributions+UAL7$Total_Benefits)]
+    
     UAL7 <- na.omit(UAL7)
     UAL7 <- data.frame(UAL7)
     #View(UAL5)
     m <- ggplot() +
-      geom_col(position = "dodge2")+
-      geom_col(data=UAL7, aes(x=Fiscal_Year, y=-(Total_Benefits),
-                              color="Total Benefit Payments & Expenses", group =1,
-                              text = paste0("Fiscal Year: ", Fiscal_Year,
-                                            "<br>Total Expenses: $",round(-(Total_Benefits/1000000),2), " $Millions")),position = "dodge", 
-               width = 0.7, 
-               fill = "orangered1"
-      )+
-      geom_col(data=UAL7, aes(x=Fiscal_Year, y=Total_Contributions,
-                              color="Total Contributions", group = 1,
-                              text = paste0("Fiscal Year: ", Fiscal_Year,
-                                            "<br>Total Contributions: $",round(Total_Contributions/1000000,2), " $Millions")),position = "dodge", 
-               width = 0.7,
-               fill = "royalblue3"
-      )+
-      
-      geom_col(data=UAL7, aes(x=Fiscal_Year, y=Net_Cash_Flow,
-                              color="Net Cash Flow", group =1,
-                              text = paste0("Fiscal Year: ", Fiscal_Year,
-                                            "<br>Net Cash Flow: $",round(Net_Cash_Flow/1000000,2), " $Millions")),position = "dodge", 
-               width = 0.7,
-               fill = "deepskyblue2"
-      )+
-      #geom_col(data=UAL5, aes(x=Fiscal_Year, y=ifelse(ADEC_NotPaid>0, ADEC_NotPaid,NA),
-      #                        color="ADEC OverPaid", group =1,
-      #                        text = paste0("Fiscal Year: ", Fiscal_Year,
-      #                                      "<br>ADEC OverPaid: $",ADEC_NotPaid/1000000, "in $Millions")), width = 0.7, 
-      #         position = "stack", fill = "green2"
-      #)+
-      #geom_line(data=UAL5, aes(x=Fiscal_Year, y=ADEC, 
-      #                         color="ADEC", group =1,
-      #                         text = paste0("Fiscal Year: ", Fiscal_Year,
-      #                                       "<br>ADEC: $",round(ADEC/1000000,2), " $Millions")), fill = "gold2", size=0.8
-      #)+
-    
-    scale_colour_manual(values=c("white", "white", "white"))+
+       geom_col(data=UAL7 %>% pivot_longer(starts_with(colnames(UAL7[,1:3]))), 
+               mapping = aes(x=Fiscal_Year, y=value,
+               group = name, fill = name, color = name, 
+               text = paste0("Fiscal Year: ", Fiscal_Year, "<br>", paste0(name),
+               " $",value/1000000, " in $Millions")), 
+               size = 0.2, position = "dodge2")+
+      scale_fill_manual(values = c(palette_reason$LightBlue, palette_reason$SatBlue, palette_reason$Orange))+
+      scale_colour_manual(values=c("white", "white", "white"))+
+      geom_hline(yintercept = 0)+
       scale_y_continuous(labels = function(x) paste0("$", round((x/1000000),2), "M"), name = "Annual Cash Flow",
       )+
       scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
