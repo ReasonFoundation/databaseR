@@ -615,6 +615,9 @@ ui <- fluidPage(
   theme = shinythemes::shinytheme("spacelab"),
   sidebarLayout(
     sidebarPanel(
+      img(src = base64enc::dataURI(file = "https://github.com/ReasonFoundation/GraphicsR/blob/master/R/reason_logo.png"), width = 200, height = 55),
+      br(),
+      br(),
       selectInput("x", "Select State", choices = states),
       uiOutput("secondSelection"),
       #ADD slider input to choose year range

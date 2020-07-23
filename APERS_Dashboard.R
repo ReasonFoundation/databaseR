@@ -570,12 +570,13 @@ server <- function(input, output, session){
     UAL7 <- data.table(PlanData()) 
     #View(state.plans[plan_name == "Alabama Employees' Retirement System (ERS)"]$return_1y) 
     
-    UAL7 <- data.table("Total_Benefits"= -(as.numeric(UAL7$total_benefit_payments)), 
+    UAL7 <- data.table( "Net_Cash_Flow" = (as.numeric(UAL7$ee_contribution)+
+                                             as.numeric(UAL7$er_contribution))+
+                          (as.numeric(UAL7$total_benefit_payments)),
+                        "Total_Benefits"= -(as.numeric(UAL7$total_benefit_payments)), 
                        "Total_Contributions"= (  as.numeric(UAL7$ee_contribution)+
                                                    as.numeric(UAL7$er_contribution)),
-                       "Net_Cash_Flow" = (as.numeric(UAL7$ee_contribution)+
-                                            as.numeric(UAL7$er_contribution))+
-                         (as.numeric(UAL7$total_benefit_payments)),
+                      
                        "Fiscal_Year"= as.numeric(UAL7$year)
     )
     
@@ -589,13 +590,13 @@ server <- function(input, output, session){
                              text = paste0("Fiscal Year: ", Fiscal_Year, "<br>", paste0(name),
                                            " $",value/1000000, " in $Millions")), 
                size = 0.1, position = "dodge2")+
-      scale_fill_manual(values = c(palette_reason$LightBlue, palette_reason$SatBlue, palette_reason$Orange))+
+      scale_fill_manual(values = c(palette_reason$LightBlue, palette_reason$Orange,palette_reason$SatBlue))+
       scale_colour_manual(values=c("white", "white", "white"))+
       geom_hline(yintercept = 0)+
       scale_y_continuous(labels = function(x) paste0("$", round((x/1000000),2), "M"), name = "Annual Cash Flow",
       )+
       scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
-                         breaks = seq(input$year, 2019, by = 1), limits = c(input$year, 2019))+
+                         breaks = seq(input$year, 2020, by = 1), limits = c(input$year, 2020))+
       theme_bw()+
       ###Adding custom theme
       #https://departmentfortransport.github.io/R-cookbook/plots.html
@@ -820,7 +821,7 @@ server <- function(input, output, session){
       scale_y_continuous(labels = function(x) paste0("$", round((x/1000000),2), "M"), name = "Employer Contributions vs. ADEC",
       )+
       scale_x_continuous(labels = function(x) paste0(x, ""), name = "",
-                         breaks = seq(input$year-1, (last(UAL5$Fiscal_Year)+1), by = 1), limits = c(input$year-1, (max(UAL5$Fiscal_Year)+1)))+
+                         breaks = seq(input$year-1, 2019, by = 1), limits = c(input$year-1, 2019))+
       theme_bw()+
       ###Adding custom theme
       #https://departmentfortransport.github.io/R-cookbook/plots.html
