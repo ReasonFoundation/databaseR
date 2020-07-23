@@ -176,7 +176,8 @@ columns <- c("total_pension_liability_dollar", "wage_inflation",
              "other_additions_dollar", "x1_year_investment_return_percentage",
              "amortizaton_method", "number_of_years_remaining_on_amortization_schedule",
              "fiscal_year_of_contribution", "statutory_payment_dollar",
-             "statutory_payment_percentage", "discount_rate_assumption")
+             "statutory_payment_percentage", "discount_rate_assumption",
+             "multiple_discount_rates")
 
 #Custom Function to filter for number of variables we commonly use in pension analysis (state plans*)
 filteredData <- function(plan, y, fy){
@@ -230,6 +231,7 @@ filteredData <- function(plan, y, fy){
       inflation_assum = inflation_rate_assumption_for_gasb_reporting,
       arr = investment_return_assumption_for_gasb_reporting,
       dr = discount_rate_assumption,#NEW
+      dr_mtpl = multiple_discount_rates, #NEW
       number_of_years_remaining_on_amortization_schedule,
       payroll_growth_assumption,
       total_amortization_payment_pct = total_amortization_payment_percentage,
@@ -298,6 +300,7 @@ filteredSourceData <- function(plan_name, fy){
       inflation_assum = inflation_rate_assumption_for_gasb_reporting,
       arr = investment_return_assumption_for_gasb_reporting,
       dr = discount_rate_assumption,#NEW
+      dr_mtpl = multiple_discount_rates, #NEW
       number_of_years_remaining_on_amortization_schedule,
       payroll_growth_assumption,
       total_amortization_payment_pct = total_amortization_payment_percentage,

@@ -620,12 +620,7 @@ ui <- fluidPage(
       #ADD slider input to choose year range
       sliderInput('year', 'Select Starting Year', min = 1990, max = 2019, value = 2001, sep = ""),
       uiOutput("thirdSelection"),
-      pickerInput("pk", "Choose Columns (Filtered data only)", 
-        choices = c(variables),
-        selected = c(variables),
-        multiple = T,
-        options = list(`actions-box` = TRUE)
-          ),
+      uiOutput("forthSelection"),
       em("NOTES: "),
       br(),
       em("Filtered data is available for major state plans (under `state` in dropdown menue)."),
@@ -634,6 +629,8 @@ ui <- fluidPage(
       em("Update#1 Data sources are displayed in Source tab."),
       br(),
       em("Update#2 Discount rate assumption data added to Filtered option."),
+      br(),
+      em("Update#3 Added multiple column selection for Filtered data."),
       br(),
       br(),
       textOutput('plot_2019Updates'),
@@ -657,11 +654,7 @@ ui <- fluidPage(
         tabPanel("Inv.Returns", plotly::plotlyOutput("plot_Filtered_Returns"),
                  plotly::plotlyOutput("plot_Filtered_ARR")),
         tabPanel("Contributions", plotly::plotlyOutput("plot_Filtered_Contr"),
-                 plotly::plotlyOutput("plot_Filtered_CashFlow")),
-        tabPanel("Payroll",plotly::plotlyOutput("plot_payroll"),
-                 plotly::plotlyOutput("plot_payrollUS")),
-        tabPanel("AALvsGDP",plotly::plotlyOutput("plot_GDPvsAAL"),
-                 plotly::plotlyOutput("plot_GDPlevel"))    
+                 plotly::plotlyOutput("plot_Filtered_CashFlow"))
       )
     )
   )
@@ -699,6 +692,18 @@ server <- function(input, output, session){
     } else {
       radioGroupButtons("filter", "Data", choices = c("Full"),
                         status = "primary")
+    }
+  })
+  
+  output$forthSelection <- renderUI({
+    if(input$filter == "Filtered"){
+      pickerInput("pk", "Choose Columns (Filtered data only)", 
+                                                 choices = c(variables),
+                                                 selected = c(variables),
+                                                 multiple = T,
+                                                 options = list(`actions-box` = TRUE))
+    } else {
+      NULL
     }
   })
   
