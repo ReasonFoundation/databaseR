@@ -411,6 +411,7 @@ reason.data$year <- as.numeric(reason.data$year)
 
 palette_reason <- data.table(
   Orange = "#FF6633", 
+  LightOrange = "#FF9164",
   DarkGrey = "#333333", 
   SpaceGrey = "#A69FA1",
   DarkBlue = "#1696d2",
@@ -475,6 +476,7 @@ plotTheme <- ggplot2::theme(   panel.grid.major = element_blank(),
                                axis.text.x = element_text(size=10, color = "black", angle = 90, hjust = 1, vjust = 0.5),
                                legend.title = element_text(size = 8, colour = "white", face = "bold"))
 
+set_reason_theme(style = "slide")
 ##Ensure all variables are numeric
 reason.data$mva <- as.numeric(reason.data$mva)
 reason.data$return_yr <- as.numeric(reason.data$return_1yr)
@@ -1194,7 +1196,7 @@ server <- function(input, output, session){
                group = name, fill = name, color = name, 
                text = paste0("Fiscal Year: ", Fiscal_Year, "<br>", paste0(name),
                " $",value/1000000, " in $Millions")), 
-               size = 0.2, position = "dodge2")+
+               size = 0.1, position = "dodge2")+
       scale_fill_manual(values = c(palette_reason$LightBlue, palette_reason$SatBlue, palette_reason$Orange))+
       scale_colour_manual(values=c("white", "white", "white"))+
       geom_hline(yintercept = 0)+
