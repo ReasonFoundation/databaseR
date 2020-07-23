@@ -615,7 +615,7 @@ ui <- fluidPage(
   theme = shinythemes::shinytheme("spacelab"),
   sidebarLayout(
     sidebarPanel(
-      img(src = base64enc::dataURI(file = "https://github.com/ReasonFoundation/GraphicsR/blob/master/R/reason_logo.png"), width = 200, height = 55),
+      img(src = base64enc::dataURI(file = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/reason_logo.png"), width = 200, height = 50),
       br(),
       br(),
       selectInput("x", "Select State", choices = states),
@@ -626,8 +626,7 @@ ui <- fluidPage(
       uiOutput("forthSelection"),
       em("NOTES: "),
       br(),
-      em("Filtered data is available for major state plans (under `state` in dropdown menue)."),
-      em("These plans are graphed in the UAL, Inv.Returns & Contributions tabs."),
+      em("Filtered data is available for major `state` plans."),
       br(),
       em("Update#1 Data sources are displayed in Source tab."),
       br(),
@@ -700,7 +699,7 @@ server <- function(input, output, session){
   
   output$forthSelection <- renderUI({
     if(input$filter == "Filtered"){
-      pickerInput("pk", "Choose Columns (Filtered data only)", 
+      pickerInput("pk", "Select Columns (Filtered data only)", 
                                                  choices = c(variables),
                                                  selected = c(variables),
                                                  multiple = T,
