@@ -220,6 +220,7 @@ variables <- c(
 columns <- c("total_pension_liability_dollar", "wage_inflation",
              "payroll_growth_assumption", "other_contribution_dollar",
              "other_additions_dollar", "x1_year_investment_return_percentage",
+             "amortization_method", "number_of_years_remaining_on_amortization_schedule",
              "fiscal_year_of_contribution", "statutory_payment_dollar",
              "statutory_payment_percentage", "discount_rate_assumption", "multiple_discount_rates")
 
@@ -232,7 +233,7 @@ filteredData <- function(plan, y, fy){
       Plan[,columns[i] := NA]}
   }
   
-  if(is.na(Plan$discount_rate_assumption)){ 
+  if(sum(is.na(Plan$discount_rate_assumption))==0){ 
     Plan$discount_rate_assumption <- Plan$investment_return_assumption_for_gasb_reporting}
   ####
   Plan <- Plan %>%
@@ -302,7 +303,7 @@ filteredSourceData <- function(plan_name, fy){
     if(sum((colnames(Plan) == columns[i]))==0) {
       Plan[,columns[i] := NA]}
   }
-  if(is.na(Plan$discount_rate_assumption)){ 
+  if(sum(is.na(Plan$discount_rate_assumption))==0){ 
     Plan$discount_rate_assumption <- Plan$investment_return_assumption_for_gasb_reporting}
   ####
   Plan <- Plan %>%
