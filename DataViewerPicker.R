@@ -52,6 +52,20 @@ plans <- as.character(unique(pl[,2]))
 
 #palette_reason$categorical[[3]]
 #reason_color_pal("categorical")
+palette_reason <- data.table(
+  Orange = "#FF6633", 
+  LightOrange = "#FF9164",
+  DarkGrey = "#333333", 
+  SpaceGrey = "#A69FA1",
+  DarkBlue = "#0066CC",
+  GreyBlue = "#6699CC", 
+  Yellow = "#FFCC33", 
+  LightBlue = "#66B2FF", 
+  SatBlue = "#3366CC", 
+  Green = "#669900",
+  LightGreen = "#00CC66",
+  Red = "#CC0000",
+  LightRed = "#FF0000")
 #palette
 
 pullSourceData <- function(plan_name){
@@ -846,7 +860,7 @@ server <- function(input, output, session){
     #geom_point(data=UAL, aes(x=Fiscal_Year[20], y=Market_Assets[20]), size = 0.75)+
     #scale_colour_manual(values=c("orangered2", "royalblue3","white", "white"))+
     #manual color reference: http://sape.inf.usi.ch/quick-reference/ggplot2/colour
-    scale_colour_manual(values=c("royalblue3","orangered2", "white", "white"))+
+    scale_colour_manual(values=c(palette_reason$Orange, palette_reason$SatBlue, "white", "white"))+
       scale_y_continuous(labels = function(x) paste0("$",x,"B"), name = "")+
       scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
                          breaks = seq(min(UAL$Fiscal_Year), 2019, by = 1), limits = c(min(UAL$Fiscal_Year), 2019))+
@@ -906,7 +920,7 @@ server <- function(input, output, session){
                               color="Unfunded Actuarial Liability", group =1,
                               text = paste0("Fiscal Year: ", Fiscal_Year,
                                             "<br>UAL: $",round(UAL_AVA,2), "B")),
-                fill = "orangered2"#, alpha = 1, size = 1
+                fill = palette_reason$Orange#, alpha = 1, size = 1
       )+
       
       # geom_area(data=UAL, aes(x=Fiscal_Year, y=ifelse(UAL_AVA2==1,round(UAL_AVA,2), NA)), fill = "white", alpha = 1)+
@@ -914,7 +928,7 @@ server <- function(input, output, session){
       #  geom_line(data=UAL, aes(x=Fiscal_Year, y=ifelse(UAL_AVA2==1,0, NA)), color = "green3", size = 0.1)+
       #  geom_line(data=UAL, aes(x=Fiscal_Year, y=ifelse(UAL_AVA2==1,round(UAL_AVA,2), NA)), color = "green3", size = 0.1)+
       
-      scale_colour_manual(values=c("orangered2"))+
+      scale_colour_manual(values=c(palette_reason$Orange))+
       
       scale_y_continuous(labels = function(x) paste0("$",x,"B"), name = "")+
       scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
@@ -982,7 +996,7 @@ server <- function(input, output, session){
                                text = paste0("Fiscal Year: ", Fiscal_Year,
                                              "<br>10Y Geomean: ",round(V1,3)*100, "%")),
                 size = 1.00)+
-      scale_colour_manual(values=c("orangered1", "royalblue3", "grey80"))+
+      scale_colour_manual(values=c(palette_reason$Orange, palette_reason$SatBlue, palette_reason$SpaceGrey))+
       scale_y_continuous(labels = function(x) paste0(x*100,"%"), name = "",
                          breaks = seq(-0.28, 0.26, by = 0.04), limits = c(-0.28, 0.26))+
       scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
@@ -1025,7 +1039,7 @@ server <- function(input, output, session){
                                text = paste0("Fiscal Year: ", Data[,1],
                                              "<br>Average GDP Change: ",round(Data[,5],1), "%")),
                 size = 1.00)+
-      scale_colour_manual(values=c("orangered1", "royalblue2", "orangered3", "royalblue4"))+
+      scale_colour_manual(values=c(palette_reason$Orange, palette_reason$Blue, palette_reason$LightOrange, palette_reason$LightBlue))+
       scale_y_continuous(labels = function(x) paste0(x,"%"), name = "",
                          breaks = seq(-3, 10, by = 1), limits = c(-3, 10))+
       scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
@@ -1055,13 +1069,13 @@ server <- function(input, output, session){
                                color="AAL-to-GDP Ratio", group =1,
                                text = paste0("Fiscal Year: ", Data[,2],
                                              "<br>AAL-to-GDP Ratio: ",round(Data[,1],4))),
-                size = 1.00, fill="royalblue")+
+                size = 1.00, fill=palette_reason$LightBlue)+
       geom_line(data=Data2, aes(x=Data2[,2], y=Data2[,1], 
                                 color="AAL-to-GDP(x30) Ratio", group =1,
                                 text = paste0("Fiscal Year: ", Data2[,2],
                                               "<br>AAL-to-GDP(x30) Ratio: ",round(Data2[,1],4))),
-                size = 1.00, fill="royalblue4")+
-      scale_colour_manual(values=c("orangered1", "orangered4"))+
+                size = 1.00, fill=palette_reason$LightBlue)+
+      scale_colour_manual(values=c(palette_reason$Orange, palette_reason$LightOrange))+
       scale_y_continuous(labels = function(x) paste0(round(x,3)), name = "",
                          breaks = seq(0, 0.3, by = 0.03), limits = c(0, 0.3))+
       scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
@@ -1097,14 +1111,14 @@ server <- function(input, output, session){
                               color="ADEC Not Paid", group =1,
                               text = paste0("Fiscal Year: ", Fiscal_Year,
                                             "<br>ADEC Not Paid: $",round(ADEC/1000000,2), " $Millions")), width = 0.7, 
-               fill = "orangered1"
+               fill = palette_reason$Orange
       )+
       geom_col(data=UAL5, aes(x=Fiscal_Year, y=ifelse((ADEC_Paid>ADEC), ADEC_Paid,0),
                               color="ADEC OverPaid", group =1,
                               text = paste0("Fiscal Year: ", Fiscal_Year,
                                             "<br>ADEC OverPaid: $",round((ADEC_Paid-ADEC)/1000000,2), 
                                             " $Millions")), width = 0.7, 
-               fill = "green3"
+               fill = palette_reason$LightGreen
       )+
       
       geom_col(data=UAL5, aes(x=Fiscal_Year, y=ifelse((ADEC_Paid<=ADEC), ADEC_Paid,ADEC),
@@ -1207,7 +1221,8 @@ server <- function(input, output, session){
       #                         text = paste0("Fiscal Year: ", Fiscal_Year,
       #                                       "<br>10Y Geomean: ",round(V1,3)*100, "%")),
       #          size = 1.00)+
-      scale_colour_manual(values=c("orangered1", "brown", "gold3", "royalblue2", "orangered1", "gold1"))+
+      scale_colour_manual(values=c(palette_reason$Orange, palette_reason$SpaceGrey, palette_reason$Yellow, 
+                                   palette_reason$LightBlue, palette_reason$LightOrange, palette_reason$Yellow))+
       scale_y_continuous(labels = function(x) paste0(x*100,"%"), name = "",
                          breaks = seq(0.05, 0.09, by = 0.01), limits = c(0.05, 0.09))+
       scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
@@ -1224,52 +1239,28 @@ server <- function(input, output, session){
     UAL7 <- data.table(PlanData()) 
     #View(state.plans[plan_name == "Alabama Employees' Retirement System (ERS)"]$return_1y) 
     
-    UAL7 <- data.table("Total_Benefits"= (as.numeric(UAL7$total_benefit_payments)), 
+    UAL7 <- data.table("Total_Benefits"= -(as.numeric(UAL7$total_benefit_payments)), 
                        "Total_Contributions"= (  as.numeric(UAL7$ee_contribution)+
                                                    as.numeric(UAL7$er_contribution)),
+                       "Net_Cash_Flow" = (as.numeric(UAL7$ee_contribution)+
+                                            as.numeric(UAL7$er_contribution))+
+                         (as.numeric(UAL7$total_benefit_payments)),
                        "Fiscal_Year"= as.numeric(UAL7$year)
     )
-    UAL7[, Net_Cash_Flow := (UAL7$Total_Contributions+UAL7$Total_Benefits)]
+    
     UAL7 <- na.omit(UAL7)
     UAL7 <- data.frame(UAL7)
     #View(UAL5)
     m <- ggplot() +
-      geom_col(position = "dodge2")+
-      geom_col(data=UAL7, aes(x=Fiscal_Year, y=-(Total_Benefits),
-                              color="Total Benefit Payments & Expenses", group =1,
-                              text = paste0("Fiscal Year: ", Fiscal_Year,
-                                            "<br>Total Expenses: $",round(-(Total_Benefits/1000000),2), " $Millions")),position = "dodge", 
-               width = 0.7, 
-               fill = "orangered1"
-      )+
-      geom_col(data=UAL7, aes(x=Fiscal_Year, y=Total_Contributions,
-                              color="Total Contributions", group = 1,
-                              text = paste0("Fiscal Year: ", Fiscal_Year,
-                                            "<br>Total Contributions: $",round(Total_Contributions/1000000,2), " $Millions")),position = "dodge", 
-               width = 0.7,
-               fill = "royalblue3"
-      )+
-      
-      geom_col(data=UAL7, aes(x=Fiscal_Year, y=Net_Cash_Flow,
-                              color="Net Cash Flow", group =1,
-                              text = paste0("Fiscal Year: ", Fiscal_Year,
-                                            "<br>Net Cash Flow: $",round(Net_Cash_Flow/1000000,2), " $Millions")),position = "dodge", 
-               width = 0.7,
-               fill = "deepskyblue2"
-      )+
-      #geom_col(data=UAL5, aes(x=Fiscal_Year, y=ifelse(ADEC_NotPaid>0, ADEC_NotPaid,NA),
-      #                        color="ADEC OverPaid", group =1,
-      #                        text = paste0("Fiscal Year: ", Fiscal_Year,
-      #                                      "<br>ADEC OverPaid: $",ADEC_NotPaid/1000000, "in $Millions")), width = 0.7, 
-      #         position = "stack", fill = "green2"
-      #)+
-      #geom_line(data=UAL5, aes(x=Fiscal_Year, y=ADEC, 
-      #                         color="ADEC", group =1,
-      #                         text = paste0("Fiscal Year: ", Fiscal_Year,
-      #                                       "<br>ADEC: $",round(ADEC/1000000,2), " $Millions")), fill = "gold2", size=0.8
-      #)+
-    
-    scale_colour_manual(values=c("white", "white", "white"))+
+      geom_col(data=UAL7 %>% pivot_longer(starts_with(colnames(UAL7[,1:3]))), 
+               mapping = aes(x=Fiscal_Year, y=value,
+                             group = name, fill = name, color = name, 
+                             text = paste0("Fiscal Year: ", Fiscal_Year, "<br>", paste0(name),
+                                           " $",value/1000000, " in $Millions")), 
+               size = 0.1, position = "dodge2")+
+      scale_fill_manual(values = c(palette_reason$LightBlue, palette_reason$SatBlue, palette_reason$Orange))+
+      scale_colour_manual(values=c("white", "white", "white"))+
+      geom_hline(yintercept = 0)+
       scale_y_continuous(labels = function(x) paste0("$", round((x/1000000),2), "M"), name = "Annual Cash Flow",
       )+
       scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
@@ -1303,10 +1294,10 @@ server <- function(input, output, session){
                               color="Payroll", group =1,
                               text = paste0("Fiscal Year: ", Fiscal_Year,
                                             "<br>Payroll: $",round(Payroll,2), " Billions")),
-                color = "orangered4", size = 1
+                color = palette_reason$LightOrange, size = 1
       )+
       
-      scale_colour_manual(values=c("orangered2", "royalblue"))+
+      scale_colour_manual(values=c(palette_reason$LightOrange, palette_reason$LightBlue))+
       
       scale_y_continuous(labels = function(x) paste0("$", x), name = "Payroll in $Billions")+
       scale_x_continuous(labels = function(x) paste0(x, ""), name = "",
