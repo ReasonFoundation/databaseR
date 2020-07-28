@@ -1222,7 +1222,7 @@ server <- function(input, output, session){
       #                                       "<br>10Y Geomean: ",round(V1,3)*100, "%")),
       #          size = 1.00)+
       scale_colour_manual(values=c(palette_reason$Orange, palette_reason$SpaceGrey, palette_reason$Yellow, 
-                                   palette_reason$LightBlue, palette_reason$LightOrange, palette_reason$Yellow))+
+                                   palette_reason$SatBlue, palette_reason$LightOrange, palette_reason$Yellow))+
       scale_y_continuous(labels = function(x) paste0(x*100,"%"), name = "",
                          breaks = seq(0.05, 0.09, by = 0.01), limits = c(0.05, 0.09))+
       scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
