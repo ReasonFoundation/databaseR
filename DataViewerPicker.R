@@ -54,7 +54,7 @@ plans <- as.character(unique(pl[,2]))
 #reason_color_pal("categorical")
 palette_reason <- data.table(
   Orange = "#FF6633", 
-  LightOrange = "#FF9164",
+  LightOrange = "#FF9900",
   DarkGrey = "#333333", 
   SpaceGrey = "#A69FA1",
   DarkBlue = "#0066CC",
