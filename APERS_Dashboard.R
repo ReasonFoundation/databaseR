@@ -40,12 +40,12 @@ pl <- planList()
 states <- as.character(unique(pl[,3]))
 plans <- as.character(unique(pl[,2]))
 
-###################
+####################
 #Loading our own APERS data
 urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/Arkansas_APERS_Reason.csv"
 APERS.data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
 View(APERS.data)
-###################
+####################
 
 #UAL2 <- data.frame(UAL2)
 #https://github.com/ReasonFoundation/pensionviewr
