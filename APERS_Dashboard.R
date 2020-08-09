@@ -42,9 +42,9 @@ plans <- as.character(unique(pl[,2]))
 
 ####################
 #Loading our own APERS data
-urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/Arkansas_APERS_Reason.csv"
-APERS.data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-View(APERS.data)
+urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/APERS_GL.csv"
+APERS.gainloss <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+View(APERS.gainloss)
 ####################
 
 #UAL2 <- data.frame(UAL2)
@@ -360,6 +360,8 @@ reason.data2 <- data.table(reason.data2)
 #set_reason_theme(style = "slide")
 ######Shiny App/Dashboard [interface]
 ##########################
+help(glPlot)
+
 #https://rstudio.github.io/shinydashboard/structure.html
 ui <- dashboardPage(skin = "yellow",
                     dashboardHeader(title = "Pension Dashboard"),
