@@ -48,9 +48,7 @@ library(plotly)
 #Pionline Pension tracker:
 #https://www.pionline.com/section/returns-tracker
 
-urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
-returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-#View(returns_2020)
+urlfile="https://raw.githubusx)View(returns_2020)
 
 pl <- planList()
 
