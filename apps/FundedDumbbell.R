@@ -49,7 +49,6 @@ reason.data <- as.data.table(reason.data %>% arrange(year))
 
 #Custom Function to filter for number of variables we commonly use in pension analysis (state plans*)
 filteredData <- function(Data,fy){
-  
   columns <- c("total_pension_liability_dollar", "wage_inflation",
                "payroll_growth_assumption", "other_contribution_dollar",
                "other_additions_dollar", "x1_year_investment_return_percentage",
@@ -515,11 +514,11 @@ output$top_ranking <- renderValueBox({
   valueBox("Funded Status", 
            HTML(paste0("Period: ", "<B>",input$x[1], "</B>","-", "<B>",input$x[2],"</B>",  
                 "<br>","<B>","All US Plans: ","</B>", " Funded Status", ifelse(na.omit(US.funded)<0,paste0(" Declined "),
-                paste0(" Increased ")),"<B>",round(na.omit(US.funded)*100,1), "%.","</B>","<br>",
+                paste0(" Increased ")),"<B>",round(na.omit(US.funded)*100,1), "%","</B>","<br>",
                 "<B>", input$s, "</B>",": Funded Status", 
                 ifelse(na.omit(State.funded)<0,paste0(" Declined "),
                 paste0(" Increased ")), "<B>",
-                round(na.omit(State.funded)*100,1), "%","</B>",sep="<br>")), 
+                ifelse(is.na(US.funded), paste("data not available"), round(na.omit(State.funded)*100,1)), "%","</B>",sep="<br>")), 
                 icon = icon(ifelse(State.funded<0, paste0("arrow-down"), paste0("arrow-up"))),
                 color = ifelse(State.funded<0, paste0("orange"), paste0("green")))
   
@@ -544,7 +543,7 @@ output$plot_State <- plotly::renderPlotly({
   p <- ggplot() +
     ggtitle(label = paste0("State: ", input$s))+
     geom_line(data=UAL, aes(x=Fiscal_Year, y=Funded_Status, 
-                            color=str_wrap(Pension_Plan,45), group =1,
+                            color=str_wrap(Pension_Plan,55), group =1,
                             text = paste0("Fiscal Year: ", Fiscal_Year,
                                           "<br>Funded Ratio: ",round(Funded_Status,2)*100, "%")),
               size = 1.00)+

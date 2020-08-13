@@ -183,7 +183,6 @@ and attribute_name in ('1 Year Investment Return Percentage',
 ##Why 112 state plans (which 2 are missing?)
 #View(unique(all_data$display_name))
 
-
 variables <- c(
 "return_1yr",
 "actuarial_cost_method_in_gasb_reporting",
@@ -304,8 +303,7 @@ filteredData <- function(plan, y, fy){
       wage_inflation
     )
 }
-#x <- filteredData(pl, "California State Teachers Retirement System", 2001)
-#View(x)
+x <- filteredData(pl, "Illinois Teachers Retirement System", 2001)
 #y <- filteredData(pl, "Employee Retirement System of Hawaii", 2001)
 
 filteredSourceData <- function(plan_name, fy){
@@ -374,7 +372,8 @@ filteredSourceData <- function(plan_name, fy){
     )
 }
 
-#NMPERA.wide <- pullSourceData("New Mexico Educational Retirement Board")
+#ILTRS.wide <- filteredData("Illinois Teachers Retirement System")
+#View(ILTRS.wide)
 #NMPERA.wide <- filteredSourceData(NMPERA.wide, 2001)
 #View(NMPERA.wide)
 #View(filteredData(pl, "CalPERS - California Public Employees Retirement Fund", 2001))
@@ -470,7 +469,7 @@ reason.data$year <- as.numeric(reason.data$year)
 #View(reason.data)
 
 #Label state and local plans with*
-urlfile2="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/Reason_State_Names_Mod.csv"
+urlfile2="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/Reason_State_Names_Mod2.csv"
 plan.names <- data.table(read_csv(url(urlfile2), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
 #View(plan.names)
 
@@ -728,6 +727,7 @@ server <- function(input, output, session){
   PlanData <- reactive({
     if(input$filter == "Filtered"){
       UAL <- data.table(filteredData(pl, input$y, input$year))
+      View(UAL)
     } else {
       UAL <- pullData(pl, input$y)
       UAL <- UAL %>%
