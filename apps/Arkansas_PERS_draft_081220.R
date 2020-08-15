@@ -1,14 +1,19 @@
-#############################################
 ########## Arkansas PERS Dashboard ##########
-#############################################
+##Data: Manually Collected
+##By: Anil, Jordan, Swaroop
 
-### Clear Ojects ###
 
+### Clean Global Environment ###
 rm(list = ls())
 
-
+#devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
 ### Load Packages ###
 
+#install.packages('devtools')
+#library(devtools)
+#devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
+#devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
+#install.packages("data.table")
 library(pensionviewr)
 library(tseries)
 library(data.table)
@@ -26,8 +31,6 @@ library(plotly)
 library(plyr)
 library(dplyr)
 
-
-
 ### Reason Palette ###
 
 palette_reason <- data.table(
@@ -43,19 +46,16 @@ palette_reason <- data.table(
   Green = "#669900", 
   Red = "#CC0000")
 
-
-
 ### Arkansas Data ###
-
 # Original
 urlfile = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/APERS_numeric.csv"
 APERS.data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-
+#View(APERS.data)
 
 ### US Data from PensionViewr ###
 
-urlfile1 = "https://raw.githubusercontent.com/ANiraula/PensionModeling/master/Database/Reason_State_Names_Mod.csv"
-plan.names <- data.table(read_csv(url(urlfile1), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
+urlfile2="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/Reason_State_Names_Mod.csv"
+plan.names <- data.table(read_csv(url(urlfile2), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
 
 urlfile2 = "https://raw.githubusercontent.com/ANiraula/PensionModeling/master/Database/reason.data.state.csv"
 reason.data <- read_csv(url(urlfile2), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
@@ -65,10 +65,7 @@ pl <- planList()
 states <- as.character(unique(pl[, 3]))
 plans <- as.character(unique(pl[, 2]))
 
-
-
 ### Selecting Certain Columns ###
-
 reason.data <- reason.data %>%
   select(
     year,
@@ -135,9 +132,7 @@ char_cols <- c("mva",
 
 reason.data[, (char_cols) := lapply(.SD, as.numeric), .SDcols = char_cols]
 
-
 ### Geometric Mean Function ###
-
 geomean <- function(x) {
   x <- as.vector(na.omit(x))
   x <- x +1
@@ -150,20 +145,15 @@ first.nan <- function(x) {
 
 
 ### Label state and local plans with (*) asterisk ###
-
+pl <- planList()
 pl <- data.table(pl)
 for (i in 1:plan.names[,.N]){
   pl[display_name %in% plan.names[i, 1]]$display_name <- as.character(plan.names[i,2])
 }
 
-
-
-
 ual_us <- (reason.data[, sum(na.omit(aal)), by=list(year)]) %>% filter(year > 2000)
 x <- (reason.data[, sum(na.omit(mva)), by=list(year)]) %>% filter(year > 2000)
 ual_us$V1 <- (ual_us$V1 - x$V1)/1000000000000
-
-
 
 ### Create a theme() for ggplot ###
 
@@ -176,22 +166,13 @@ plotTheme <- ggplot2::theme(   panel.grid.major = element_blank(),
                                axis.title.x = element_text(size=9, color = "black"),
                                legend.title = element_text(size = 8, colour = "white", face = "bold"))
 
-
-
 reason.data$funded_ratio <- as.numeric(reason.data$funded_ratio)
 funded <- reason.data[, median(na.omit(funded_ratio)), by=list(year)]
 funded <- funded %>% filter(year > 2000)
 funded2 <- funded
 funded <- funded$V1
 
-
-
-names(APERS.data)
-
-
 ###### Shiny App/Dashboard  
-
-
 
 ui <- dashboardPage(skin = "blue",
                     
@@ -199,24 +180,23 @@ ui <- dashboardPage(skin = "blue",
                       
                       titleWidth= 650,
                       title = tagList(
-                      img(src='https://www.atlasnetwork.org/assets/uploads/global-directory/Screen_Shot_2019-08-19_at_11.52.56_AM.png',
-                          height = 48,
-                          width = 110,
-                          align = "left"),
-                      span(class = "logo-lg", HTML("<b>Arkansas PERS Dashboard</b>")))),
+                        img(src='https://www.atlasnetwork.org/assets/uploads/global-directory/Screen_Shot_2019-08-19_at_11.52.56_AM.png',
+                            height = 48,
+                            width = 110,
+                            align = "left"),
+                        span(class = "logo-lg", HTML("<b>Arkansas PERS Dashboard</b>")))),
                     
                     dashboardSidebar(
-
-                      
+  
                       sidebarMenu(
                         
                         menuItem("APERS Dashboard", tabName = "main", icon = icon("chart-line")),
                         
                         menuItem(sliderInput('year',
                                              'Select Starting Year',
-                                             min = 2001,
+                                             min = 1995,
                                              max = max(APERS.data$year),
-                                             value = 2001,
+                                             value = 1995,
                                              step = 1,
                                              sep = ""))
                       )
@@ -236,48 +216,42 @@ ui <- dashboardPage(skin = "blue",
         .skin-blue .main-header .logo {
                               background-color: #FF6633;
                               }
-
         /* logo when hovered */
         .skin-blue .main-header .logo:hover {
                               background-color: #FF6633;
                               }
-
         /* navbar (rest of the header) */
         .skin-blue .main-header .navbar {
                               background-color: #FF6633;
                               }        
-
         /* main sidebar */
         .skin-blue .main-sidebar {
                               background-color: #FFFFFF;
                               }
-
         /* active selected tab in the sidebarmenu */
         .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
                               background-color: #FF6633;
                               color: #FFFFFF;
                               }
-
         /* other links in the sidebarmenu */
         .skin-blue .main-sidebar .sidebar .sidebar-menu a{
                               background-color: #FFFFFF;
                               color: #000000;
                               }
-
         /* toggle button when hovered  */                    
          .skin-blue .main-header .navbar .sidebar-toggle:hover{
                               background-color: #FF6633;
                               }
                               '))
-                                ),
-                                
-                                
+                      ),
+                      
+                      
                       
                       
                       
                       tabItems(
                         
-
+                        
                         tabItem(tabName = "main",
                                 
                                 #tags$head(tags$style(HTML(".small-box {height: 100px}"))),#Height of valueBox
@@ -286,32 +260,32 @@ ui <- dashboardPage(skin = "blue",
                                 tags$style(".small-box { background-color: #FFFFFF !important; color: #333333 !important; }"),
                                 
                                 fluidRow(
-                                
-                                column(width = 12, valueBoxOutput("top_ranking2"), valueBoxOutput("top_ranking")),
-                                
-                                
-                                column(width = 12,
-                                
-                                
-                                tabBox(
                                   
-                                  side = "left",
-                                  tabPanel(title = "APERS Assets vs. Liabilities", width = 6, plotly::plotlyOutput("plot_Filtered")), 
-                                  tabPanel(title = "APERS Unfunded Liability", width = 5, plotly::plotlyOutput("plot_Filtered_UAL"))),
-
-                                box(title = "APERS vs. U.S. Funded Status", width = 6, plotly::plotlyOutput("plot_Funded"))),
-                                
-                                column(width = 12,
-                                
-                                box(title = "APERS Investment Returns", width = 6,  plotly::plotlyOutput("plot_Filtered_Returns")), 
-                                box(title = "Causes of APERS Pension Debt", width = 6,  plotly::plotlyOutput("plot_waterfall")))
-                                
+                                  column(width = 12, valueBoxOutput("top_ranking2"), valueBoxOutput("top_ranking")),
+                                  
+                                  
+                                  column(width = 12,
+                                         
+                                         
+                                         tabBox(
+                                           
+                                           side = "left",
+                                           tabPanel(title = "APERS Assets vs. Liabilities", width = 6, plotly::plotlyOutput("plot_Filtered")), 
+                                           tabPanel(title = "APERS Unfunded Liability", width = 5, plotly::plotlyOutput("plot_Filtered_UAL"))),
+                                         
+                                         box(title = "APERS vs. U.S. Funded Status", width = 6, plotly::plotlyOutput("plot_Funded"))),
+                                  
+                                  column(width = 12,
+                                         
+                                         box(title = "APERS Investment Returns", width = 6,  plotly::plotlyOutput("plot_Filtered_Returns")), 
+                                         box(title = "Causes of APERS Pension Debt", width = 6,  plotly::plotlyOutput("plot_waterfall")))
+                                  
                                 )
                         )
                         
                       )
                     )
-                  
+                    
 )
 
 ######Shiny app[server]
@@ -330,7 +304,7 @@ server <- function(input, output, session){
     UAL <- data.table(UAL)
   })
   
-
+  
   
   output$plot_2019Updates <- renderText({
     Updt.2019 <- data.table(pullData(pl, input$y))
@@ -416,7 +390,7 @@ server <- function(input, output, session){
     
     UAL <- left_join(UALa, UALb)
     
-
+    
     valueBox(value = tags$p(ifelse(median(na.omit(UAL$Funded_Ratio))>median(na.omit(UAL$Funded_Ratio_US)), "Funded Above US Median*",  "Funded Below US Median*"), style = "font-size: 80%;"), HTML(paste0(
       "Plan Median Funded: ", round(median(na.omit(UAL$Funded_Ratio))*100, 2), "%","<br>",
       "US Median Funded: ", 
@@ -465,15 +439,12 @@ server <- function(input, output, session){
   
   output$plot_waterfall <- plotly::renderPlotly({
     
-    df <- PlanData()
+    urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/APERS_GL.csv"
+    APERSData <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
     
-    df$investments <- as.numeric(df$investments) * 1e3
-    df$benefit_changes <- as.numeric(df$benefit_changes) * 1e3
-    df$assumption_method_changes <- as.numeric(df$assumption_method_changes) * 1e3
-    df$negative_amo <- as.numeric(df$negative_amo) * 1e3
-    df$demographic <- as.numeric(df$demographic) * 1e3
-    df$pay_increase <- as.numeric(df$pay_increase) * 1e3
-    
+    APERSData <- as.data.table(APERSData)# coverted to data.table
+    y = APERSData[,lapply(.SD,sum),.SDcols=colnames(APERSData)]*1e-6# sum values by each column
+    y = t(y[,2:8])#Saving needed columns and transposing table for graphics
     
     x= list("Underperforming Investments",
             "Benefit Changes & Other",
@@ -491,17 +462,8 @@ server <- function(input, output, session){
                "relative",
                "total")
     
-    y <- c(sum(df$investments),
-           sum(df$benefit_changes),
-           sum(df$assumption_method_changes),
-           sum(df$negative_amo),
-           sum(df$demographic),
-           sum(df$pay_increase), 0)
-    
     data <- data.frame(x = factor(x, levels = x), measure, y)
-    
-    
-    
+  
     fig <- plot_ly( data,
                     type = "waterfall",
                     measure = ~measure,
@@ -511,11 +473,10 @@ server <- function(input, output, session){
                     text = "",
                     hoverinfo = 'text',
                     hovertemplate = paste('%{y:$,.0f}<extra></extra>'),
-                    decreasing = list(marker = list(color = "#669900")),
-                    increasing = list(marker = list(color = "#CC0000")),
-                    totals = list(marker = list(color = "#FFCC33")),
-                    
-                    connector = list(line = list(color= "#333333", width = 1))) 
+                    decreasing = list(marker = list(color = palette_reason$Green)),
+                    increasing = list(marker = list(color = palette_reason$Red)),
+                    totals = list(marker = list(color = palette_reason$Orange)),
+                    connector = list(line = list(color= palette_reason$SpaceGrey, width = 1))) 
     
     fig <- fig %>%
       layout(title = "",
@@ -533,15 +494,15 @@ server <- function(input, output, session){
     UAL <- data.table(PlanData())
     
     UALa <- data.table("Funded_Ratio"= (UAL$funded_ratio), 
-                      "Fiscal_Year"= (UAL$year)
-                      )
+                       "Fiscal_Year"= (UAL$year)
+    )
     
-
+    
     UALb <- data.table("Funded_Ratio_US" = funded2$V1,
                        "Fiscal_Year" = funded2$year
-                       )
+    )
     
-
+    
     UALa$Fiscal_Year <-as.numeric(UALa$Fiscal_Year)
     UALb$Fiscal_Year <-as.numeric(UALb$Fiscal_Year)
     
@@ -701,7 +662,7 @@ server <- function(input, output, session){
   
   output$plot_Filtered_Contr <- plotly::renderPlotly({
     UAL5 <- data.table(PlanData()) 
-
+    
     UAL5 <- data.table("ADEC"= as.numeric(UAL5$adec), 
                        "ADEC_Paid"= (as.numeric(UAL5$adec)*as.numeric(UAL5$adec_paid_pct)), 
                        "Fiscal_Year"= as.numeric(UAL5$year)
@@ -713,7 +674,7 @@ server <- function(input, output, session){
     #UAL5 <- na.omit(UAL5)
     
     UAL5 <- data.frame(UAL5)
-
+    
     
     c <- ggplot() +
       geom_col(data=UAL5, aes(x=Fiscal_Year, y=ADEC,
@@ -737,7 +698,7 @@ server <- function(input, output, session){
                                             " Million")), width = 0.7, 
                fill = "grey80"
       )+
-  
+      
       geom_line(data=UAL5, aes(x=Fiscal_Year, y=ADEC, 
                                color="ADEC", group =1,
                                text = paste0("Fiscal Year: ", Fiscal_Year,
@@ -750,7 +711,7 @@ server <- function(input, output, session){
       scale_x_continuous(labels = function(x) paste0(x, ""), name = "",
                          breaks = seq(input$year-1, (last(UAL5$Fiscal_Year)+1), by = 1), limits = c(input$year-1, (max(UAL5$Fiscal_Year)+1)))+
       theme_bw()+
-
+      
       plotTheme
     
     c <- ggplotly(c, tooltip = c("text"))
@@ -762,12 +723,3 @@ server <- function(input, output, session){
 
 
 shinyApp(ui = ui, server = server)
-
-
-
-
-
-
-
-
-
