@@ -45,15 +45,16 @@ library(plotly)
 #           color = "black", position = "dodge2")+
 #  theme_bw()
 
-#Pionline Pension tracker:
-#https://www.pionline.com/section/returns-tracker
 
-urlfile="https://raw.githubusx)View(returns_2020)
+urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
+returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+#View(returns_2020)
 
 pl <- planList()
 
 
 ui <- fluidPage(
+  img(src = base64enc::dataURI(file = "https://raw.githubusercontent.com/ANiraula/PublicPlansData/master/reason_logo.png"), width = 200, height = 55),
   titlePanel("State Pension 2019-20 Returns"),
   # CODE BELOW: Add select inputs on state and plan_names to choose between different pension plans in Reason database
   theme = shinythemes::shinytheme("spacelab"),
