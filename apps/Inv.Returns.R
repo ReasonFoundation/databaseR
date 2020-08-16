@@ -45,7 +45,6 @@ library(plotly)
 #           color = "black", position = "dodge2")+
 #  theme_bw()
 
-
 urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
 returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
 #View(returns_2020)
