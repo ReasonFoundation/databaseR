@@ -50,6 +50,15 @@ plans <- as.character(unique(pl[,2]))
 #View(pullData(pl[state=="New Mexico"], pl[state=="New Mexico"]$display_name))
 #View(pl)
 
+####Load->Save->Reuse state-level data
+#Data <- pullStateData(2001)
+#Data <- filterData(Data, 2001)
+#write.csv(Data, file = "/Users/anilniraula/Downloads/Data.csv")
+#urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/Data.csv"
+#Data <-- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+#View(Data)
+#View(Data %>% filter(plan_name == "Idaho Public Employee Retirement System"))
+
 #palette_reason$categorical[[3]]
 #reason_color_pal("categorical")
 palette_reason <- data.table(
@@ -414,6 +423,7 @@ pullStateData.test <- source_url("https://raw.githubusercontent.com/ReasonFounda
 # Filter Downloaded Data -------------------------------------------------------------
 
 ##Filter out reason data for variables we commonly use for pension analysis
+load("/Users/anilniraula/Downloads/sysdata.rda")
 
 reason.data <- reason.data %>%
   #########
