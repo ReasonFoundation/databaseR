@@ -727,7 +727,7 @@ server <- function(input, output, session){
   PlanData <- reactive({
     if(input$filter == "Filtered"){
       UAL <- data.table(filteredData(pl, input$y, input$year))
-      View(UAL)
+  
     } else {
       UAL <- pullData(pl, input$y)
       UAL <- UAL %>%
@@ -946,6 +946,11 @@ server <- function(input, output, session){
     UAL3 <- data.table(PlanData()) 
     
     #View(state.plans[plan_name == "Alabama Employees' Retirement System (ERS)"]$return_1y) 
+    geomean <- function(x) {
+      x <- as.vector(na.omit(x))
+      x <- x +1
+      exp(mean(log(x)))-1 
+    }
     returns <- as.numeric(UAL3$return_1yr)
     nyear <- 10
     rolling <- geomean(returns[1:nyear])

@@ -47,7 +47,9 @@ library(plotly)
 
 urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
 returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-#View(returns_2020)
+returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions) 
+returns_2020$arr <- as.numeric(returns_2020$arr) 
+#View(returns_2020$arr)
 
 pl <- planList()
 
@@ -59,7 +61,7 @@ ui <- fluidPage(
   theme = shinythemes::shinytheme("spacelab"),
   sidebarLayout(
     sidebarPanel(width = 5, 
-      radioGroupButtons("filter", "Filter by", choices = c("Reported returns", "Highest returns", "Asset size"), selected = c("Reported returns"))
+      radioGroupButtons("filter", "Filter by", choices = c("Highest returns", "Return Assumption", "Asset size"))
     ),
     mainPanel(
       ###Remove error messages
@@ -78,22 +80,29 @@ ui <- fluidPage(
 
 server <- function(input, output, session){
   
-  output$plot_Returns <- DT::renderDT({
-    
+  output$plot_Returns <- DT::renderDataTable({
+   
     returns_2020 <- as.data.table(returns_2020)
-    returns_2020 <- returns_2020 %>% filter(!is.na(returns_2020$`2020_return`)) 
-    returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions)
-
-
-         if(input$filter == "Highest returns"){
-           returns_2020 %>% arrange(desc(returns_2020$`2020_return`))
+    returns_2020 <- returns_2020 %>% filter(!is.na(returns_2020$`2020_return`))
+    returns_2020 <- returns_2020 %>% filter(state != "Pennsylvania")
+    returns_2020<- returns_2020 %>% arrange(plan_name)
+    returns_2020$mva_billions <- round(returns_2020$mva_billions,1)
+    colnames(returns_2020) <- c("Pension Plan", "State", "2020FY Return", "Return Assumption", "Market Assets (Billions)", "Source")
+    
+    returns_2020 <- (
+          if(input$filter == "Highest returns"){
+           returns_2020 %>% arrange(desc(returns_2020[,3]))
         } else if(input$filter == "Asset size"){
-          returns_2020 %>% arrange(desc(returns_2020$mva_billions))
-        }else{returns_2020 %>% arrange(returns_2020$arr)}
-
+          returns_2020 %>% arrange(desc(returns_2020[,5]))
+        } else{returns_2020 %>% arrange(desc(returns_2020[,4]))})
+    
+    returns_2020 <- datatable(returns_2020) %>% formatPercentage(c("2020FY Return", "Return Assumption"), 1)
+  
+    #http://www.stencilled.me/post/2019-04-18-editable/
+    #returns_2020 <- DT::datatable(returns_2020, editable = FALSE)#set to TRUE to allow editing
+    
     #returns_2020 <- as.data.table(returns_2020)
     #returns_2020[,one_year_gain_loss := (returns_2020$mva_billions * (returns_2020$arr - returns_2020$`2020_return`))]
-   
   })
   
   
