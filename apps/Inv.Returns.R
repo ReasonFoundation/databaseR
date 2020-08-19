@@ -48,11 +48,11 @@ library(plotly)
 urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
 returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
 returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions) 
+returns_2020$mva_billions_19 <- as.numeric(returns_2020$mva_billions_19) 
 returns_2020$arr <- as.numeric(returns_2020$arr) 
 #View(returns_2020$arr)
 
 pl <- planList()
-
 
 ui <- fluidPage(
   img(src = base64enc::dataURI(file = "https://raw.githubusercontent.com/ANiraula/PublicPlansData/master/reason_logo.png"), width = 200, height = 55),
@@ -61,7 +61,7 @@ ui <- fluidPage(
   theme = shinythemes::shinytheme("spacelab"),
   sidebarLayout(
     sidebarPanel(width = 5, 
-      radioGroupButtons("filter", "Filter by", choices = c("Highest returns", "Return Assumption", "Asset size"))
+      radioGroupButtons("filter", "Filter by", choices = c("Plan Name", "Highest returns", "Return Assumption", "Asset size"), selected = c("Plan Name"))
     ),
     mainPanel(
       ###Remove error messages
@@ -86,15 +86,25 @@ server <- function(input, output, session){
     returns_2020 <- returns_2020 %>% filter(!is.na(returns_2020$`2020_return`))
     returns_2020 <- returns_2020 %>% filter(state != "Pennsylvania")
     returns_2020<- returns_2020 %>% arrange(plan_name)
+    returns_2020<- data.table(returns_2020)
+    returns_2020[, inv_gain_loss := mva_billions_19*(arr-`2020_return`)]
+    returns_2020$inv_gain_loss <- round(returns_2020$inv_gain_loss,3)
     returns_2020$mva_billions <- round(returns_2020$mva_billions,1)
-    colnames(returns_2020) <- c("Pension Plan", "State", "2020FY Return", "Return Assumption", "Market Assets (Billions)", "Source")
-    
+    returns_2020$mva_billions_19 <- round(returns_2020$mva_billions_19,1)
+    colnames(returns_2020) <- c("Pension Plan", "State", "2020FY Return", "Return Assumption", "Market Assets (Billions)", "2019 Market Assets (Billions)", "Source", "Approximate Actuarial Gain/Loss (Billions)")
+    returns_2020[,8] <- round(returns_2020[,8],1)
+    returns_2020 <- returns_2020 %>% select("Pension Plan", "State", "2020FY Return", "Return Assumption", "Market Assets (Billions)", "Approximate Actuarial Gain/Loss (Billions)", "Source")
     returns_2020 <- (
           if(input$filter == "Highest returns"){
            returns_2020 %>% arrange(desc(returns_2020[,3]))
         } else if(input$filter == "Asset size"){
           returns_2020 %>% arrange(desc(returns_2020[,5]))
-        } else{returns_2020 %>% arrange(desc(returns_2020[,4]))})
+        } else if(input$filter == "Return Assumption"){
+          returns_2020 %>% arrange(desc(returns_2020[,4]))
+        } else{
+          returns_2020 %>% arrange(returns_2020[,1])
+        }
+        )
     
     returns_2020 <- datatable(returns_2020) %>% formatPercentage(c("2020FY Return", "Return Assumption"), 1)
   
