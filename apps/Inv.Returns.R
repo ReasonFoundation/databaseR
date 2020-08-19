@@ -50,7 +50,7 @@ returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_
 returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions) 
 returns_2020$mva_billions_19 <- as.numeric(returns_2020$mva_billions_19) 
 returns_2020$arr <- as.numeric(returns_2020$arr) 
-#View(returns_2020$arr)
+#View(returns_2020)
 
 pl <- planList()
 
@@ -82,7 +82,7 @@ server <- function(input, output, session){
   
   output$plot_Returns <- DT::renderDataTable({
    
-    returns_2020 <- as.data.table(returns_2020)
+    returns_2020 <- data.table(returns_2020)
     returns_2020 <- returns_2020 %>% filter(!is.na(returns_2020$`2020_return`))
     returns_2020 <- returns_2020 %>% filter(state != "Pennsylvania")
     returns_2020<- returns_2020 %>% arrange(plan_name)
@@ -90,7 +90,7 @@ server <- function(input, output, session){
     returns_2020[, inv_gain_loss := mva_billions_19*(arr-`2020_return`)]
     returns_2020$inv_gain_loss <- round(returns_2020$inv_gain_loss,3)
     returns_2020$mva_billions <- round(returns_2020$mva_billions,1)
-    returns_2020$mva_billions_19 <- round(returns_2020$mva_billions_19,1)
+    returns_2020$mva_billions_19 <- as.character(round(returns_2020$mva_billions_19,1))
     colnames(returns_2020) <- c("Pension Plan", "State", "2020FY Return", "Return Assumption", "Market Assets (Billions)", "2019 Market Assets (Billions)", "Source", "Approximate Actuarial Gain/Loss (Billions)")
     returns_2020[,8] <- round(returns_2020[,8],1)
     returns_2020 <- returns_2020 %>% select("Pension Plan", "State", "2020FY Return", "Return Assumption", "Market Assets (Billions)", "Approximate Actuarial Gain/Loss (Billions)", "Source")
@@ -106,11 +106,10 @@ server <- function(input, output, session){
         }
         )
     
-    returns_2020 <- datatable(returns_2020) %>% formatPercentage(c("2020FY Return", "Return Assumption"), 1)
-  
+    #returns_2020 <- datatable(returns_2020) %>% formatPercentage(c("2020FY Return", "Return Assumption"), 1)
     #http://www.stencilled.me/post/2019-04-18-editable/
-    #returns_2020 <- DT::datatable(returns_2020, editable = FALSE)#set to TRUE to allow editing
-    
+    returns_2020 <- DT::datatable(returns_2020, editable = FALSE) %>% 
+    formatPercentage(c("2020FY Return", "Return Assumption"), 1)#set to TRUE to allow editing
     #returns_2020 <- as.data.table(returns_2020)
     #returns_2020[,one_year_gain_loss := (returns_2020$mva_billions * (returns_2020$arr - returns_2020$`2020_return`))]
   })
