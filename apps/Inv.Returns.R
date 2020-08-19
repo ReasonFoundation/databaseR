@@ -91,9 +91,9 @@ server <- function(input, output, session){
     returns_2020$inv_gain_loss <- round(returns_2020$inv_gain_loss,3)
     returns_2020$mva_billions <- round(returns_2020$mva_billions,1)
     returns_2020$mva_billions_19 <- as.character(round(returns_2020$mva_billions_19,1))
-    colnames(returns_2020) <- c("Pension Plan", "State", "2020FY Return", "Return Assumption", "Market Assets (Billions)", "2019 Market Assets (Billions)", "Source", "Approximate Actuarial Gain/Loss (Billions)")
+    colnames(returns_2020) <- c("Pension Plan", "State", "2020FY Return", "Return Assumption", "Market Assets (Billions)", "2019 Market Assets (Billions)", "Source", "Approximate Deviation from Assumption (Billions)")
     returns_2020[,8] <- round(returns_2020[,8],1)
-    returns_2020 <- returns_2020 %>% select("Pension Plan", "State", "2020FY Return", "Return Assumption", "Market Assets (Billions)", "Approximate Actuarial Gain/Loss (Billions)", "Source")
+    returns_2020 <- returns_2020 %>% select("Pension Plan", "State", "2020FY Return", "Return Assumption", "Market Assets (Billions)", "Approximate Deviation from Assumption (Billions)", "Source")
     returns_2020 <- (
           if(input$filter == "Highest returns"){
            returns_2020 %>% arrange(desc(returns_2020[,3]))
