@@ -283,75 +283,36 @@ reason.data$total_proj_adec_pct <- as.numeric(reason.data$total_proj_adec_pct)
 #set_reason_theme(style = "slide")
 
 ###SHINY DASHBOARD APP
-ui <- dashboardPage(skin = "yellow",
-      dashboardHeader(title = img(src = base64enc::dataURI(file = "https://raw.githubusercontent.com/ANiraula/PublicPlansData/master/reason_logo.png"), 
-                                                       width = 200, height = 45),
-                      dropdownMenu(type  = "notifications", notificationItem(text = htmlOutput("text2"))
-      )),
-  
+ui <- fluidPage(
+        titlePanel(title = "Funded Status Change"
+      ),
+      theme = shinythemes::shinytheme("spacelab"),
   #Change font of the body text
   #https://stackoverflow.com/questions/58454087/how-to-change-the-font-family-of-verbatimtextoutput-to-be-the-same-as-the-input
-  dashboardSidebar(width = "270px",
-      title = "",
-      sidebarMenu(
-      menuItem(sliderInput('x', h3('Select Time Period'), 
-                           min = 2001, max = 2019, value = c(2001,2018), sep = "")),
-      menuItem(uiOutput("secondSelection")),
+  sidebarLayout(
+    sidebarPanel(width = 3,
+      sliderInput('x', h3('Select Time Period'), 
+                           min = 2001, max = 2019, value = c(2001,2018), sep = ""),
+     uiOutput("secondSelection"),
      # em("Choose Starting and Ending Years to customize any period between 2001 and 2018"),
-      menuItem((uiOutput("thirdSelection"))
-      ))),
-      dashboardBody(
-      ###Remove error messages
-      tags$style(type="text/css",
-                 ".shiny-output-error { visibility: hidden; }",
-                 ".shiny-output-error:before { visibility: hidden; }"
-                 
-      ),
+     uiOutput("thirdSelection"),
+     selectInput("s", "State Funded Status (Select State*)", choices = states),
+     htmlOutput("top_ranking"),
      
-      fluidRow(
-        tags$head(tags$style(HTML(
-          '.myClass { 
-        font-size: 4px;
-        line-height: 50px;
-        text-align: left;
-        font-family: "Arial",Arial;
-        padding: 0 15px;
-        overflow: hidden;
-        color: white;
-      }
-    '))),
-      box(
-          width = 7, height = 670, background = "blue", plotly::plotlyOutput("plot_US"),
-          tags$div(HTML(paste("<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>"))),
-          tags$div(htmlOutput("text1")),
-          #Specify Source line text font/size with css
-          tags$head(tags$style("#text1{color: black;
-                                 font-size: 14px;
-                                 font-weight:bold;
-                                 font-style: italic;
-                                 }"
-          )
-          )),
-      #Adjust size of the valueBox
-      tags$head(tags$style(HTML(".small-box {height: 130px}"))),#
-      valueBoxOutput("top_ranking"),
-      box(width = 5, background = "blue",
-          
-          tags$head(
-            tags$style(HTML("
-            .selectize-input {
-             font-size: 13pt;
-             font-family: Arial;
-             padding-top: 5px;
-      }
-
-    "))
+      ),
+      ###Remove error messages
+     mainPanel(
+       ###Remove error messages
+       tags$style(type="text/css",
+                  ".shiny-output-error { visibility: hidden; }",
+                  ".shiny-output-error:before { visibility: hidden; }"
        ),
-          
-          selectInput("s", "State Funded Status (Select State*)", choices = states),
-          plotly::plotlyOutput("plot_State")))
-      )
-    )
+       plotly::plotlyOutput("plot_US"),
+          tags$div(HTML(paste("<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>"))),
+          tags$div(htmlOutput("text1"))
+          #Specify Source line text font/size with css
+          ))
+        )
 ##########################
 ######Shiny app[server] -------------------------------------------------
 
@@ -492,12 +453,12 @@ server <- function(input, output, session){
       ) %>%
       layout(xaxis=list(fixedrange=TRUE)) %>%
       layout(yaxis=list(fixedrange=TRUE))
-    p <- p %>% layout(autosize = T, height = 650)
+    p <- p %>% layout(autosize = T, height = 670)
     p
 })
 
 
-output$top_ranking <- renderValueBox({
+output$top_ranking <- renderText({
   
   US.funded <- data.table(reason.data[year == input$x[1] | year == input$x[2]])
   x <- sum(na.omit(US.funded[year==input$x[1]]$mva))/sum(na.omit(US.funded[year==input$x[1]]$aal))
@@ -513,18 +474,21 @@ output$top_ranking <- renderValueBox({
   State.funded <- y-x
   #View(State.funded)
   
-  valueBox("Funded Status", 
+  
            HTML(paste0("Period: ", "<B>",input$x[1], "</B>","-", "<B>",input$x[2],"</B>",  
-                "<br>","<B>","All US Plans: ","</B>", " Funded Status", ifelse(na.omit(US.funded)<0,paste0(" Declined "),
+                "<br>","<B>","All US Plans: ","</B>", "<br>"," Funded Status", ifelse(na.omit(US.funded)<0,paste0(" Declined "),
                 paste0(" Increased ")),"<B>",round(na.omit(US.funded)*100,1), "%","</B>","<br>",
-                "<B>", input$s, "</B>",": Funded Status", 
+                "<B>", input$s, ": ", "</B>","<br>","Funded Status", 
                 ifelse(na.omit(State.funded)<0,paste0(" Declined "),
                 paste0(" Increased ")), "<B>",
-                ifelse(is.na(US.funded), paste("data not available"), round(na.omit(State.funded)*100,1)), "%","</B>",sep="<br>")), 
-                icon = icon(ifelse(State.funded<0, paste0("arrow-down"), paste0("arrow-up"))),
-                color = ifelse(State.funded<0, paste0("orange"), paste0("green")))
+                ifelse(is.na(US.funded), paste("data not available"), round(na.omit(State.funded)*100,1)), "%","</B>",sep="<br>"))
+              
   
 })
+
+Data <- pullStateData(2001)
+Data <- filterData(Data, 2005)
+#View(Data)
 
 output$plot_State <- plotly::renderPlotly({
   UAL <- data.table(Funded())

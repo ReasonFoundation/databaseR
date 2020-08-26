@@ -61,7 +61,8 @@ ui <- fluidPage(
   theme = shinythemes::shinytheme("spacelab"),
   sidebarLayout(
     sidebarPanel(width = 5, 
-      radioGroupButtons("filter", "Filter by", choices = c("Plan Name", "Highest returns", "Return Assumption", "Asset size"), selected = c("Plan Name"))
+      radioGroupButtons("filter", "Filter by", choices = c("Plan Name", "Highest returns", "Return Assumption", "Asset size"), selected = c("Plan Name")),
+      em("**Preliminary returns"),
     ),
     mainPanel(
       ###Remove error messages
@@ -69,12 +70,11 @@ ui <- fluidPage(
                  ".shiny-output-error { visibility: hidden; }",
                  ".shiny-output-error:before { visibility: hidden; }"
       ),
-      tabsetPanel(
-        tabPanel('Table', DT::DTOutput('plot_Returns'))    
+      
+       DT::DTOutput('plot_Returns')
       )
     )
   )
-)
 ##########################
 ######Shiny app[server] -------------------------------------------------
 
@@ -108,7 +108,8 @@ server <- function(input, output, session){
     
     #returns_2020 <- datatable(returns_2020) %>% formatPercentage(c("2020FY Return", "Return Assumption"), 1)
     #http://www.stencilled.me/post/2019-04-18-editable/
-    returns_2020 <- DT::datatable(returns_2020, editable = FALSE) %>% 
+    returns_2020 <- DT::datatable(returns_2020, editable = FALSE, options = list(
+      "pageLength" = 40, autoWidth = TRUE)) %>% 
     formatPercentage(c("2020FY Return", "Return Assumption"), 1)#set to TRUE to allow editing
     #returns_2020 <- as.data.table(returns_2020)
     #returns_2020[,one_year_gain_loss := (returns_2020$mva_billions * (returns_2020$arr - returns_2020$`2020_return`))]
