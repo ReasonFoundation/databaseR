@@ -4,9 +4,9 @@ Alabama Teachers' Retirement System (TRS),Alabama,,,,,
 Alaska Public Employees Retirement System (PERS),Alaska,,,,,
 Alaska Teachers Retirement System (TRS),Alaska,,,,,
 Arizona Corrections Officers Retirement Plan (CORP),Arizona,,,,,
-Arizona Public Safety Personnel Retirement System (PSPRS),Arizona,,,,,
+Arizona Public Safety Personnel Retirement System (PSPRS)**,Arizona,0.005,0.073,10.7,7.829913,https://www.pionline.com/pension-funds/arizona-public-safety-personnel-returns-05-fiscal-year-below-benchmark
 Arizona State Retirement System (ASRS),Arizona,,,,,
-Arkansas Public Employees System (APERS),Arkansas,,,,,
+Arkansas Public Employees System (APERS),Arkansas,0.024,0.0715,9,8.833327659,https://www.pionline.com/pension-funds/arkansas-public-employees-returns-24-fiscal-year
 Arkansas Teachers Retirement Plan (ATRS),Arkansas,,,,,
 California State Teachers Retirement System (CalSTRS),California,0.039,0.07,246,238.86,https://www.calstrs.com/news-release/calstrs-returns-39-2019-20-amid-volatile-markets
 CalPERS - California Public Employees Retirement Fund (CalPERS),California,0.047,0.07,396.9,372.61,https://www.calpers.ca.gov/page/newsroom/calpers-news/2020/calpers-preliminary-investment-return-2019-20
@@ -63,7 +63,7 @@ Nevada Public Employees Retirement System (NVPERS),Nevada,0.072,0.075,46.6,
 New Hampshire Retirement System (RS),New Hampshire,,,,,
 New Jersey Public Employees Retirement System (PERS),New Jersey,,,,,
 New Jersey Teachers’ Pension & Annuity Fund (TRS),New Jersey,,,,,
-New Mexico Educational Retirement Board (ERB),New Mexico,,,,,
+New Mexico Educational Retirement Board (ERB),New Mexico,-0.01,0.0725,12.8,13.5,https://www.pionline.com/pension-funds/new-mexico-educational-gives-staff-reins-manager-consultant-hirings
 New Mexico Public Employees Retirement Association (PERA),New Mexico,,,,,
 New York State & Local Employees Retirement System,New York,,,,,
 New York State & Local Police & Fire Retirement System,New York,,,,,
@@ -76,8 +76,8 @@ Ohio Police and Fire Pension Fund,Ohio,,,,,
 Ohio Public Employees Retirement System (OPERS) Traditional Defined Benefit Pension Plan,Ohio,,,,,
 Ohio School Employees Retirement System (SERS),Ohio,,,,,
 Ohio State Teachers Retirement System (TRS),Ohio,,,,,
-Oklahoma Public Employees Retirement System (PERS),Oklahoma,,,,,
-Oklahoma Police Pension and Retirement System,Oklahoma,0.019,0.07,2.6,2.62,https://www.pionline.com/pension-funds/oklahoma-police-returns-19-fiscal-year
+Oklahoma Public Employees Retirement System (PERS),Oklahoma,0.045,0.075,10.1,9.958113213,https://www.pionline.com/pension-funds/oklahoma-public-employees-garners-45-return-fiscal-year
+Oklahoma Police Pension and Retirement System,Oklahoma,0.019,0.07,2.6,2.6189,https://www.pionline.com/pension-funds/oklahoma-police-returns-19-fiscal-year
 Oklahoma Teachers Retirement System (TRS),Oklahoma,0.013,0.075,17,17.28,https://www.pionline.com/pension-funds/oklahoma-teachers-returns-13-fiscal-year-below-benchmark
 Oregon Public Employees Retirement System (PERS),Oregon,,,,,
 Pennsylvania Municipal Retirement System,Pennsylvania,,,,,
@@ -85,7 +85,7 @@ Pennsylvania Public School Employees' Retirement System (PSERS),Pennsylvan
 Pennsylvania State Employees' Retirement System (SERS),Pennsylvania,0.188,0.07,31.1,23.49,https://www.pionline.com/pension-funds/pennsylvania-state-employees-returns-188-2019
 Police & Firemens Retirement System Of New Jersey (PFRS),New Jersey,,,,,
 Public Employees Retirement System of Nevada - Police and Firefighters Plan,Nevada,,,,,
-Public Employees' Retirement System of Mississippi (PERS),Mississippi,,,,,
+Public Employees' Retirement System of Mississippi (PERS),Mississippi,0.0335,0.075,28.2,28.206602,https://www.pers.ms.gov/Content/InvestmentReport/investment_report.pdf
 Rhode Island Employees Retirement System (ERS),Rhode Island,0.038,0.07,8.47,6.36,https://www.pionline.com/pension-funds/rhode-island-employees-returns-38-fiscal-year
 Rhode Island Municipal Employees Retirement System,Rhode Island,,,,,
 South Carolina Police Officers Retirement System (PORS),South Carolina,,,,,
@@ -101,7 +101,7 @@ Texas Teacher Retirement System (TRS),Texas,,,,,
 University of California Retirement System (UCRP),California,,,,,
 "Utah Retirement Systems, Noncontributory Retirement System (URS)",Utah,,,,,
 "Utah Retirement Systems, Public Safety Retirement System",Utah,,,,,
-Vermont State Retirement System (VSRS),Vermont,,,,,
+Vermont State Retirement System (VSRS),Vermont,,0.075,,1.909469823,https://www.pionline.com/pension-funds/vermont-returns-4-fiscal-year-beating-benchmark
 Vermont State Teachers' Retirement System (VSTRS),Vermont,,,,,
 Virginia Retirement System (VRS),Virginia,,,,,
 Washington Law Enforcement Officers’ and Firefighters Retirement System Plan 2 (LEOFF Plan 2),Washington,,,,,
