@@ -83,7 +83,7 @@ plotTheme <- ggplot2::theme(   panel.grid.major = element_blank(),
 ui <-fluidPage(
   titlePanel(
         img(src='https://www.atlasnetwork.org/assets/uploads/global-directory/Screen_Shot_2019-08-19_at_11.52.56_AM.png'),
-        title = "Causes of Arkasnsas ERS Pension Debt"),
+        title = "Causes of Arkansas ERS Pension Debt"),
                     
   theme = shinythemes::shinytheme("spacelab"),
   sidebarLayout(
