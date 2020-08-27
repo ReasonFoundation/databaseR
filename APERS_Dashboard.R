@@ -26,6 +26,7 @@ library(tidyverse)
 library(shiny)
 library(shinyWidgets)
 library(shinydashboard)
+library(shinymanager)
 library(htmlwidgets)
 #library(shinyFiles)
 library(DT)# -- for interactive tables (DT::renderDT() & DT::DTOutput())
@@ -40,11 +41,24 @@ pl <- planList()
 states <- as.character(unique(pl[,3]))
 plans <- as.character(unique(pl[,2]))
 
+#Credentials
+credentials <- data.frame(
+  user = c("shiny", "shinymanager"), # mandatory
+  password = c("4reasoners", "12345"), # mandatory
+  start = c("2020-08-15"), # optinal (all others)
+  expire = c(NA, "2020-08-15"),
+  admin = c(FALSE, TRUE),
+  comment = "Simple and secure authentification mechanism 
+  for single ‘Shiny’ applications.",
+  stringsAsFactors = FALSE
+)
+
+
 ####################
 #Loading our own APERS data
 urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/APERS_GL.csv"
 APERS.gainloss <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-View(APERS.gainloss)
+#View(APERS.gainloss)
 ####################
 
 #UAL2 <- data.frame(UAL2)
