@@ -28,6 +28,8 @@ library(base64enc)
 #Shiny-----------
 library(shiny)
 library(shinyWidgets)
+library(shinymanager)
+library(repmis)
 #library(shinyFiles)
 library(DT)
 library(plotly)
@@ -49,6 +51,8 @@ states <- as.character(unique(pl[,3]))
 plans <- as.character(unique(pl[,2]))
 #View(pullData(pl[state=="New Mexico"], pl[state=="New Mexico"]$display_name))
 #View(pl)
+
+source_data("https://github.com/ReasonFoundation/databaseR/blob/master/shiny.rda?raw=true")
 
 ####Load->Save->Reuse state-level data
 #Data <- pullStateData(2001)
@@ -338,7 +342,7 @@ filteredSourceData <- function(plan_name, fy){
 
 urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/30Y_Treasury.csv"
 treasury <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-View(treasury)
+#View(treasury)
 ##Load R scrip from GitHub
 #https://www.r-bloggers.com/reading-an-r-file-from-github/
 library(devtools)
@@ -572,6 +576,18 @@ gdpvsaal.30[,year := seq(2002, 2018, by = 1)]
 #(TxERS[year == 2012]$payroll-TxERS[year == 2010]$payroll)/TxERS[year == 2010]$payroll
 #View(TxERS)
 
+#credentials <- data.frame(
+#  user = c("shiny", "shinymanager"), # mandatory
+#  password = c("4reasoners", "12345"), # mandatory
+#  start = c("2020-08-15"), # optinal (all others)
+#  expire = c(NA, "2020-08-15"),
+#  admin = c(FALSE, TRUE),
+#  comment = "Simple and secure authentification mechanism 
+#  for single ‘Shiny’ applications.",
+#  stringsAsFactors = FALSE
+#)
+
+
 ######Shiny app[interface] ----------------------------------------------
 
 ui <- fluidPage(
@@ -626,10 +642,19 @@ ui <- fluidPage(
     )
   )
 )
+
+#wrap around secure_app fora password protection
+ui <- secure_app(ui)
 ##########################
 ######Shiny app[server] -------------------------------------------------
 
 server <- function(input, output, session){
+  
+  #shinymanager
+  res_auth <- secure_server(
+    check_credentials = check_credentials(credentials)
+  )
+  
   note_text <- paste0("This shiny app allows you to browse through Reason database by", sep="\n", "\n",
                       "selecting a state & pension plan.", sep="\n",
                       "Go to 'Table' & 'Columns' tabs to see data for chosen plan (to save use download button). ", sep="\n",

@@ -5,9 +5,9 @@ account: anil-niraula
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2584813
-bundleId: 3448100
+bundleId: 3562235
 url: https://anil-niraula.shinyapps.io/ReasonDataViewer3/
-when: 1595979279.41086
+when: 1598499399.05378
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: .RData|APERS_Dashboard.R|Arizona EORP.csv|DataViewer.R|Download_Data.R|PullSourceData.R|pullStateData.R|README.md|Reason_State_Names_Mod.csv|Reason_State_Names_Mod2.csv|reason.data.state.csv|RPension_Database.docx|RPension_Database.Rmd|apps/proj.2019.R|apps/reason_logo.png|apps/reason.data.2019.csv|apps/UALapp.reason.R|functions/PullSourceData.R|functions/pullStateData.R|files
+ignoredFiles: .RData|APERS_Dashboard.R|Arizona EORP.csv|Data.csv|DataViewer.R|DataViewerPicker2.R|Download_Data.R|Inv.Returns.PERSI.jpeg|PullSourceData.R|pullStateData.R|README.md|Reason_State_Names_Mod.csv|Reason_State_Names_Mod2.csv|reason.data.state.csv|RPension_Database.docx|RPension_Database.Rmd|shiny.rda|functions/PullSourceData.R|functions/pullStateData.R|apps|files

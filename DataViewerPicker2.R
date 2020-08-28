@@ -28,6 +28,8 @@ library(base64enc)
 #Shiny-----------
 library(shiny)
 library(shinyWidgets)
+library(shinymanager)
+library(repmis)
 #library(shinyFiles)
 library(DT)
 library(plotly)
@@ -301,6 +303,7 @@ gdpvsaal.30[,year := seq(2002, 2018, by = 1)]
 #1-(TxERS[year == 2012]$payroll/TxERS[year == 2010]$payroll)
 #(TxERS[year == 2012]$payroll-TxERS[year == 2010]$payroll)/TxERS[year == 2010]$payroll
 #View(TxERS)
+source_data("https://github.com/ReasonFoundation/databaseR/blob/master/shiny.rda?raw=true")
 
 ######Shiny app[interface] ----------------------------------------------
 
@@ -309,7 +312,7 @@ ui <- fluidPage(
   # CODE BELOW: Add select inputs on state and plan_names to choose between different pension plans in Reason database
   theme = shinythemes::shinytheme("spacelab"),
   sidebarLayout(
-    sidebarPanel(
+    sidebarPanel(width = 3,
       img(src = base64enc::dataURI(file = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/reason_logo.png"), width = 200, height = 50),
       br(),
       br(),
@@ -356,10 +359,19 @@ ui <- fluidPage(
     )
   )
 )
+
+#wrap around secure_app for password protection
+ui <- secure_app(ui)
 ##########################
 ######Shiny app[server] -------------------------------------------------
 
 server <- function(input, output, session){
+  
+  #shinymanager
+  res_auth <- secure_server(
+    check_credentials = check_credentials(credentials)
+  )
+  
   note_text <- paste0("This shiny app allows you to browse through Reason database by", sep="\n", "\n",
                       "selecting a state & pension plan.", sep="\n",
                       "Go to 'Table' & 'Columns' tabs to see data for chosen plan (to save use download button). ", sep="\n",
