@@ -122,12 +122,15 @@ and attribute_name in ('1 Year Investment Return Percentage',
     dplyr::group_by_at(dplyr::vars(-.data$attribute_value)) %>%  # group by everything other than the value column.
     dplyr::mutate(row_id = 1:dplyr::n()) %>%
     dplyr::ungroup() %>%  # build group index
-    tidyr::spread(.data$attribute_name, .data$attribute_value, convert = TRUE) %>%    # spread
     dplyr::select(-.data$row_id) %>%  # drop the index
     janitor::clean_names()
 }
 
-#View(pullSourceData("Employee Retirement System of Hawaii"))
+
+data <- pullSourceData("")
+data <- pullSourceData("Employee Retirement System of Hawaii")
+View(data)
+data <- data %>% tidyr::pivot_wider(names_from = attribute_name, values_from = attribute_value)
 ##Pull state Data only
 
 

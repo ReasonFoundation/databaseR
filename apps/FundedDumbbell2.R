@@ -30,6 +30,7 @@ library(base64enc)
 library(shiny)
 library(shinyWidgets)
 library(shinydashboard)
+library(bootstrap)
 #library(shinyFiles)
 library(DT)
 library(plotly)
@@ -45,7 +46,6 @@ plans <- as.character(unique(pl[,2]))
 
 reason.data <- pullStateData(2001)
 reason.data <- as.data.table(reason.data %>% arrange(year))
-
 
 #Custom Function to filter for number of variables we commonly use in pension analysis (state plans*)
 filteredData <- function(Data,fy){
@@ -282,15 +282,29 @@ reason.data$total_proj_adec_pct <- as.numeric(reason.data$total_proj_adec_pct)
 #https://rkabacoff.github.io/datavis/datavis.pdf
 #set_reason_theme(style = "slide")
 
+set_reason_theme(style = "web")
+
 ###SHINY DASHBOARD APP
 ui <- fluidPage(
-        titlePanel(title = "Funded Status Change"
-      ),
-      theme = shinythemes::shinytheme("spacelab"),
+      h1(id = "title", "Funded Status Change"),
+      #Set Title font
+      tags$head(tags$style(
+         HTML('#title {
+                font-size: 20pt; 
+                color: black;
+                font-style: Calibri;
+             }'))),
+      theme = shinythemes::shinytheme("spacelab"), 
+      #Set Control Panel text font
+      tags$style(HTML("body, pre { 
+                font-size: 10pt; 
+                color: black;
+                font-style: Calibri}")),
+      
   #Change font of the body text
   #https://stackoverflow.com/questions/58454087/how-to-change-the-font-family-of-verbatimtextoutput-to-be-the-same-as-the-input
   sidebarLayout(
-    sidebarPanel(width = 3,
+    sidebarPanel(width = 3, img(src = base64enc::dataURI(file = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/reason_logo.png"), width = 200, height = 50),
       sliderInput('x', h3('Select Time Period'), 
                            min = 2001, max = 2019, value = c(2001,2018), sep = ""),
      uiOutput("secondSelection"),
@@ -307,8 +321,9 @@ ui <- fluidPage(
                   ".shiny-output-error { visibility: hidden; }",
                   ".shiny-output-error:before { visibility: hidden; }"
        ),
+       
        plotly::plotlyOutput("plot_US"),
-          tags$div(HTML(paste("<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>"))),
+          tags$div(HTML(paste("<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>"))),
           tags$div(htmlOutput("text1"))
           #Specify Source line text font/size with css
           ))
@@ -387,7 +402,7 @@ server <- function(input, output, session){
                             " (",round(DF[,2],2)*100,"%", " to ", round(DF[,3],2)*100,"%)")), 
               ) + 
     geom_col(aes(group = state, fill = c("Decline in Funded Status")),
-      color = "white", size = 2)+
+    color = "white", size = 2)+
     geom_col(aes(x = DF[,3], xend = DF[,2],group = state, fill = c("Increase in Funded Status")), 
              color = "white", size = 2)+
     scale_fill_manual(values=c(palette_reason$LightBlue, palette_reason$Orange, palette_reason$Yellow, palette_reason$LightBlue, palette_reason$Red, palette_reason$DarkGrey))+
@@ -402,7 +417,6 @@ server <- function(input, output, session){
                linetype="dashed", 
                color = palette_reason$DarkGrey, size=1)+
     labs(caption = paste("reason.org/pensions"))+
-    theme_bw()+
     labs(title= paste0("State Pension Funded Gap (",input$x[1], "-", input$x[2],")"),
          x = "Funded Ratio", y = "")+
     theme_bw()+
@@ -418,10 +432,13 @@ server <- function(input, output, session){
                       axis.text.x = element_text(size=9, color = "black", angle = 90, hjust = 1, vjust = 1),
                       axis.title.y = element_text(size=9, color = "black"),
                       axis.title.x = element_text(size=9, color = "black"),
-                      legend.title = element_text(size = 6, colour = "white", face = "bold"))
+                      legend.title = element_text(size = 9, colour = "white", face = "bold"),
+                      plot.title=element_text(family="Calibri", face="bold", size=15))#Set Plot Title font
     
     p <- ggplotly(p, tooltip = c("text"))
-    p <- p %>% layout(legend = list(orientation = "v", x=0.64, y = 0.5, font = list(size = 11)))
+    p <- p %>% layout(legend = list(orientation = "v", x=0.64, y = 0.5, font = list(size = 14, family = "Calibri")),#Set legend fonts 
+                      xaxis = list(tickfont = list(size = 13, family = "Calibri")), #Set axis label fonts 
+                      yaxis = list(tickfont = list(size = 13, family = "Calibri")))
     p = p %>%
       #https://mran.revolutionanalytics.com/snapshot/2016-03-14/web/packages/plotly/plotly.pdf
       config(staticPlot = F, 
@@ -431,7 +448,7 @@ server <- function(input, output, session){
              displayModeBar = T,#Removing the all the buttons
              modeBarButtonsToRemove = list(
                #"toImage",
-               "zoom2d",
+               #"zoom2d",
                "pan2d",
                "lasso2d",
                "lasszoom2d",
@@ -439,7 +456,7 @@ server <- function(input, output, session){
                "select2d",
                "zoomIn2d",
                "zoomOut2d",
-               "autoScale2d",
+               #"autoScale2d",
                "resetScale2d",
                "hoverClosestCartesian",
                "hoverCompareCartesian",
@@ -546,25 +563,25 @@ output$plot_State <- plotly::renderPlotly({
            editable = F,
            autosizable = T,
            showTips = T,
-           displayModeBar = T,#Removing the all the buttons
+           displayModeBar = F,#Removing the all the buttons
            modeBarButtonsToRemove = list(
              #"toImage",
-             "zoom2d",
-             "pan2d",
-             "lasso2d",
-             "lasszoom2d",
-             "pan2d",
-             "select2d",
-             "zoomIn2d",
-             "zoomOut2d",
-             "autoScale2d",
-             "resetScale2d",
-             "hoverClosestCartesian",
-             "hoverCompareCartesian",
-             "sendDataToCloud",
-             "toggleHover",
-             "resetViews",
-             "toggleSpikelines",
+             #"zoom2d",
+             #"pan2d",
+             #"lasso2d",
+             #"lasszoom2d",
+             #"pan2d",
+             #"select2d",
+             #"zoomIn2d",
+             #"zoomOut2d",
+             #"autoScale2d",
+             #"resetScale2d",
+             #"hoverClosestCartesian",
+             #"hoverCompareCartesian",
+             #"sendDataToCloud",
+             #"toggleHover",
+             #"resetViews",
+             #"toggleSpikelines",
              "resetViewMapbox"
            ),
            displaylogo = FALSE

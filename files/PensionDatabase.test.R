@@ -4,9 +4,6 @@
 #Clean Global Environment
 rm(list = ls())
 
-#Test this to view the mappings in postgreSQL
-#"select * from master_priority_view"
-
 ### Load R Packages ###
 
 #install.packages('devtools')
@@ -31,20 +28,25 @@ library(plotly)
 library(plyr)
 library(dplyr)
 
-#Pull data from Reason database
+#Detailed overview of `pensionviewr` package
 #https://github.com/ReasonFoundation/pensionviewr
 
 ##### [1]PullStateData() #####
 
 state.data <- pullStateData(1990)
+#**Uncomment to use below
+
 #str(state.data)
 #View(state.data)
 #View(colnames(state.data))
 #View(unique(state.data$display_name))
 
-New_Mexico.data <- state.data %>% filter(state == 'New Mexico')#Filter by state
+#Filter by state
+New_Mexico.data <- state.data %>% filter(state == 'New Mexico')
 #View(New_Mexico.data)
-NMERB.data <- state.data %>% filter(display_name == "New Mexico Educational Retirement Board")# filter by plan
+
+# filter by plan
+NMERB.data <- state.data %>% filter(display_name == "New Mexico Educational Retirement Board")
 #View(NMERB.data)
 
 
@@ -53,9 +55,10 @@ NMERB.data <- state.data %>% filter(display_name == "New Mexico Educational Reti
 
 pl <- planList()# pull list of states, plan ids, and plan names
 #View(pl)
+
 #Pull data for a specific plan from database
 NMERB.data <- pullData(pl,"New Mexico Educational Retirement Board") %>% 
-                        filter(year >= 2001)
+  filter(year >= 2001)
 #View(NMERB.data)
 #View(colnames(NMERB.data))
 
@@ -71,9 +74,9 @@ NMERB.data.filtered <- filterData(NMERB.data, 2010)
 
 ####
 #Transform data from long to wide format 
-#w/ Pivot_wider (Tidyr)
+#w/ pivot_wider (Tidyr)
 
-#Run this function
+#Run this function first
 pullSource <- function(plan_name){
   con <- RPostgres::dbConnect(
     RPostgres::Postgres(),
@@ -117,18 +120,18 @@ and attribute_name in ('1 Year Investment Return Percentage',
     janitor::clean_names()
 }
 
-#Use this function to pull data with source column
+#Use this function for Hawaii pension plan
 data <- pullSource("Employee Retirement System of Hawaii")
 #View(data)
 
-#Spread data from Long to Wide formar (by )
-data <- data %>% tidyr::pivot_wider(names_from = attribute_name, values_from = attribute_value, )
+#Spread data from Long to Wide format
+data <- data %>% tidyr::pivot_wider(names_from = attribute_name, values_from = attribute_value)
 
 ####
-## Manipulate using lapply (sum by column)
+## Manipulate using lapply (sum values by column)
 
 NMERB.data <- pullData(pl,"New Mexico Educational Retirement Board") %>% 
-              filter(year >= 2001)
+  filter(year >= 2001)
 NMERB.data.cut <- data.table(NMERB.data %>% select(actuarial_value_of_assets_dollar, actuarially_accrued_liabilities_dollar))
 #View(NMERB.data.cut)
 NMERB.data.cut = NMERB.data.cut[,lapply(.SD,sum),.SDcols=colnames(NMERB.data.cut)]
@@ -139,16 +142,16 @@ NMERB.data.cut = NMERB.data.cut[,lapply(.SD,sum),.SDcols=colnames(NMERB.data.cut
 state.data <- data.table(pullStateData(2001))
 state.data$actuarially_accrued_liabilities_dollar <- as.numeric(state.data$actuarially_accrued_liabilities_dollar)
 state.data.aal <- state.data[, sum(na.omit(actuarially_accrued_liabilities_dollar)), 
-                               by=list(year, state)] %>%
-                               arrange(state)
+                             by=list(year, state)] %>%
+  arrange(state)
 #View(state.data.aal)
 
 ####
-#Create new column w/ data.table & dplyr
 state.data$market_value_of_assets_dollar <- as.numeric(state.data$market_value_of_assets_dollar)
 
 #Create funded ratio columns (w/ data.table & dplyr)
 state.data <- state.data[,funded_mva := market_value_of_assets_dollar/actuarially_accrued_liabilities_dollar]
+#Same with %>% mutate()
 state.data <- state.data %>% mutate(funded_mva2 = market_value_of_assets_dollar/actuarially_accrued_liabilities_dollar)
 #View(state.data)
 
