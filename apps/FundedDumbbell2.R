@@ -16,6 +16,7 @@ rm(list=ls())
 #devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
 library(reasontheme)
 library(pensionviewr)
+library(extrafont)
 #library(janitor)
 library(tidyverse)
 #library(openxlsx)
@@ -35,12 +36,18 @@ library(bootstrap)
 library(DT)
 library(plotly)
 
+
 #### Load/Filter #####
 pl <- planList() 
 #View(arrange(pl, by = id))
 states <- as.character(unique(pl[,3]))
 plans <- as.character(unique(pl[,2]))
 
+
+font_import(pattern = "calibri")
+#loadfonts(device = "win")
+#dir.create('~/.fonts')
+#file.copy("/Users/anilniraula/Calibri.ttf", "~/.fonts")
 ##
 # Load data ---------------------------------------------------------------
 
@@ -292,14 +299,14 @@ ui <- fluidPage(
          HTML('#title {
                 font-size: 20pt; 
                 color: black;
-                font-style: Calibri;
+                font-style: Arial;
              }'))),
       theme = shinythemes::shinytheme("spacelab"), 
       #Set Control Panel text font
       tags$style(HTML("body, pre { 
                 font-size: 10pt; 
                 color: black;
-                font-style: Calibri}")),
+                font-style: Arial}")),
       
   #Change font of the body text
   #https://stackoverflow.com/questions/58454087/how-to-change-the-font-family-of-verbatimtextoutput-to-be-the-same-as-the-input
@@ -324,7 +331,8 @@ ui <- fluidPage(
        
        plotly::plotlyOutput("plot_US"),
           tags$div(HTML(paste("<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>"))),
-          tags$div(htmlOutput("text1"))
+          
+       tags$div(htmlOutput("text1"))
           #Specify Source line text font/size with css
           ))
         )
@@ -416,11 +424,13 @@ server <- function(input, output, session){
     geom_vline(xintercept=(median(DF[,3]+median(DF[,4]))), text = paste0("Median US Funded Status"),
                linetype="dashed", 
                color = palette_reason$DarkGrey, size=1)+
-    labs(caption = paste("reason.org/pensions"))+
     labs(title= paste0("State Pension Funded Gap (",input$x[1], "-", input$x[2],")"),
-         x = "Funded Ratio", y = "")+
-    theme_bw()+
-#  scale_y_continuous(labels = function(x) paste0(x), name = "")+
+         x = "Funded Ratio", y = ""
+         )+
+   # theme_set(theme_bw( base_family= "Calibri"))+
+    annotate("text", fontface = 'bold', size = 3.3, x=1.5, y=2,
+             label = paste0("reason.org/pensions"))+
+   #  scale_y_continuous(labels = function(x) paste0(x), name = "")+
    scale_x_continuous(labels = function(x) paste0(x*100,"%"), name = "",
                      breaks = seq(0, 1.8, by = 0.2), limits = c(0, 1.8))+
 
@@ -433,12 +443,12 @@ server <- function(input, output, session){
                       axis.title.y = element_text(size=9, color = "black"),
                       axis.title.x = element_text(size=9, color = "black"),
                       legend.title = element_text(size = 9, colour = "white", face = "bold"),
-                      plot.title=element_text(family="Calibri", face="bold", size=15))#Set Plot Title font
+                      plot.title=element_text(family="Arial Unicode MS", face="bold", size=15))#Set Plot Title font
     
     p <- ggplotly(p, tooltip = c("text"))
-    p <- p %>% layout(legend = list(orientation = "v", x=0.64, y = 0.5, font = list(size = 14, family = "Calibri")),#Set legend fonts 
-                      xaxis = list(tickfont = list(size = 13, family = "Calibri")), #Set axis label fonts 
-                      yaxis = list(tickfont = list(size = 13, family = "Calibri")))
+    p <- p %>% layout(legend = list(orientation = "v", x=0.64, y = 0.5, font = list(size = 14, family = "Arial Unicode MS")),#Set legend fonts 
+                      xaxis = list(tickfont = list(size = 13, family = "Arial Unicode MS")), #Set axis label fonts 
+                      yaxis = list(tickfont = list(size = 13, family = "Arial Unicode MS"))) 
     p = p %>%
       #https://mran.revolutionanalytics.com/snapshot/2016-03-14/web/packages/plotly/plotly.pdf
       config(staticPlot = F, 
