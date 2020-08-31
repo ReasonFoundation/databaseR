@@ -1,5 +1,4 @@
 ### Reason Database Viewer ###
-## V3.0 ##
 #(by Anil Niraula)#
 
 #https://shiny.rstudio.com/tutorial/written-tutorial/lesson3/
@@ -36,7 +35,6 @@ library(DT)
 library(plotly)
 #devtools::install_github("ropensci/plotly")
 
-
 #DF <- data.table(Fiscal_Year = seq(2001, 2019, by =1))
 #DF <- DF[,var1 := data.table(rnorm(19, 30, 5))]
 #DF <- DF[,var2 := data.table(rnorm(19, 60, 10))]
@@ -66,7 +64,7 @@ plans <- as.character(unique(pl[,2]))
 
 #palette_reason$categorical[[3]]
 #reason_color_pal("categorical")
-palette_reason <- data.frame(
+palette_reason <- data.table(
   Orange = "#FF6633", 
   LightOrange = "#FF9900",
   DarkGrey = "#333333", 

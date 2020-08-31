@@ -82,12 +82,11 @@ plotTheme <- ggplot2::theme(   panel.grid.major = element_blank(),
 
 ui <-fluidPage(
   titlePanel(
-        img(src='https://www.atlasnetwork.org/assets/uploads/global-directory/Screen_Shot_2019-08-19_at_11.52.56_AM.png'),
-        title = "Causes of Arkansas ERS Pension Debt"),
+        title = ""),
                     
   theme = shinythemes::shinytheme("spacelab"),
   sidebarLayout(
-    sidebarPanel(
+    sidebarPanel(img(src = base64enc::dataURI(file = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/reason_logo.png"), width = 200, height = 50),
           sliderInput('year',
           'Select Starting Year',
            min = 2001,
@@ -102,7 +101,8 @@ ui <-fluidPage(
                ".shiny-output-error { visibility: hidden; }",
                ".shiny-output-error:before { visibility: hidden; }"
     ),
-      plotly::plotlyOutput("plot_waterfall")
+      plotly::plotlyOutput("plot_waterfall"),
+    tags$div(htmlOutput("text1"))
   )
 )
 )
@@ -110,6 +110,12 @@ ui <-fluidPage(
 ##########################
 
 server <- function(input, output, session){
+  
+  output$text1 <- renderText({
+    paste(HTML(
+      "Source:"), tags$a(href="https://reason.org/topics/pension-reform/", "Pension Integrity Project at Reason Foundation"),"<br>", 
+      "analysis of APERS CAFRs and valuation reports.", sep="\n")
+     })
   
   #[1]Pulling scv file from GitHub containing APERS gain/loss data
   
@@ -132,13 +138,13 @@ server <- function(input, output, session){
   output$plot_waterfall <- plotly::renderPlotly({
     
     y <- gain_loss()
-    x = list("Investments",
-            "Benefit<br>Changes &<br>Other",
-            "Changes in<br>Methods and<br>Assumption",
+    x = list("Underperforming<br>Investments",
+            "Benefit<br>Changes<br> & Other",
+            "Changes in<br>Methods /<br>Assumptions",
             "Negative<br>Amortization",
-            "Deviations<br>from<br>Demographic<br>Assumptions",
-            "Pay<br>Increases<br>Not Given",
-            "Net Change<br>to Unfunded<br>Liability")
+            "Actual<br>Demographic<br>Performance<br>Better Than<br>Expected",
+            "Gains From<br>Expected<br>Pay<br>Increases<br>Not Given",
+            "Net Change to<br>Unfunded<br>Liability")
     
     measure= c("relative",
                "relative",
@@ -150,6 +156,7 @@ server <- function(input, output, session){
     
     data <- data.frame(x = factor(x, levels = x), measure, y)
     #View(data)
+    
     fig <- plot_ly( data,
                     type = "waterfall",
                     measure = ~measure,
@@ -158,19 +165,30 @@ server <- function(input, output, session){
                     y= ~y,
                     text = "",
                     hoverinfo = 'text',
-                    hovertemplate = paste0("Pension Debt Gain/(Loss): ", "<br>", "$", round(y, 2), "B", "<br>", "Period: ", input$year, "-2019"),
+                    hovertemplate = paste0("Pension Debt Gain/(Loss): ", "<br>", "$", round(y, 2), "B", "<br>"),
                     decreasing = list(marker = list(color = palette_reason$Green)),
                     increasing = list(marker = list(color = palette_reason$Red)),
                     totals = list(marker = list(color = palette_reason$Orange)),
                     connector = list(line = list(color= palette_reason$SpaceGrey, width = 1))) 
     
     fig <- fig %>%
-      layout(title = "",
-             xaxis = list(title = ""),
-             yaxis = list(title = "Change in Unfunded Liability (Billions)", range = c(0,4.5)),
+      layout(title = paste0("<b>Causes of Arkansas ERS Pension Debt<b>"," (",input$year,"-2019)"),
+             xaxis = list(title = "",tickfont = list(size = 11, face = "bold")),
+             yaxis = list(title = "<b>Change in Unfunded Liability (in $Billions)<b>",
+                          titlefont = list(size = 12), range = c(0,5),
+                          showgrid = FALSE,
+                          tick0 = 0,
+                          dtick = 0.5,
+                          ticklen = 2,
+                          linecolor = '#636363',
+                          linewidth = 0.75),
              barmode = 'stack',
              autosize = T,
-             showlegend = F)
+             showlegend = F) %>% 
+      layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
+                    y = 0, x = 4.5, text = "reason.org/pensions",
+                    xanchor='right', yanchor='auto', xshift=0, yshift=0,
+                    font=list(size=9, color="black")))
     
     fig
     
