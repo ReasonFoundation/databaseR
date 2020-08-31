@@ -328,7 +328,7 @@ ui <- fluidPage(
       br(),
       em("Update#1 Data sources are displayed in Source tab."),
       br(),
-      em("Update#2 Discount rate assumption data added to Filtered option."),
+      em("Update#2 Discount rate data added to Filtered option."),
       br(),
       em("Update#3 Added multiple column selection for Filtered data."),
       br(),
@@ -480,7 +480,9 @@ server <- function(input, output, session){
     x <- data.table(PlanData())
     if(input$filter == "Filtered"){
       x <- x %>% select(year, plan_name, state, input$pk)}
-    x
+      x  <- DT::datatable(x, editable = FALSE, options = list(
+      "pageLength" = 20, autoWidth = TRUE))
+      x
   })
   
   ##Create a reactive source data table
@@ -500,6 +502,8 @@ server <- function(input, output, session){
     x <- data.table(PlanSourceData())
     if(input$filter == "Filtered"){
       x <- x %>% select(year, plan_name, state, data_source_name, input$pk)}
+    x  <- DT::datatable(x, editable = FALSE, options = list(
+      "pageLength" = 20, autoWidth = TRUE))
     x
   })
   
@@ -510,6 +514,8 @@ server <- function(input, output, session){
       x <- x %>% select(year, plan_name, state, input$pk)}
     x <- data.table(colnames(x))
     colnames(x) <- c("Variables")
+    x  <- DT::datatable(x, editable = FALSE, options = list(
+      "pageLength" = 20, autoWidth = TRUE))
     x
   })
   
