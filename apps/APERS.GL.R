@@ -77,7 +77,6 @@ plotTheme <- ggplot2::theme(   panel.grid.major = element_blank(),
                                axis.title.x = element_text(size=9, color = "black"),
                                legend.title = element_text(size = 8, colour = "white", face = "bold"))
 
-
 ###### Shiny App/Dashboard  
 
 ui <-fluidPage(
@@ -165,7 +164,7 @@ server <- function(input, output, session){
                     y= ~y,
                     text = "",
                     hoverinfo = 'text',
-                    hovertemplate = paste0("Pension Debt Gain/(Loss): ", "<br>", "$", round(y, 2), "B", "<br>"),
+                    hovertemplate = paste0("Pension Debt Gain/(Loss): ", "<br>", "$", round(y, 2), "B", "<br><extra></extra>"),
                     decreasing = list(marker = list(color = palette_reason$Green)),
                     increasing = list(marker = list(color = palette_reason$Red)),
                     totals = list(marker = list(color = palette_reason$Orange)),
