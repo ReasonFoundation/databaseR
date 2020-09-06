@@ -1,0 +1,415 @@
+,master_attribute_id,master_attribute_name,priority,plan_attribute_id,attribute_name,attribute_column_name,data_source_name
+1,1,Market Value of Assets Dollar,100,10996,Market Value of Assets,mva,Reason
+2,1,Market Value of Assets Dollar,200,564,Net Assets,mktassets_net,Public Plans Database
+3,1,Market Value of Assets Dollar,300,14004,Market Value of Assets (MVA),market-value-of-assets-(mva),Texas Pension Review Board
+4,1,Market Value of Assets Dollar,400,11301,Market Value of Assets,market_value_of_assets,Florida Division of Retirement
+5,2,Actuarially Accrued Liabilities Dollar,100,10990,Actuarial Acrrued Liability,aal,Reason
+6,2,Actuarially Accrued Liabilities Dollar,200,462,Actuarial Accrued Liabilities Under GASB Standards,actliabilities_gasb,Public Plans Database
+7,2,Actuarially Accrued Liabilities Dollar,300,48,Actuarially Accured Liabilities,actuarially_accured_liabilities,Census
+8,2,Actuarially Accrued Liabilities Dollar,500,11312,Actuarially Accrued Liability,actuarially_accrued_liability,Florida Division of Retirement
+9,2,Actuarially Accrued Liabilities Dollar,600,13210,Total Accrued Liability,total-accrued-liability,PSPRS
+10,3,Covered Payroll Dollar,100,10993,Covered Payroll,payroll,Reason
+11,3,Covered Payroll Dollar,200,466,Covered Payroll,payroll,Public Plans Database
+12,3,Covered Payroll Dollar,300,49,Covered Payroll,covered_payroll,Census
+13,4,1 Year Investment Return Percentage,100,10981,Market Investment Return (MVA Basis),market_return,Reason
+14,4,1 Year Investment Return Percentage,200,485,1-Yr Investment Return,investmentreturn_1yr,Public Plans Database
+15,5,10 Year Investment Return Percentage,200,492,10-Yr Investment Return,investmentreturn_10yr,Public Plans Database
+16,6,12 Year Investment Return Percentage,200,493,12-Yr Investment Return,investmentreturn_12yr,Public Plans Database
+17,7,15 Year Investment Return Percentage,200,494,15-Yr Investment Return,investmentreturn_15yr,Public Plans Database
+18,8,2 Year Investment Return Percentage,200,486,2-Yr Investment Return,investmentreturn_2yr,Public Plans Database
+19,9,20 Year Investment Return Percentage,200,495,20-Yr Investment Return,investmentreturn_20yr,Public Plans Database
+20,10,25 Year Investment Return Percentage,200,496,25-Yr Investment Return,investmentreturn_25yr,Public Plans Database
+21,11,3 Year Investment Return Percentage,200,487,3-Yr Investment Return,investmentreturn_3yr,Public Plans Database
+22,12,30 Year Investment Return Percentage,200,497,30-Yr Investment Return,investmentreturn_30yr,Public Plans Database
+23,13,4 Year Investment Return Percentage,200,488,4-Yr Investment Return,investmentreturn_4yr,Public Plans Database
+24,14,5 Year Investment Return Percentage,200,489,5-Yr Investment Return,investmentreturn_5yr,Public Plans Database
+25,15,7 Year Investment Return Percentage,200,490,7-Yr Investment Return,investmentreturn_7yr,Public Plans Database
+26,16,8 Year Investment Return Percentage,200,491,8-Yr Investment Return,investmentreturn_8yr,Public Plans Database
+27,18,Actuarial Assets Reported for Asset Smoothing,200,432,Actuarial Assets Reported for Asset Smoothing,actassets_smooth,Public Plans Database
+28,19,Actuarial Cost Method Code Names,200,450,Actuarial Cost Method Code Names,actcostmethcode,Public Plans Database
+29,20,Actuarial Cost Method Code Names for GASB,200,415,Actuarial Cost Method Code Names for GASB,actcostmethcode_gasb,Public Plans Database
+30,22,Actuarial Cost Method in GASB Reporting,200,408,Actuarial Cost Method for GASB Reporting,actcostmeth_gasb,Public Plans Database
+31,23,Actuarial Cost Method in Valaution,200,427,Actuarial Cost Method for Plan Reporting,actcostmeth,Public Plans Database
+32,24,Actuarial Cost Method Notes,200,428,Actuarial Cost Method Notes,actcostmeth_note,Public Plans Database
+33,25,Actuarial Funded Ratio Percentage,100,10992,GASB 25 Funded Ratio,fundedratio_old,Reason
+34,25,Actuarial Funded Ratio Percentage,200,463,Funded Ratio Under GASB Standards,actfundedratio_gasb,Public Plans Database
+35,25,Actuarial Funded Ratio Percentage,300,13240,Funding Ratio,funding-ratio,PSPRS
+36,26,Actuarial Liabilities Entry Age Normal Dollar,200,627,Actuarial Liabilities Under Entry Age Normal,actliabilities_ean,Public Plans Database
+37,27,Actuarial Liabilities Projected Union Credit Dollar,200,628,Actuarial Liabilities Under Projected Unit Credit,actliabilities_puc,Public Plans Database
+38,28,Actuarial Report Calendar Year,200,402,Actuarial Report Calendar Year,actrpt_cy,Public Plans Database
+39,29,Actuarial Valuation Report Date,200,404,Actuarial Valuation Report Date,actrptdate,Public Plans Database
+40,30,Actuarial Value of Assets Dollar,100,10989,Actuarial Value of Assets,ava,Reason
+41,30,Actuarial Value of Assets Dollar,200,626,Actuarial Assets,actassets_ava,Public Plans Database
+42,30,Actuarial Value of Assets Dollar,300,13220,Present Assets,present-assets,PSPRS
+43,30,Actuarial Value of Assets Dollar,400,11141,Actuarial Value of Assets,actuarial_value_of_assets,California State Controller
+44,31,Actuarial Value of Assets GASB Dollar,200,461,Actuarial Assets under GASB standards,actassets_gasb,Public Plans Database
+45,32,Actuarially Determined Contribution Dollar,100,10885,Actuarially Determined Employer Contribution (GASB 67/68),adec_amt,Reason
+46,32,Actuarially Determined Contribution Dollar,200,474,Actuarially Determined Contribution,adec,Public Plans Database
+47,33,Actuarially Determined Contribution Missed Dollar,100,10887,Total ADEC Missed (GASB 67/68),adec_missed,Reason
+48,35,Actuarially Determined Contribution Percentage of Payroll,200,477,Percent of ADEC Paid,percentadec,Public Plans Database
+49,36,Actuarially Required Contribution Dollar,100,10984,Actuarially Required Contribution (GASB 25),arc,Reason
+50,36,Actuarially Required Contribution Dollar,200,467,Employer Annual Required Contribution,requiredcontribution,Public Plans Database
+51,36,Actuarially Required Contribution Dollar,300,11008,Actuarially Required Contribution - Inferred Based on GASB 68 Proportions,arc_inferred,Reason
+52,37,Actuarially Required Contribution Paid Percentage,100,10987,Percent of ARC Paid (GASB 25),arc_pct,Reason
+53,37,Actuarially Required Contribution Paid Percentage,200,468,Percent of Employer Required Contribution Paid,percentreqcontpaid,Public Plans Database
+54,39,Adjustment to Market Value of Assets Dollar,200,563,Internal Adjustment To Market Assets,adjustment_mktassets,Public Plans Database
+55,40,Administering Government Type,200,370,Administering Government Type,administeringgovt,Public Plans Database
+56,41,Administrating Jurisdiction  ,200,373,Administrating Jurisdiction,govtname,Public Plans Database
+57,42,Administrative Expense Dollar,200,559,Deductions - Administrative Expense,expense_adminexpenses,Public Plans Database
+58,42,Administrative Expense Dollar,300,22,Administrative Expenses,administrative_expenses,Census
+59,43,Administrative Expense in Normal Cost Dollar,100,22,Administrative Expenses,administrative_expenses,Census
+60,45,Alternative Expense Dollar,200,541,Alternatives Expense,expense_alternatives,Public Plans Database
+61,46,Alternative Investments Percentage,200,515,Percent of Assets Invested In Alternatives,alternatives,Public Plans Database
+62,47,Alternatives Income Dollar,200,536,Alternatives Income,income_alternatives,Public Plans Database
+63,48,Amortizaton Method,200,410,Amortizaton Method,fundingmeth_gasb,Public Plans Database
+64,51,Amounts Transmitted To Federal Social Security System Dollar,300,75,Amounts Transmitted To Federal Social Security System,amounts_transmitted_to_federal_social_security_system,Census
+65,52,Are Most Members Covered by Social Security?,200,376,Are Most Members Covered by Social Security?,socseccovered,Public Plans Database
+66,53,Asset Smoothing Baseline,200,445,Asset Smoothing Baseline,assetsmoothingbaseline,Public Plans Database
+67,54,Asset Smoothing Baseline Add or Subtract Gain/Loss,200,447,Asset Smoothing Baseline Add or Subtract Gain/Loss,addsubtractgainloss,Public Plans Database
+68,55,Asset Smoothing Period for GASB Reporting,200,417,Asset Smoothing Period for GASB Reporting,assetsmoothingperiod_gasb,Public Plans Database
+69,56,Asset Valuation Method Code for GASB Reporting,200,416,Asset Valuation Method Code for GASB Reporting,assetvalmethcode_gasb,Public Plans Database
+70,57,Asset Valuation Method Code for Plan Reporting,200,434,Asset Valuation Method Code for Plan Reporting,assetvalmethcode,Public Plans Database
+71,58,Asset Valuation Method for GASB Reporting,200,409,Asset Valuation Method for GASB Reporting,assetvalmeth_gasb,Public Plans Database
+72,59,Asset Valuation Method for Plan Reporting,200,424,Asset Valuation Method for Plan Reporting,assetvalmeth,Public Plans Database
+73,60,Asset Valuation Method Note,200,426,Asset Valuation Method Note,assetvalmeth_note,Public Plans Database
+74,63,Average Age At Retirement For Service Retirees  ,200,602,Average Age At Retirement For Service Retirees,serviceretage_avg,Public Plans Database
+75,64,Average Age Of Actives  ,200,589,Average Age Of Actives,activeage_avg,Public Plans Database
+76,65,Average Age Of Beneficiaries  ,200,596,Average Age Of Beneficiaries,beneficiaryage_avg,Public Plans Database
+77,66,Average Age Of Service Retirees  ,200,600,Average Age Of Service Retirees,serviceretireeage_avg,Public Plans Database
+78,67,Average Annual Benefit At Retirement For Service Retirees  ,200,604,Average Annual Benefit At Retirement For Service Retirees,serviceretbenefit_avg,Public Plans Database
+79,68,Average Benefit Of Beneficiaries  ,200,597,Average Benefit Of Beneficiaries,beneficiarybenefit_avg,Public Plans Database
+80,69,Average Benefit Paid To Service Retirees  ,200,601,Average Benefit Paid To Service Retirees,serviceretireebenefit_avg,Public Plans Database
+81,70,Average Salary Of Actives  ,200,591,Average Salary Of Actives,activesalary_avg,Public Plans Database
+82,71,Average Tenure At Retirement For Service Retirees  ,200,603,Average Tenure At Retirement For Service Retirees,servicerettenure_avg,Public Plans Database
+83,72,Average Tenure Of Actives  ,200,590,Average Tenure Of Actives,activetenure_avg,Public Plans Database
+84,73,Basis of Membership and Participation,300,58,Membership Basis,membership_basis,Census
+85,74,Benefit Payments Dollar,200,595,Total Annual Benefit Payments In Year,benefits_tot,Public Plans Database
+86,74,Benefit Payments Dollar,300,16,Total benefit payments,total_benefit_payments,Census
+87,75,Benefits Paid To Disability Retirees Dollar,200,605,Total Benefits Paid To Disability Retirees,benefits_disabilityretirees,Public Plans Database
+88,76,Benefits Paid To Service Retirees Dollar,200,599,Total Benefits Paid To Service Retirees,benefits_serviceretirees,Public Plans Database
+89,77,Benefits Website,200,397,Benefits Website,benefitswebsite,Public Plans Database
+90,78,Blended Discount Rate,200,421,Blended Discount Rate,blendeddiscountrate,Public Plans Database
+91,80,Bonds Corporate Book Value Dollar,300,62,Corporate Bonds At Book Value,corporate_bonds_at_book_value,Census
+92,81,Bonds Corporate Other Book Value Dollar,300,74,Corporate Bonds Other At Book Value,corporate_bonds_other_at_book_value,Census
+93,82,Bonds Corporate Other Dollar,300,31,"Corporate bonds, other",corporate_bonds_other,Census
+94,83,Bonds Federally Sponsored Investments Dollar,300,30,Federally-sponsored agencies,federally_sponsored_agencies,Census
+95,84,CAFR Calendar Year,200,401,CAFR Calendar Year,cafr_cy,Public Plans Database
+96,85,Cash and Short Term Investments Dollar,300,23,Total cash and short-term investments,total_cash_and_short_term_investments,Census
+97,86,Cash and Short Term Investments Percentage,200,514,Percent of Assets Invested in Cash & Short Term Instruments,cashandshortterm,Public Plans Database
+98,87,Cash on Hand and Demand Deposits Dollar,300,25,Cash on hand and demand deposits,cash_on_hand_and_demand_deposits,Census
+99,88,Census Coverage Type,300,57,Coverage Type,coverage_type,Census
+100,89,Census Retirement System Code,300,56,System Category,system_category,Census
+101,90,Closed Plan  ,200,368,Closed Plan,planclosed,Public Plans Database
+102,92,COLA Benefits Paid Dollar,200,555,Deductions - COLA Benefit,expense_colabenefits,Public Plans Database
+103,93,COLA Code,200,412,COLA Code,cola_code,Public Plans Database
+104,95,COLA Provsion Text,200,411,COLA Provsion Text,cola_verabatim,Public Plans Database
+105,96,Confict Between CAFR and Actuarial Valuation,200,403,Confict Between CAFR and Actuarial Valuation,cafr_av_conflict,Public Plans Database
+106,98,Cost Sharing  ,200,380,Cost Sharing,costsharing,Public Plans Database
+107,99,Cost Structure  ,200,378,Cost Structure,coststructure,Public Plans Database
+108,100,Covered Payroll GASB Dollar,200,476,Covered Payroll - GASB 67,coveredpayroll_gasb67,Public Plans Database
+109,101,Covers Elected Officials,200,396,Covers Elected Officials,electedofficials,Public Plans Database
+110,102,Covers Local Employees,200,385,Covers Local Employees,coverslocalemployees,Public Plans Database
+111,103,Covers Local Fire Fighters,200,392,Covers Local Fire Fighters,localfire,Public Plans Database
+112,104,Covers Local General Employees,200,388,Covers Local General Employees,localgenee,Public Plans Database
+113,105,Covers Local Police Officers,200,390,Covers Local Police Officers,localpolice,Public Plans Database
+114,106,Covers State Employees,200,384,Covers State Employees,coversstateemployees,Public Plans Database
+115,107,Covers State Fire Employees,200,391,Covers State Fire Employees,statefire,Public Plans Database
+116,108,Covers State General Employees,200,387,Covers State General Employees,stategenee,Public Plans Database
+117,109,Covers State Police Employees,200,389,Covers State Police Employees,statepolice,Public Plans Database
+118,110,Covers Teachers,200,386,Covers Teachers,coversteachers,Public Plans Database
+119,111,Current Gain/Loss Amount,200,439,Current Gain/Loss Amount,gainloss,Public Plans Database
+120,112,Current Year Liabilities Dollar,300,55,Current Year Liabilities,current_year_liabilities,Census
+121,113,Data Entry Code,200,406,Data Entry Code,dataentrycode,Public Plans Database
+122,114,Data Source for Actuarial Costs,200,565,Data Source for Actuarial Costs,source_actcosts,Public Plans Database
+123,115,Data Source for GASB Schedules,200,458,Data Source for GASB Schedules,source_gasbschedules,Public Plans Database
+124,116,Data Source for Income Statement,200,517,Data Source for Income Statement,source_incomestatement,Public Plans Database
+125,117,Data Source for Investment Return Data,200,484,Data Source for Investment Return Data,source_investmentreturn,Public Plans Database
+126,118,Data Source for Membership Data,200,584,Data Source for Membership Data,source_membership,Public Plans Database
+127,119,Data Source for Plan Basics,200,364,Data Source for Plan Basics,source_planbasics,Public Plans Database
+128,122,Death Benefits Paid Dollar,200,552,Deductions - Death Benefits,expense_deathbenefits,Public Plans Database
+129,124,Depreciation Expense Dollar,200,560,Deductions - Depreciation,expense_depreciation,Public Plans Database
+130,127,Disability Benefits Paid Dollar,200,551,Deductions - Disability Benefits,expense_disabilitybenefits,Public Plans Database
+131,127,Disability Benefits Paid Dollar,300,18,Disability benefits,disability_benefits,Census
+132,129,Dividends Income Dollar,200,532,Dividend Income,income_dividends,Public Plans Database
+133,129,Dividends Income Dollar,300,10,Dividend earnings,dividend_earnings,Census
+134,130,Do Employees Contribute,300,59,Do Employees Contribute,do_employees_contribute,Census
+135,131,Domestic Fixed Income Percentage,200,511,Percent of Assets Invested In Us Bonds,fixedincome_domestic,Public Plans Database
+136,132,Domestic Investments Percentage,200,508,Percent of Assets Invested in US Equities,equities_domestic,Public Plans Database
+137,134,DROP Benefits Paid Dollar,200,553,Deductions - Drop Benefits,expense_dropbenefits,Public Plans Database
+138,135,DROP Members,200,609,DROP Members,dropmembers,Public Plans Database
+139,137,Employee Contribution Dollar,100,10705,"Employee Payment, Total $ Amount",EE_Total_Amt,Reason
+140,137,Employee Contribution Dollar,200,521,Employee Contributions,contrib_ee_regular,Public Plans Database
+141,139,Employee Group Id  ,200,399,Employee Group Id,eegroupid,Public Plans Database
+142,140,Employee Normal Cost Dollar,200,573,Member Contribution Amount,normcostamount_ee,Public Plans Database
+143,141,Employee Normal Cost Percentage,200,568,Member Contribution Rate,normcostrate_ee,Public Plans Database
+144,142,Employee Normal Cost Percentage Estimated Categorical,200,578,Was Estimated Member Contribution Rate Estimated by CRR ?,normcostrate_ee_est,Public Plans Database
+145,143,Employees Receiving Lump Sum Payments,300,64,Employees Receiving Lump Sum Payments,employees_receiving_lump_sum_payments,Census
+146,145,Employer Contribution Other Dollar,200,526,Contributions - Other Employer,contrib_er_other,Public Plans Database
+147,147,Employer Contribution Regular Dollar,200,522,Employer Contributions,contrib_er_regular,Public Plans Database
+148,148,Employer Contribution State Dollar,200,523,State Contributions,contrib_er_state,Public Plans Database
+149,149,Employer Normal Cost Dollar,200,574,Employer Normal Cost Amount,normcostamount_er,Public Plans Database
+150,150,Employer Normal Cost Percentage,200,569,Employer Normal Cost Rate,normcostrate_er,Public Plans Database
+151,151,Employer Normal Cost Percentage Estimated Categorical,200,579,Was Employer Normal Cost Rate Estimated by CRR ?,normcostrate_er_est,Public Plans Database
+152,152,Employer Regular Contribution Dollar,300,3,Contributions from parent local governments,contributions_from_parent_local_governments,Census
+153,153,Employer State Contribution Dollar,300,5,Total State Contributions,total_state_contributions,Census
+154,154,Employer Type  ,200,379,Employer Type,employertype,Public Plans Database
+155,155,Employers Projected Actuarial Required Contribution Dollar,200,575,Employer Projected Actuarial Required Contribution Amount,reqcontamount_er,Public Plans Database
+156,156,Employers Projected Actuarial Required Contribution Percentage of Payroll,200,570,Employer Projected Actuarial Required Contribution Rate,reqcontrate_er,Public Plans Database
+157,157,Estimated Actuarial Assets Indicator,200,478,Were Actuarial Assets Estimated By CRR ?,actassets_est,Public Plans Database
+158,158,Estimated Actuarial Funded Ratio Indicator,200,480,Was Funded Ratio Estimated By CRR ?,actfundedratio_est,Public Plans Database
+159,159,Estimated Actuarial Liabilities Indicator,200,479,Were Actuarial Liabilities Estimated By CRR ?,actliabilities_est,Public Plans Database
+160,160,Estimated Employers Projected Actuarial Required Contribution Categorical,200,580,Was Employer Projected Actuarial Required Contribution Rate Estimated by CRR ?,reqcontrate_er_est,Public Plans Database
+161,161,Expected Return Method,200,446,Expected Return Method,expectedreturnmethod,Public Plans Database
+162,162,Fair Value Change Investments,200,529,Net Change in Fair Value of Investments,fairvaluechange_investments,Public Plans Database
+163,163,Federal Agency Securities Investments Dollar,300,28,Federal Agency securities,federal_agency_securities,Census
+164,164,Federal Government Securities Investments Dollar,300,27,Total federal government securities,total_federal_government_securities,Census
+165,165,Federal Treasury Securities Investments Dollar,300,29,Federal Treasury securities,federal_treasury_securities,Census
+166,166,Federally Sponsored Agnecy Securities Investments Dollar,300,71,Federally Sponsored Agencies At Book Value,federally_sponsored_agencies_at_book_value,Census
+167,171,Fiscal Year  ,200,360,Fiscal Year,fy,Public Plans Database
+168,172,Fiscal Year End Date  ,200,405,Fiscal Year End Date,fye,Public Plans Database
+169,173,Fiscal Year of Contribution,200,566,Fiscal Year in which ARC/ADEC is to be Paid,contributionfy,Public Plans Database
+170,174,Fiscal Year Type,200,366,Fiscal Year Type,fiscalyeartype,Public Plans Database
+171,176,Foreign And International Securities Investments 1997-2001 Dollar,300,72,Foreign And International Securities (Same as Z70),foreign_and_international_securities_sameasZ70,Census
+172,177,Foreign and international securities Investments 2001-present Dollar,300,37,Foreign and international securities,foreign_and_international_securities,Census
+173,181,"Former Active Members, Retired on Account of Age or Service",300,45,"Former Active Members, Retired on Account of Age or Service",members_retired_on_account_of_age_or_service,Census
+174,182,"Former Active Members, Retired on Account of Disability",300,46,"Former Active Members, Retired on Account of Disability",former_active_members_retired_on_account_of_disability,Census
+175,183,Full State Name  ,200,372,Full State Name,statename,Public Plans Database
+176,186,Funding Method Code 1 for GASB Reporting,200,418,Funding Method Code #1 for GASB Reporting,fundingmethcode1_gasb,Public Plans Database
+177,187,Funding Method Code 1 for Plan Reporting,200,451,Funding Method Code #1 for Plan Reporting,fundmethcode_1,Public Plans Database
+178,188,Funding Method Code 2 for GASB Reporting,200,419,Funding Method Code #2 for GASB Reporting,fundingmethcode2_gasb,Public Plans Database
+179,189,Funding Method Code 2 for Plan Reporting,200,452,Funding Method Code #2 for Plan Reporting,fundmethcode_2,Public Plans Database
+180,190,Funding Method for Plan Reporting,200,429,Funding Method for Plan Reporting,fundingmeth,Public Plans Database
+181,191,Funding Method Note,200,430,Funding Method Note,fundingmeth_note,Public Plans Database
+182,192,Gain From Investments Dollar,300,12,Gains on investments,net_gains_on_investments,Census
+183,193,Gain Loss Base 1,200,437,Gain Loss Base #1,gainlossbase_1,Public Plans Database
+184,194,Gain Loss Base 2,200,438,Gain Loss Base #2,gainlossbase_2,Public Plans Database
+185,195,Gain Loss Concept,200,436,Gain Loss Concept,gainlossconcept,Public Plans Database
+186,196,Gain Loss Period,200,440,Gain Loss Period,gainlossperiod,Public Plans Database
+187,197,Gain Loss Recognition,200,444,Gain Loss Recognition,gainlossrecognition,Public Plans Database
+188,198,Gain/Loss Periods Phased In for Asset Smoothing,200,442,Gain/Loss Periods Phased In for Asset Smoothing,phaseinperiods,Public Plans Database
+189,199,Gain/Loss Values to be Included in Smoothed Asset Calculation,200,425,Gain/Loss Values to be Included in Smoothed Asset Calculation,phasein,Public Plans Database
+190,200,Gain/Loss Values Used in Smoothing,200,443,Gain/Loss Values Used in Smoothing,phaseintype,Public Plans Database
+191,201,Geometric Growth Percentage,200,502,Geometric Growth Since 2001,geogrowth_est,Public Plans Database
+192,202,Geometric Return Percentage,200,501,Geometric Return Since 2001,georeturn_est,Public Plans Database
+193,203,Gross or Net Investment Returns Categorical,200,500,Reported Investment Returns,grossreturns,Public Plans Database
+194,206,Inactive Members,300,44,Inactive Members,inactive_members,Census
+195,207,Include Judges or Attorneys,200,395,Include Judges or Attorneys,judgesattorneys,Public Plans Database
+196,208,Interest and Dividends Income Dollar,200,533,Net Investments - Interest And Dividends,income_interestanddividends,Public Plans Database
+197,209,Interest Income Dollar,200,531,Interest Income,income_interest,Public Plans Database
+198,209,Interest Income Dollar,300,9,Interest earnings,interest_earnings,Census
+199,210,International Fixed Income Percentage,200,512,Percent of Assets Invested In Foreign Bonds,fixedincome_international,Public Plans Database
+200,211,International Income Dollar,200,537,International Income,income_international,Public Plans Database
+201,212,International Investments Percentage,200,509,Percent of Assets Invested in International Equities,equities_international,Public Plans Database
+202,213,Investment Expenses Dollar,200,543,Net Investments - Investment Expense,expense_investments,Public Plans Database
+203,216,Investments Held in Trust by Other Agencies Dollar,300,35,Investments held in trust by other agencies,investments_held_in_trust_by_other_agencies,Census
+204,220,Local Employee Contribution Dollar,300,2,Contributions by local employees,contributions_by_local_employees,Census
+205,221,Local Employers,200,382,Local Employers,localemployers,Public Plans Database
+206,222,Local Government Active Members,300,50,Local Government Active Members,local_government_active_members,Census
+207,223,Local Government Contribution Dollar,300,4,Local government contributions,local_government_contributions,Census
+208,224,Long Term Investment Return Percentage,200,498,Long-Term Investment Return,investmentreturn_longterm,Public Plans Database
+209,225,Long Term Investment Return Starting Year,200,499,Starting Year for Long-Term Investment Return Calculation,investmentreturn_longtermstartye,Public Plans Database
+210,226,Loss from Investments Dollar,300,13,Losses on investments,losses_on_investments,Census
+211,227,Lower Corridor for Market vs. Actuarial Assets,200,449,Lower Corridor for Market vs. Actuarial Assets,lowercorridor,Public Plans Database
+212,228,Lump Sum Benefits Paid Dollar,200,556,Deductions - Lump Sum Benefits,expense_lumpsumbenefits,Public Plans Database
+213,229,Management Fees for Securities Lending Dollar,200,519,Securities Management Lending Fees,expense_seclendmgmtfees,Public Plans Database
+214,230,Market Assets Reported for Asset Smoothing,200,431,Market Assets Reported for Asset Smoothing,mktassets_smooth,Public Plans Database
+215,231,Market Funded Ratio Percentage,200,482,Actuarial Funded Ratio (GASB 67),actfundedratio_gasb67,Public Plans Database
+216,233,Market Value of Assets Net of Fees Dollar,200,564,Net Assets,mktassets_net,Public Plans Database
+217,234,Members Covered By Social Security,300,73,Members Covered By Social Security,members_covered_by_social_security,Census
+218,235,Monthly Lump Sum Payments to Members Dollar,300,69,Monthly Lump Sum Payments To Members,monthly_lump_sum_payments_to_members,Census
+219,236,Monthly Lump Sum Payments to Survivors Dollar,300,70,Monthly Lump Sum Payments To Survivors,monthly_lump_sum_payments_to_survivors,Census
+220,237,Monthly Payments to Disabled Dollar,300,67,Monthly Payments To Disabled,monthly_payments_to_disabled,Census
+221,238,Monthly Payments to Retirees Dollar,300,66,Monthly Payments To Retirees,monthly_payments_to_retirees,Census
+222,239,Monthly Payments to Survivors Dollar,300,68,Monthly Payments To Survivors,monthly_payments_to_survivors,Census
+223,240,Mortgage Investments Dollar,300,33,Mortgages held directly,mortgages_held_directly,Census
+224,243,Net Expenses Dollar,200,562,Deductions - Total,expense_net,Public Plans Database
+225,244,Net Flows Reported for Asset Smoothing,200,433,Net Flows Reported for Asset Smoothing,netflows_smooth,Public Plans Database
+226,245,Net Pension Liability Dollar,200,473,Net Pension Liability,netpensionliability,Public Plans Database
+227,245,Net Pension Liability Dollar,400,10877,Net Pension Liability,npl,Reason
+228,245,Net Pension Liability Dollar,500,14010,Net Pension Liability (NPL),net-pension-liability-(npl),Texas Pension Review Board
+229,246,Net Position Dollar,200,472,Net Position,netposition,Public Plans Database
+230,247,No Actuarial Valuation,200,630,No Actuarial Valuation,noav,Public Plans Database
+231,248,No CAFR,200,629,No CAFR,nocafr,Public Plans Database
+232,253,Number of Survivors,300,47,Survivors,survivors,Census
+233,255,Number of Years Remaining on Amortization Schedule,200,420,Unfunded Liability Amortization Period for GASB Reporting,uaalamortperiod_gasb,Public Plans Database
+234,259,Optional Benefits Available,300,60,Optional Benefits Available,optional_benefits_available,Census
+235,260,Other Actuarially Accured Liabilities Dollar,200,465,Other Liability,actliabilities_other,Public Plans Database
+236,261,Other Additions Dollar,200,547,Other Additions,income_otheradditions,Public Plans Database
+237,262,Other Benefits Paid Dollar,200,557,Deductions - Other Benefits,expense_otherbenefits,Public Plans Database
+238,262,Other Benefits Paid Dollar,300,20,Other benefits,other_benefits,Census
+239,263,Other Contribution Dollar,200,527,Other Contributions,contrib_other,Public Plans Database
+240,264,Other Deductions Dollar,200,561,Deductions - Other,expense_otherdeductions,Public Plans Database
+241,265,Other Employee Contributions Dollar,200,525,Contributions - Other Member,contrib_ee_other,Public Plans Database
+242,267,Other Investments Dollar,200,542,Other Investment Expense,expense_otherinvestments,Public Plans Database
+243,267,Other Investments Dollar,300,41,Other investments,other_investments,Census
+244,268,Other Investments Income Dollar,200,538,Other Investment Income,income_otherinvestments,Public Plans Database
+245,268,Other Investments Income Dollar,300,11,Other investment earnings,other_investment_earnings,Census
+246,269,Other Investments Percentage,200,516,Percent of Assets Invested in Other,other,Public Plans Database
+247,270,Other Members,200,610,Other Members,othermembers,Public Plans Database
+248,271,Other Payments Dollar,300,52,Other Payments,other_payments,Census
+249,272,Other Receipts Paid Dollar,300,53,Other Receipts,other_receipts,Census
+250,273,Other Securities Investments Dollar,300,38,Other securities,other_securities,Census
+251,274,Payroll Growth Assumption,200,453,Payroll Growth Assumption,payrollgrowthassumption,Public Plans Database
+252,276,Percent of Gain/Loss to be Phased-in This Year,200,441,Percent of Gain/Loss to be Phased-in This Year,phaseinpercent,Public Plans Database
+253,278,Plan Annual ID,200,355,Plan Annual ID,plan_annual_id,Public Plans Database
+254,281,Plan Full Name,200,363,Plan Full Name,planfullname,Public Plans Database
+255,282,Plan Level Data,200,631,Plan Level Data,planleveldata,Public Plans Database
+256,283,Plan Name,200,359,Plan Name,planname,Public Plans Database
+257,284,Plan Type,200,374,Plan Type,plantype,Public Plans Database
+258,285,PPD Plan ID,200,356,PPD Plan ID,plan_id,Public Plans Database
+259,286,Present Value of Future Benefits for Active Members Dollar,200,616,Present Value of Active Future Benefits,pvfb_active,Public Plans Database
+260,287,Present Value of Future Benefits for Inactive Non Vested Members Dollar,200,615,Present Value of Inactive Non-Vested Future Benefits,pvfb_inactivenonvested,Public Plans Database
+261,288,Present Value of Future Benefits for Inactive Vested Members Dollar,200,617,Present Value of Inactive Vested Future Benefits,pvfb_inactivevested,Public Plans Database
+262,289,Present Value of Future Benefits for Other Members Dollar,200,619,Present Value of Other Future Benefits,pvfb_other,Public Plans Database
+263,290,Present Value of Future Benefits for Retired Members Dollar,200,618,Present Value of Retiree Future Benefits,pvfb_retiree,Public Plans Database
+264,291,Present Value of Future Benefits for Total Members Dollar,200,620,Present Value of Total Costs,pvfb_tot,Public Plans Database
+265,292,Present Value of Future Normal Costs Employee Dollar,200,622,Present Value of Future Member Contributions,pvfnc_ee,Public Plans Database
+266,293,Present Value of Future Normal Costs Employer Dollar,200,623,Present Value of Future Employer Normal Costs,pvfnc_er,Public Plans Database
+267,294,Present Value of Future Normal Costs Total Dollar,200,621,Total Present Value of Future Normal Costs,pvfnc_tot,Public Plans Database
+268,295,Present Value of Future Services Dollar,200,624,Present Value of Future Salaries,pvfs,Public Plans Database
+269,296,Private Equity Investments Dollar,200,540,Private Equity Expense,expense_privateequity,Public Plans Database
+270,297,Private Equity Investments Income Dollar,200,535,Private Equity Income,income_privateequity,Public Plans Database
+271,298,Projected Payroll Dollar,200,581,Projected Payroll,projectedpayroll,Public Plans Database
+272,299,Public Plans Database Id  ,200,358,Public Plans Database Id,ppd_id,Public Plans Database
+273,300,Real Estate Income Dollar,200,534,Real Estate Income,income_realestate,Public Plans Database
+274,301,Real Estate Investments Dollar,200,539,Real Estate Expense,expense_realestate,Public Plans Database
+275,301,Real Estate Investments Dollar,300,40,Real property,real_property,Census
+276,302,Real Estate Investments Percentage,200,513,Percent of Assets Invested In Real Estate,realestate,Public Plans Database
+277,303,Receipts for Transmittal to Federal Social Security System Dollar,300,14,Receipts for Transmittal to Federal Social Security System,receipts_for_transmittal_to_fed_social_security_system,Census
+278,304,Refunds Dollar,100,13089,Refunds,refunds,Illinois Department of Insurance
+279,304,Refunds Dollar,200,558,Deductions - Refunds/Withdrawals,expense_refunds,Public Plans Database
+280,304,Refunds Dollar,300,21,Withdrawals,withdrawals,Census
+281,305,Remaining Amortization Period,200,455,Remaining Amortization Period,remainingamortperiod,Public Plans Database
+282,306,Rentals From State Government Dollar,300,15,Rentals from state government,rentals_from_state_government,Census
+283,307,Reporting Date Notes,200,398,Reporting Date Notes,reportingdatenotes,Public Plans Database
+284,308,Retirement Benefits Paid Dollar,200,550,Deductions - Retirement Benefits,expense_retbenefits,Public Plans Database
+285,308,Retirement Benefits Paid Dollar,300,17,Retirement benefits,retirement_benefits,Census
+286,310,School Employees,200,394,School Employees,schoolees,Public Plans Database
+287,311,School Employers,200,383,School Employers,schoolemployers,Public Plans Database
+288,312,Securities Lending Dollar,200,545,Securities Lending - Total Net Expenses,expense_securitieslending,Public Plans Database
+289,313,Securities Lending Income Dollar,200,544,Securities Lending Interest,income_securitieslending,Public Plans Database
+290,314,Securities Lending Rebates Dollar,200,546,Securities Lending Rebates,income_securitieslendingrebate,Public Plans Database
+291,317,Service Purchase Dollar,200,524,Member Service Purchase,contrib_ee_purchaseservice,Public Plans Database
+292,318,Short Term Investments Dollar,300,26,All other short term investments,all_other_short_term_investments,Census
+293,319,Smoothing Reset,200,435,Smoothing Reset,smoothingreset,Public Plans Database
+294,320,Social Security Coverage Of Plan Members  ,200,377,Social Security Coverage Of Plan Members,socseccovered_verbatim,Public Plans Database
+295,321,Source for Actuarial Liabilities,200,614,Source for Actuarial Liabilities,source_actliabilities,Public Plans Database
+296,322,Source for Asset Allocation,200,506,Source for Asset Allocation,source_assetallocation,Public Plans Database
+297,323,Source Reference for Funding and Methods,200,423,Source Reference for Funding and Methods,source_fundingandmethods,Public Plans Database
+298,324,Source Reference for GASB Assumptions,200,407,Source Reference for GASB Assumptions,source_gasbassumptions,Public Plans Database
+299,325,State Abbreviation,200,371,State Abbreviation,stateabbrev,Public Plans Database
+300,326,State and Local Government Securitites Investments Dollar,300,36,State and local government securities,state_and_local_government_securities,Census
+301,327,State Contribution for Employee Dollar,300,7,State contributions on behalf of local employees,state_contributions_on_behalf_of_local_employees,Census
+302,328,State Contribution to Own System on Behalf of Employees Dollar,300,6,State contributions on behalf of state employees,state_contributions_on_behalf_of_state_employees,Census
+303,329,State Employee Contribution Dollar,300,1,Contributions by state employees,contributions_by_state_employees,Census
+304,330,State Employers,200,381,State Employers,stateemployers,Public Plans Database
+305,331,State Government Active Members,300,51,State Government Active Members,state_government_active_members,Census
+306,332,Stocks Corporate Book Value Dollar,300,63,Corporate Stocks At Book Value,corporate_stocks_at_book_value,Census
+307,333,Stocks Corporate Dollar,300,34,Corporate stocks,corporate_stocks,Census
+308,334,Survivior Benefits Paid Dollar,200,554,Deductions - Survivor Benefits,expense_survivorbenefits,Public Plans Database
+309,334,Survivior Benefits Paid Dollar,300,19,Survivor benefits,survivor_benefits,Census
+310,335,Survivors Receiving Lump Sum Payments,300,65,Survivors Receiving Lump Sum Payments,survivors_receiving_lump_sum_payments,Census
+311,336,System ID,200,361,System ID,system_id,Public Plans Database
+312,337,Teacher Only Plan,200,393,Teacher Only Plan,teacher,Public Plans Database
+313,339,Tier Id  ,200,400,Tier Id,tierid,Public Plans Database
+314,340,Time or Savings Deposits Dollar,300,24,Time or savings deposits,time_or_savings_deposits,Census
+315,342,Total Active Members,200,587,Total Number Of Actives,actives_tot,Public Plans Database
+316,342,Total Active Members,300,43,Total Active Members,total_active_members,Census
+317,344,Total Additions Dollar,200,548,Total Additions,income_net,Public Plans Database
+318,345,Total Amortization Payment Percentage,200,583,Unfunded Actuarial Accrued Liability Rate,uaalrate,Public Plans Database
+319,346,Total Amortization Period,200,454,Total Amortization Period,totamortperiod,Public Plans Database
+320,347,Total Amount Of Active Salaries (Payroll) in Dollars,200,588,Total Amount Of Active Salaries (Payroll),activesalaries,Public Plans Database
+321,350,Total Benefits Paid Dollar,200,549,Deductions - Total Benefit Payments,expense_totbenefits,Public Plans Database
+322,351,Total Cash and Securities Investments Dollar,300,42,Total cash and securities,total_cash_and_securities,Census
+323,352,Total Contribution Dollar,200,528,Total Contributions,contrib_tot,Public Plans Database
+324,353,Total Corporate Bonds Investments Dollar,300,32,Total corporate bonds,total_corporate_bonds,Census
+325,354,Total Earnings on Investments Dollar,300,8,Total earnings on investments,total_earnings_on_investments,Census
+326,355,Total Equities Investments Percentage,200,507,Percent of Assets Invested in Equities,equities_tot,Public Plans Database
+327,356,Total Fixed Income Percentage,200,510,Percent of Assets Invested In Bonds,fixedincome_tot,Public Plans Database
+328,357,Total Normal Cost Dollar,200,572,Total Normal Cost Amount,normcostamount_tot,Public Plans Database
+329,358,Total Normal Cost Percentage,200,567,Total Normal Cost Rate,normcostrate_tot,Public Plans Database
+330,359,Total Normal Cost Percentage Estimated Categorical,200,577,Was Total Normal Cost Rate Estimated by CRR ?,normcostrate_tot_est,Public Plans Database
+331,360,Total Number Of Beneficiaries  ,200,594,Total Number Of Beneficiaries,beneficiaries_tot,Public Plans Database
+332,361,Total Number Of Dependent Survivor Beneficiaries  ,200,586,Total Number Of Dependent Survivor Beneficiaries,beneficiaries_dependentsurvivors,Public Plans Database
+333,362,Total Number Of Disability Retirees  ,200,585,Total Number Of Disability Retirees,beneficiaries_disabilityretirees,Public Plans Database
+334,363,Total Number Of Inactive Non-Vested  ,200,593,Total Number Of Inactive Non-Vested,inactivenonvested,Public Plans Database
+335,364,Total Number Of Inactive Vested  ,200,592,Total Number Of Inactive Vested,inactivevestedmembers,Public Plans Database
+336,365,Total Number Of Members  ,200,611,Total Number Of Members,totmembership,Public Plans Database
+337,366,Total Number Of Other Beneficiaries  ,200,608,Total Number Of Other Beneficiaries,beneficiaries_other,Public Plans Database
+338,367,Total Number Of Service Retirees  ,200,598,Total Number Of Service Retirees,beneficiaries_serviceretirees,Public Plans Database
+339,368,Total Number Of Spousal Survivor Beneficiaries  ,200,607,Total Number Of Spousal Survivor Beneficiaries,beneficiaries_spousalsurvivors,Public Plans Database
+340,369,Total Number Of Survivor Beneficiaries  ,200,606,Total Number Of Survivor Beneficiaries,beneficiaries_survivors,Public Plans Database
+341,372,Total Other Investments Dollar,300,39,Total other investments,total_other_investments,Census
+342,373,Total Other Securities Investments Dollar,300,54,Total Other Securities,total_other_securities,Census
+343,374,Total Pension Liability Dollar,200,471,Total Pension Liability,totalpensionliability,Public Plans Database
+344,374,Total Pension Liability Dollar,400,10875,Total Pension Liability ,tpl,Reason
+345,374,Total Pension Liability Dollar,500,14008,Total Pension Liability,total-pension-liability,Texas Pension Review Board
+346,375,Total Projected Actuarial Required Contribution Dollar,200,576,Total Projected Actuarial Required Contribution Amount,reqcontamount_tot,Public Plans Database
+347,376,Total Projected Actuarial Required Contribution Percentage of Payroll,200,571,Total Projected Actuarial Required Contribution Rate,reqcontrate_tot,Public Plans Database
+348,377,Type of Employees Covered,200,375,Type of Employees Covered,employeetypecovered,Public Plans Database
+349,379,Unfunded Actuarially Accrued Liabilities Dollar,200,464,Unfunded Actuarial Accrued Liability Under GASB Standards,uaal_gasb,Public Plans Database
+350,379,Unfunded Actuarially Accrued Liabilities Dollar,300,10991,Unfunded Accrued Liability,ual,Reason
+351,379,Unfunded Actuarially Accrued Liabilities Dollar,400,11206,Total Unfunded Actuarial Accrued Liability (UAAL),total_unfunded_actuarial_accrued_liability_(uaal),California State Controller
+352,379,Unfunded Actuarially Accrued Liabilities Dollar,500,11142,Unfunded Actuarial Accrued Liability (UAAL),unfunded_actuarial_accrued_liability_(uaal),California State Controller
+353,379,Unfunded Actuarially Accrued Liabilities Dollar,600,14006,Unfunded Actuarial Accrued Liability (UAAL),unfunded-actuarial-accrued-liability-(uaal),Texas Pension Review Board
+354,379,Unfunded Actuarially Accrued Liabilities Dollar,700,11313,Unfunded Actuarially Accrued Liability (UAAL),unfunded_actuarially_accrued_liability_(uaal),Florida Division of Retirement
+355,379,Unfunded Actuarially Accrued Liabilities Dollar,800,12066,Unfunded Accrued Liability (UAL) as of 6/30/15,unfunded-accrued-liability-(ual)-as-of-6/30/15,CalPERS
+356,379,Unfunded Actuarially Accrued Liabilities Dollar,900,13230,Net Unfunded Accrued Liability,net-unfunded-accrued-liability,PSPRS
+357,379,Unfunded Actuarially Accrued Liabilities Dollar,900,13146,Unfunded Accrued Liability,unfunded-accrued-liability,Illinois Department of Insurance
+358,380,Unfunded Liability Year Established,200,456,Unfunded Liability Year Established,uaalyearestablished,Public Plans Database
+359,381,Upper Corridor for Market vs. Actuarial Assets,200,448,Upper Corridor for Market vs. Actuarial Assets,uppercorridor,Public Plans Database
+360,385,Valuation ID,200,362,Valuation ID,valuationid,Public Plans Database
+361,387,Vesting Period,300,61,Vesting Period,vesting_period,Census
+362,388,Wage Inflation,200,457,Wage Inflation,wageinflation,Public Plans Database
+363,389,Year,200,357,Year,year,Public Plans Database
+364,390,Year Of Inception  ,200,367,Year Of Inception,planinceptionyear,Public Plans Database
+365,391,Year of Plan Closing,200,369,Year of Plan Closing,planyearclosed,Public Plans Database
+366,392,Actuarial Valuation Date for Actuarial Costs,200,582,Actuarial Valuation Date for Actuarial Costs,actvaldate_actuarialcosts,Public Plans Database
+367,394,Actuarial Valuation Date for GASB Schedules,200,483,Actuarial Valuation Date for GASB Schedules,actvaldate_gasbschedules,Public Plans Database
+368,395,Discount Rate Assumption,100,10976,Discount Rate Assumption,assum_discountrate,Reason
+369,397,Inflation Rate Assumption for GASB Reporting,200,413,Inflation Rate Assumption for GASB Reporting,inflationassumption_gasb,Public Plans Database
+370,398,Interest Rate Assumption,100,11263,Interest Rate Assumption,interest_rate_assumption,Florida Division of Retirement
+371,399,Investment Return Assumption for GASB Reporting,100,10978,Rate of Return Assumption,assum_returnrate,Reason
+372,399,Investment Return Assumption for GASB Reporting,200,414,Investment Return Assumption for GASB Reporting,investmentreturnassumption_gasb,Public Plans Database
+373,400,Statutory Payment Dollar,100,10842,"Statutory Payment in Dollars, Employer",statutory_amt_er,Reason
+374,401,Statutory Payment Percentage,100,10843,"Statutory Payment Percentage, Employer",statutory_pct_er,Reason
+375,402,Investment Experience Dollar,100,10801,Investment_Experience,Investment_Experience,Reason
+376,403,Age of Retirement Experience Dollar,100,10802,Age_of_Retirement_Experience,Age_of_Retirement_Experience,Reason
+377,404,Disability Claim Experience Active Dollar,100,10803,Disability_Claim_Experience_Active,Disability_Claim_Experience_Active,Reason
+378,405,Disability Claim Experience Inactive Dollar,100,10804,Disability_Claim_Experience_Inactive,Disability_Claim_Experience_Inactive,Reason
+379,406,Disability Claim Experience Retired Dollar,100,10805,Disability_Claim_Experience_Retired,Disability_Claim_Experience_Retired,Reason
+380,407,Disability Claim Experience Total Dollar,100,10806,Disability_Claim_Experience_Total,Disability_Claim_Experience_Total,Reason
+381,408,Mortality Rate Experience Active Dollar,100,10807,Mortality_Rate_Experience_Active,Mortality_Rate_Experience_Active,Reason
+382,409,Mortality Rate Experience Inactive Dollar,100,10808,Mortality_Rate_Experience_Inactive,Mortality_Rate_Experience_Inactive,Reason
+383,410,Mortality Rate Experience Retired Dollar,100,10809,Mortality_Rate_Experience_Retired,Mortality_Rate_Experience_Retired,Reason
+384,411,Mortality Rate Experience Total Dollar,100,10810,Mortality_Rate_Experience_Total,Mortality_Rate_Experience_Total,Reason
+385,412,Survivor Claim Experience Active Dollar,100,10811,Survivor_Claim_Experience_Active,Survivor_Claim_Experience_Active,Reason
+386,413,Survivor Claim Experience Inactive Dollar,100,10812,Survivor_Claim_Experience_Inactive,Survivor_Claim_Experience_Inactive,Reason
+387,414,Survivor Claim Experience Retired Dollar,100,10813,Survivor_Claim_Experience_Retired,Survivor_Claim_Experience_Retired,Reason
+388,415,Survivor Claim Experience Total Dollar,100,10814,Survivor_Claim_Experience_Total,Survivor_Claim_Experience_Total,Reason
+389,416,Withdrawal Experience Dollar,100,10815,Withdrawal_Experience,Withdrawal_Experience,Reason
+390,417,Salary Experience Dollar,100,10816,Salary_Experience,Salary_Experience,Reason
+391,418,Payroll Experience Dollar,100,10817,Payroll_Experience,Payroll_Experience,Reason
+392,419,New Entrant Experience Dollar,100,10818,New_Entrant_Experience,New_Entrant_Experience,Reason
+393,420,Rehire Experiennce Dollar,100,10819,Rehire_Experiennce,Rehire_Experiennce,Reason
+394,421,Other Actuarial Experience Dollar,100,10820,Other_Actuarial_Experience,Other_Actuarial_Experience,Reason
+395,422,Interest Smoothing Dollar,100,10821,Interest_Smoothing,Interest_Smoothing,Reason
+396,423,Non Investment Actuarial Experience Dollar,100,10822,Non_Investment_Actuarial_Experience,Non_Investment_Actuarial_Experience,Reason
+397,424,Actuarial Experience Dollar,100,10823,Actuarial_Experience,Actuarial_Experience,Reason
+398,425,Legislative Changes Dollar,100,10824,Legislative_Changes,Legislative_Changes,Reason
+399,426,Changes to Methods & Assumptions Dollar,100,10825,Changes_to_Methods_and_Assumptions,Changes_to_Methods_&_Assumptions,Reason
+400,427,Interest on Debt Dollar,100,10826,Interest_on_Debt,Interest_on_Debt,Reason
+401,428,Contribution Deficiency Dollar,100,10827,Contribution_Deficiency,Contribution_Deficiency,Reason
+402,430,Multiple Discount Rates,100,10977,Does the Plan Apply Different Discount Rates to Different Sets of Liabilities?,assum_variabledr,Reason
+403,431,Actuarially Required Contribution Paid Dollar,100,10985,Total ARC Paid (GASB 25),arc_paid,Reason
+404,432,Actual COLA,100,10701,Actual COLA,actual_COLA,Reason
+405,433,Minimum COLA,100,10702,Minimum COLA,min_COLA,Reason
+406,434,Contribution Rate Effective FY,100,10703,Contribution Rate Effective FY,cont_rate_FY,Reason
+407,435,"Amortization Payment, Total $ Amount",100,10704,"Amortization Payment, Total $ Amount",Amo_Total_Amt,Reason
+408,436,Administrative Expenses - Percentage,100,10706,Administrative Expenses - Percentage,Admin_Expense_Pct,Reason
+409,437,Gain or loss due to changes in benefits,100,10798,Gain or loss due to changes in benefits,Benefit_Changes,Reason
+410,438,Gain or loss due to changes in COLA Provisions,100,10799,Gain or loss due to changes in COLA Provisions,COLA_Gain_Loss,Reason
+411,439,Gain or loss due to changes in PBI Provisions,100,10800,Gain or loss due to changes in PBI Provisions,PBI_Gain_Loss,Reason
+412,440,Market Investment Return (MVA Basis),100,10980,Actuarial Investment Return (AVA Basis),actuarial_return,Reason
+413,441,ARC as a Percent of Payroll,100,11004,ARC as a Percent of Payroll,arcpct_payroll_reason,Reason
+414,442,ADEC as a Percent of Payroll,100,11005,Actuarially Determined Employer Contribution (GASB 67/68) as a Percent of Payroll,adec_pct_reason,Reason
