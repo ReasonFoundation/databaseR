@@ -62,7 +62,6 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(width = 5, 
       radioGroupButtons("filter", "Filter by", choices = c("Plan Name", "Highest returns", "Return Assumption", "Asset size"), selected = c("Plan Name")),
-      em("**Preliminary returns"),
     ),
     mainPanel(
       ###Remove error messages
@@ -71,7 +70,10 @@ ui <- fluidPage(
                  ".shiny-output-error:before { visibility: hidden; }"
       ),
       
-       DT::DTOutput('plot_Returns')
+      div(DT::DTOutput('plot_Returns'),
+          style = "font-size:80%; width:50%"),
+      tags$div(htmlOutput("text1"))#Adjusting font size & width
+      #https://community.rstudio.com/t/color-cells-in-dt-datatable-in-shiny/2288
       )
     )
   )
@@ -79,6 +81,15 @@ ui <- fluidPage(
 ######Shiny app[server] -------------------------------------------------
 
 server <- function(input, output, session){
+  
+  output$text1 <- renderText({
+    paste(HTML(
+      "Source:"), tags$a(href="https://reason.org/topics/pension-reform/", "Pension Integrity Project at Reason Foundation"),"<br>", 
+      "analysis of state pension plan repoted returns, CAFRs and valuation reports.","<br>", "<br>", 
+      "Methodology: ADD","<br>", 
+      "**Preliminary returns",sep="\n")
+  })
+  
   
   output$plot_Returns <- DT::renderDataTable({
    
@@ -106,11 +117,16 @@ server <- function(input, output, session){
         }
         )
     
+    
     #returns_2020 <- datatable(returns_2020) %>% formatPercentage(c("2020FY Return", "Return Assumption"), 1)
     #http://www.stencilled.me/post/2019-04-18-editable/
     returns_2020 <- DT::datatable(returns_2020, editable = FALSE, options = list(
       "pageLength" = 40, autoWidth = TRUE)) %>% 
-    formatPercentage(c("2020FY Return", "Return Assumption"), 1)#set to TRUE to allow editing
+      formatStyle(1, fontWeight = styleEqual(10, "bold")) %>%
+      formatPercentage(c("2020FY Return", "Return Assumption"),2)
+    #set to TRUE to allow editing
+    
+    
     #returns_2020 <- as.data.table(returns_2020)
     #returns_2020[,one_year_gain_loss := (returns_2020$mva_billions * (returns_2020$arr - returns_2020$`2020_return`))]
   })

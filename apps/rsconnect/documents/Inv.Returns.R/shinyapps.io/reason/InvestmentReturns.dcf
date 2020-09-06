@@ -5,9 +5,9 @@ account: reason
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2661717
-bundleId: 3557967
+bundleId: 3599543
 url: https://reason.shinyapps.io/InvestmentReturns/
-when: 1598403696.3174
+when: 1599416551.24321
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: APERS_data.csv|APERS_GL.csv|APERS_numeric.csv|Arkansas_PERS_draft_081220.R|FundedDumbbell.R|FundedDumbbell2.R|Plan_Inv.Returns_2020.csv|proj.2019.R|reason_logo.png|reason.data.2019.csv|UALapp.reason.R
+ignoredFiles: APERS_data.csv|APERS_GL.csv|APERS_numeric.csv|APERS.GL.R|Arkansas_PERS_draft_081220.R|FundedDumbbell.R|FundedDumbbell2.R|Plan_Inv.Returns_2020.csv|proj.2019.R|reason_logo.png|reason.data.2019.csv|UALapp.reason.R
