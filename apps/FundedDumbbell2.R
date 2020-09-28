@@ -51,93 +51,19 @@ font_import(pattern = "calibri")
 ##
 # Load data ---------------------------------------------------------------
 
-reason.data <- pullStateData(2001)
-reason.data <- as.data.table(reason.data %>% arrange(year))
-
-#Custom Function to filter for number of variables we commonly use in pension analysis (state plans*)
-filteredData <- function(Data,fy){
-  columns <- c("total_pension_liability_dollar", "wage_inflation",
-               "payroll_growth_assumption", "other_contribution_dollar",
-               "other_additions_dollar", "x1_year_investment_return_percentage",
-               "amortization_method", "number_of_years_remaining_on_amortization_schedule",
-               "fiscal_year_of_contribution", "statutory_payment_dollar",
-               "statutory_payment_percentage", "discount_rate_assumption", 
-               "multiple_discount_rates", "asset_valuation_method_for_gasb_reporting",
-               "cost_structure", "employer_normal_cost_percentage",
-               "inflation_rate_assumption_for_gasb_reporting", "total_number_of_members",
-               "total_projected_actuarial_required_contribution_percentage_of_payroll")
-  
-  Plan <- data.table(Data)
-  ##Create missing columns for plans with no data for st 7 variable
-  for (i in (1:length(columns))){
-    if(sum((colnames(Plan) == columns[i]))==0) {
-      Plan[,columns[i] := NA]}
-  }
-  
-  if(sum(is.na(Plan$discount_rate_assumption))==0){ 
-    Plan$discount_rate_assumption <- Plan$investment_return_assumption_for_gasb_reporting}
-  ####
-  Plan <- Plan %>%
-    filter(year > fy-1)
-  Plan <- Plan %>%
-    select(
-      year,
-      plan_name = display_name,
-      state,
-      return_1yr = x1_year_investment_return_percentage,
-      actuarial_cost_method_in_gasb_reporting,
-      funded_ratio = actuarial_funded_ratio_percentage,
-      ava = actuarial_value_of_assets_gasb_dollar,
-      mva = market_value_of_assets_dollar,
-      aal = actuarially_accrued_liabilities_dollar,
-      tpl = total_pension_liability_dollar,
-      adec = actuarially_required_contribution_dollar,
-      adec_paid_pct = actuarially_required_contribution_paid_percentage,
-      statutory = statutory_payment_dollar,#NEW
-      statutory_pct = statutory_payment_percentage,#NEW
-      amortizaton_method,
-      asset_valuation_method_for_gasb_reporting,
-      total_benefit_payments = total_benefits_paid_dollar,#added
-      benefit_payments = benefit_payments_dollar,
-      refunds = refunds_dollar,#added
-      admin_exp = administrative_expense_dollar,
-      cost_structure,
-      payroll = covered_payroll_dollar,
-      ee_contribution = employee_contribution_dollar,
-      ee_nc_pct = employee_normal_cost_percentage,
-      er_contribution = employer_contribution_regular_dollar,
-      er_nc_pct = employer_normal_cost_percentage,
-      er_state_contribution = employer_state_contribution_dollar,
-      er_proj_adec_pct = employers_projected_actuarial_required_contribution_percentage_of_payroll,
-      other_contribution = other_contribution_dollar,#added
-      other_additions = other_additions_dollar,#added
-      fy_contribution = fiscal_year_of_contribution,
-      inflation_assum = inflation_rate_assumption_for_gasb_reporting,
-      arr = investment_return_assumption_for_gasb_reporting,
-      dr = discount_rate_assumption,#NEW
-      multidr = multiple_discount_rates,#NEW
-      number_of_years_remaining_on_amortization_schedule,
-      payroll_growth_assumption,
-      total_amortization_payment_pct = total_amortization_payment_percentage,
-      total_contribution = total_contribution_dollar,
-      total_nc_pct = total_normal_cost_percentage,
-      total_number_of_members,
-      total_proj_adec_pct = total_projected_actuarial_required_contribution_percentage_of_payroll,
-      type_of_employees_covered,
-      unfunded_actuarially_accrued_liabilities_dollar,
-      wage_inflation
-    )
-}
-
-reason.data <- filteredData(reason.data, 2001)
+reason.data <- pullStateData(2001) 
+reason.data <- filterData(reason.data, 2001)
+reason.data <- data.table(reason.data) %>% arrange(state,plan_name,year)
+reason.data <- reason.data %>% filter(plan_name != "Colorado PERA, School Division Fund")
 #Manually imputed data for NC (2001), Arkasnas/Colorado/Alabama (2019)
 reason.data[state == "North Carolina" & year == 2001]$aal <- c(9967547769, 35248769986)
 reason.data[state == "Arkansas" & year == 2019]$mva <- c(8803211537, 17741621773)
 reason.data[state == "Arkansas" & year == 2019]$aal <- c(11129000000, 21708867019)
-reason.data[state == "Colorado" & year == 2019]$mva <- c(4545960000, 26936490000, 15819843000)
-reason.data[state == "Colorado" & year == 2019]$aal <- c(5316433000, 42425061000, 25717648000)
+reason.data[state == "Colorado" & year == 2019]$mva <- c(4545960000, 15819843000)
+reason.data[state == "Colorado" & year == 2019]$aal <- c(5316433000, 25717648000)
 reason.data[state == "Alabama" & year == 2019]$mva <- c(12568473000, 25619448000)
 reason.data[state == "Alabama" & year == 2019]$aal <- c(18543542000, 37215470000)
+reason.data[state == "Hawaii" & year == 2019]$mva <- reason.data[state == "Hawaii" & year == 2019]$mva_smooth
 
 #View(reason.data[state == "North Carolina" & year == 2001])
 #View(reason.data[state == "Colorado" & year > 2017])
@@ -330,7 +256,7 @@ ui <- fluidPage(
        ),
        
        plotly::plotlyOutput("plot_US"),
-          tags$div(HTML(paste("<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>"))),
+          tags$div(HTML(paste("<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>"))),
           
        tags$div(htmlOutput("text1"))
           #Specify Source line text font/size with css
@@ -358,7 +284,8 @@ server <- function(input, output, session){
   output$text1 <- renderText({
     paste(HTML(
                "<b>Source</b>:"), tags$a(href="https://reason.org/topics/pension-reform/", "Pension Integrity Project at Reason Foundation"),"<br>", 
-          "analysis of U.S. public pension actuarial valuation reports and CAFRs.", "<br>", 
+          "analysis of U.S. public pension actuarial valuation reports and CAFRs.", "<br>", "<br>", 
+          "<b>Methodology</b>:", "Funded Status numbers shown represent Market Value of Assets as a share of Actuarial Accrued Liability.", "<br>",
           "Notes: Montana & Nebraska data for 2001 is incomplete. Some plans are yet to disclose 2019 data. ", sep="\n")
   })
   
@@ -421,9 +348,9 @@ server <- function(input, output, session){
     geom_col(aes(x = ifelse((DF[,3]>DF[,2]), DF[,2], DF[,3])-0.005, xend = DF[,3]-0.005, y = reorder(state, gap), group = state,
                  text = paste0("")),
               fill = "white", size = 2) +
-    geom_vline(xintercept=(median(DF[,3]+median(DF[,4]))), text = paste0("Median US Funded Status"),
-               linetype="dashed", 
-               color = palette_reason$DarkGrey, size=1)+
+    #geom_vline(xintercept=(median(DF[,3]+median(DF[,4]))), text = paste0("Median US Funded Status"),
+    #           linetype="dashed", 
+    #           color = palette_reason$DarkGrey, size=1)+
     labs(title= paste0("State Pension Funded Gap (",input$x[1], "-", input$x[2],")"),
          x = "Funded Ratio", y = ""
          )+
@@ -480,7 +407,7 @@ server <- function(input, output, session){
       ) %>%
       layout(xaxis=list(fixedrange=TRUE)) %>%
       layout(yaxis=list(fixedrange=TRUE))
-    p <- p %>% layout(autosize = T, height = 670)
+    p <- p %>% layout(autosize = T, height = 650)
     p
 })
 
@@ -493,19 +420,15 @@ output$top_ranking <- renderText({
   US.funded <- y-x
   #View(US.funded)
   
-  State.funded <- data.table(Funded())
-  x <- data.table((as.numeric(sum(na.omit(State.funded[year==input$x[1]]$mva))))/
-                    (as.numeric(sum(na.omit(State.funded[year==input$x[1]]$aal)))))
-  y <- data.table((as.numeric(sum(na.omit(State.funded[year==input$x[2]]$mva))))/
-                    (as.numeric(sum(na.omit(State.funded[year==input$x[2]]$aal)))))
-  State.funded <- y-x
+  DF <- data.frame(PlanData())
+  DF <- DF %>% filter(state == input$s)
+  State.funded <- -DF[,4]
   #View(State.funded)
   
-  
-           HTML(paste0("Period: ", "<B>",input$x[1], "</B>","-", "<B>",input$x[2],"</B>",  
-                "<br>","<B>","All US Plans: ","</B>", "<br>"," Funded Status", ifelse(na.omit(US.funded)<0,paste0(" Declined "),
+           HTML(paste0(  
+                "<br>","<B>","All US Plans (",input$x[1],"-", input$x[2],"): ","</B>", "<br>"," Funded Status", ifelse(na.omit(US.funded)<0,paste0(" Declined "),
                 paste0(" Increased ")),"<B>",round(na.omit(US.funded)*100,1), "%","</B>","<br>",
-                "<B>", input$s, ": ", "</B>","<br>","Funded Status", 
+                "<B>", input$s, " (",input$x[1],"-", input$x[2],"): ", "</B>","<br>","Funded Status", 
                 ifelse(na.omit(State.funded)<0,paste0(" Declined "),
                 paste0(" Increased ")), "<B>",
                 ifelse(is.na(US.funded), paste("data not available"), round(na.omit(State.funded)*100,1)), "%","</B>",sep="<br>"))
