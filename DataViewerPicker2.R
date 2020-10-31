@@ -47,9 +47,19 @@ library(plotly)
 #  theme_bw()
 
 pl <- planList()
+#pl_unique <- unique(pl$display_name)
+#Source_Data <- pullSourceData(pl, pl_unique[1], 2001)
+#for (i in (2:length(pl_unique))){
+#  Source_Data <- rbind.fill(Source_Data, pullSourceData(pl, pl_unique[i], 2001))
+#  
+#}
+
+#Source_Data <- pullSourceData(pl, pl$display_name, 2001)
+#View(Source_Data)
+#View(colnames(pullStateData(2001)))
 states <- as.character(unique(pl[,3]))
 plans <- as.character(unique(pl[,2]))
-#View(pullData(pl[state=="New Mexico"], pl[state=="New Mexico"]$display_name))
+#View(colnames(pullData(pl[state=="New Mexico"], pl[state=="New Mexico"]$display_name)))
 #View(pl)
 
 ####Load->Save->Reuse state-level data
@@ -64,21 +74,26 @@ plans <- as.character(unique(pl[,2]))
 
 #palette_reason$categorical[[3]]
 #reason_color_pal("categorical")
-palette_reason <- data.table(
-  Orange = "#FF6633", 
-  LightOrange = "#FF9900",
-  DarkGrey = "#333333", 
-  LightGrey = "#CCCCCC",
-  SpaceGrey = "#A69FA1",
-  DarkBlue = "#0066CC",
-  GreyBlue = "#6699CC", 
-  Yellow = "#FFCC33", 
-  LightBlue = "#66B2FF", 
-  SatBlue = "#3366CC", 
-  Green = "#669900",
-  LightGreen = "#00CC66",
-  Red = "#CC0000",
-  LightRed = "#FF0000")
+
+#####
+##Load & convert color palette from the package
+#palette_reason <- lapply(palette_reason, as.character)
+
+#palette_reason <- data.table(
+#  Orange = "#FF6633", 
+#  LightOrange = "#FF9900",
+#  DarkGrey = "#333333", 
+#  LightGrey = "#CCCCCC",
+#  SpaceGrey = "#A69FA1",
+#  DarkBlue = "#0066CC",
+#  GreyBlue = "#6699CC", 
+#  Yellow = "#FFCC33", 
+#  LightBlue = "#66B2FF", 
+#  SatBlue = "#3366CC", 
+#  Green = "#669900",
+#  LightGreen = "#00CC66",
+#  Red = "#CC0000",
+#  LightRed = "#FF0000")
 #palette
 
 #View(pullSourceData("Employee Retirement System of Hawaii"))
@@ -204,17 +219,48 @@ plotTheme <- ggplot2::theme(   panel.grid.major = element_blank(),
                                axis.text.x = element_text(size=10, color = "black", angle = 90, hjust = 1, vjust = 0.5),
                                legend.title = element_text(size = 8, colour = "white", face = "bold"))
 
+
+#Convert all columns to numeric
+###################
+
+reason.data <- data.table(reason.data)
+cols <- colnames(reason.data)
+
+for (i in (1: length(cols))){
+reason.data <- reason.data[,cols[i] := as.numeric(cols[i])]
+}
+#View(reason.data)
+#class(reason.data$wage_inflation)
+
+####################
+
 ##Ensure all variables are numeric
-reason.data$mva <- as.numeric(reason.data$mva)
-reason.data$return_yr <- as.numeric(reason.data$return_1yr)
-reason.data$aal <- as.numeric(reason.data$aal)
-reason.data$arr <- as.numeric(reason.data$arr)
-reason.data$payroll <- as.numeric(reason.data$payroll)
-reason.data$payroll_growth_assumption <- as.numeric(reason.data$payroll_growth_assumption)
-reason.data$total_nc_pct <- as.numeric(reason.data$total_nc_pct)
-reason.data$benefit_payments <- as.numeric(reason.data$benefit_payments)
-reason.data$refunds <- as.numeric(reason.data$refunds)
-reason.data$total_proj_adec_pct <- as.numeric(reason.data$total_proj_adec_pct)
+#reason.data$mva <- as.numeric(reason.data$mva)
+#reason.data$return_yr <- as.numeric(reason.data$return_1yr)
+#reason.data$aal <- as.numeric(reason.data$aal)
+#reason.data$arr <- as.numeric(reason.data$arr)
+#reason.data$payroll <- as.numeric(reason.data$payroll)
+#reason.data$payroll_growth_assumption <- as.numeric(reason.data$payroll_growth_assumption)
+#reason.data$total_nc_pct <- as.numeric(reason.data$total_nc_pct)
+#reason.data$benefit_payments <- as.numeric(reason.data$benefit_payments)
+#reason.data$refunds <- as.numeric(reason.data$refunds)
+#reason.data$total_proj_adec_pct <- as.numeric(reason.data$total_proj_adec_pct)
+
+############ Pull Source datatf or each state plan
+#x <- (unique(reason.data$plan_name))
+#length(x)
+#x[3]
+
+#y <-  data.table(pullSourceData(pl, x[1], 2017))
+#y <- data.tabel(y[,1:40])
+
+#x <- for(i in (2:length(x))){
+#  z <-  data.table(pullSourceData(pl, x[6], 2017))
+#  z <- z[,1:40]
+#  y <- rbind(data.table(y), z, fill=T)
+#}
+#View(y)
+
 
 ########
 ##Compare Reason data to PPD for several variables after 2004
@@ -319,6 +365,7 @@ ui <- fluidPage(
       uiOutput("secondSelection"),
       #ADD slider input to choose year range
       sliderInput('year', 'Select Starting Year', min = 1990, max = 2019, value = 2001, sep = ""),
+      textOutput('plot_source'),
       uiOutput("thirdSelection"),
       uiOutput("forthSelection"),
       em("NOTES: "),
@@ -332,7 +379,7 @@ ui <- fluidPage(
       em("Upd#3 Added multiple column selection for Filtered data."),
       br(),
       br(),
-      textOutput('plot_2019Updates'),
+      #textOutput('plot_2019Updates'),
       # Button
       downloadButton("downloadData", "Download"),#, width = 3
       actionButton("show_note", "Note")
@@ -395,10 +442,10 @@ server <- function(input, output, session){
   output$thirdSelection <- renderUI({
     pl1 <- pullData(pl,input$y)
     if(ncol(pl1)>100) {
-      radioGroupButtons("filter", "Data", choices = c("Full", "Filtered"),
+      radioGroupButtons("filter", "Select Data", choices = c("Full", "Filtered"),
                         status = "primary")
     } else {
-      radioGroupButtons("filter", "Data", choices = c("Full"),
+      radioGroupButtons("filter", "Select Data", choices = c("Full"),
                         status = "primary")
     }
   })
@@ -506,6 +553,7 @@ server <- function(input, output, session){
       "pageLength" = 20, autoWidth = TRUE))
     x
   })
+
   
   output$plot_Variables <- DT::renderDT({
     #Load reactive datapull
@@ -523,6 +571,22 @@ server <- function(input, output, session){
     Updt.2019 <- data.table(pullData(pl, input$y))
     Updt.2019 <-  min(max(Updt.2019$year), max(Updt.2019[!is.na(display_name)]$year))
     paste0("*Latest: ", Updt.2019, "FY", sep = "")
+  })
+  
+  #Check if plan has Reason data source
+  output$plot_source <- renderText({
+    
+    Updt.2019 <- data.table(pullData(pl, input$y))
+    Updt.2019 <-  min(max(Updt.2019$year), max(Updt.2019[!is.na(display_name)]$year))
+    
+    Plan <- as.data.table(
+      pullSourceData(pl, input$y, input$year))
+    x <- data.matrix(Plan[data_source_name %in% "Reason" & year == 2018])
+    y <- as.data.table(x)
+    y <- sum(!is.na(y)==1)
+    if(y<1){
+      paste("*No Reason Data (Latest: ", Updt.2019, "FY)", sep = "")}
+    else{paste("*With Reason Data (Latest: ", Updt.2019, "FY)", sep = "")}
   })
   
   #Create interactive plot

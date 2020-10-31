@@ -102,6 +102,7 @@ ui <-fluidPage(
     ),
       plotly::plotlyOutput("plot_waterfall"),
     tags$div(htmlOutput("text1"))
+    
   )
 )
 )
