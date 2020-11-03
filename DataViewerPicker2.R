@@ -338,6 +338,11 @@ gdpvsaal.level[,year := seq(2002, 2018, by = 1)]
 gdpvsaal.30 <-(aalUS[year>2001 & year < 2019]$V1/1000000000000)/((gdp.level$GDP/1000)*30)
 gdpvsaal.30 <- data.table(gdpvsaal.30)
 gdpvsaal.30[,year := seq(2002, 2018, by = 1)]
+
+
+
+#View(codebook)
+
 #View(gdpvsaal.30)
 #gdp.pct
 #View(payrollUS)
@@ -370,19 +375,21 @@ ui <- fluidPage(
       uiOutput("forthSelection"),
       em("NOTES: "),
       br(),
-      em("Filtered data is available for major `state` plans."),
+      em("Filtered data is available for major state plans."),
       br(),
-      em("Upd#1 Data sources are displayed in Source tab."),
+      em("Upd#1 Added DR & AVA return data (Filtered option)."),
       br(),
-      em("Upd#2 Discount rate & AVA return data added to Filtered option."),
+      em("Upd#2 Added multiple column selection (Filtered option)."),
       br(),
-      em("Upd#3 Added multiple column selection for Filtered data."),
+      em("Upd#3 Added Database Codebook explaining variables (download below)."),
       br(),
       br(),
       #textOutput('plot_2019Updates'),
       # Button
       downloadButton("downloadData", "Download"),#, width = 3
-      actionButton("show_note", "Note")
+      actionButton("show_note", "Note"), 
+      downloadButton("downloadCodeBook", "Download CodeBook"),
+      
     ),
     mainPanel(
       ###Remove error messages
@@ -1163,12 +1170,29 @@ server <- function(input, output, session){
     x
   })
   
+  codebook <- reactive({
+    x <- read_csv(url(
+      "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/Reason_Database_CodeBook.csv"), 
+      col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+    x <- data.table(x)
+    x
+  })
+  
   output$downloadData <- downloadHandler(
     filename = function() {
       paste(input$y,"_",input$filter, ".csv", sep = "")
     },
     content = function(file) {
       write.csv(datasetInput(), file, row.names = FALSE)
+    }
+  )
+  
+  output$downloadCodeBook <- downloadHandler(
+    filename = function() {
+      paste("Reason_Database_CodeBook", ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(codebook(), file, row.names = T)
     }
   )
 }

@@ -69,7 +69,7 @@ returns.perc <- cbind(returns.perc, data.table(quantile(na.omit(returns_2020$`20
 colnames(returns.perc) <- as.character(seq(2001, 2020, by = 1))
 returns.perc <- t(returns.perc)
 colnames(returns.perc) <- as.character(c("10th", "25th", "50th", "75th", "90th"))
-View(returns.perc)
+#View(returns.perc)
 
 ############
 
@@ -241,8 +241,8 @@ p <- add_trace(p, uid=trace5$uid, fill=trace5$fill, line=trace5$line, mode=trace
                type=trace5$type, x=trace5$x, y=trace5$y, fillcolor=trace5$fillcolor, connectgaps=trace5$connectgaps)
 p <- layout(p, width=layout$width, xaxis=layout$xaxis, yaxis=layout$yaxis, height=layout$height, autosize=layout$autosize)
 p <- layout(p, yaxis = list(title = "FY2001-20 Actual Investment Returns", dtick = 0.02, tick0 = -0.3, 
-                            tickmode = "linear", tickformat = "%", zeroline = FALSE)) 
-p <- layout(p, hovermode = "closest")
+                            tickmode = "linear", tickformat = "%", zeroline = FALSE)) %>%
+  layout(hovermode = 'compare')# setting "compare" hover option as a default
 
 })
 }

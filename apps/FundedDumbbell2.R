@@ -243,6 +243,7 @@ ui <- fluidPage(
           tags$div(HTML(paste("<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>","<br>"))),
           
        tags$div(htmlOutput("text1"))
+       
           #Specify Source line text font/size with css
           ))
         )

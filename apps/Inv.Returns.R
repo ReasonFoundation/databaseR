@@ -60,7 +60,6 @@ returns_2020 <- returns_2020 %>% filter(!is.na(returns_2020$`2020_return`))
 returns_2020 <- returns_2020 %>% filter(state != "Pennsylvania")
 returns_2020<- returns_2020 %>% arrange(plan_name)
 
-
 #https://community.plotly.com/t/r-plotly-overlay-density-histogram/640/3
 #returns_2020<- data.matrix(na.omit(returns_2020))
 #fit <- density(returns_2020[,3])
@@ -84,15 +83,46 @@ returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions)
 returns_2020$mva_billions_19 <- as.numeric(returns_2020$mva_billions_19) 
 returns_2020$arr <- as.numeric(returns_2020$arr) 
 returns_2020$`2020_return` <- as.numeric(returns_2020$`2020_return`)
-#View(returns_2020)
+#View(na.omit(returns_2020$`2020_return`))
 
 pl <- planList()
-d1 <- density(na.omit(returns_2020[,3]))
-plot((d1$y)/sum(d1$y))
-fig <- plot_ly(x = ~d1$x, y = (d1$y)/sum(d1$y), type = 'scatter', mode = 'lines', name = 'Fair cut', fill = 'tozeroy')
-fig
 #https://chart-studio.plotly.com/~vigneshbabu/9/_10th-percentile-25th-percentile-median-75th-percentile-90th-percentile/#/
+reason.data <- pullStateData(2001)
+reason.data <- filterData(reason.data, 2001)
+reason.data <- reason.data %>% select(year, plan_name, state,return_1yr)
+reason.data$return_1yr <- as.numeric(reason.data$return_1yr)
+reason.data$year <- as.numeric(reason.data$year)
+reason.data <- data.table(reason.data)
+years <- seq(2001, 2020, by = 1)
 
+#boxplot(reason.data$return_1yr)
+
+#Creating a vector w/ 10th, 25th, 50th, 75th, and 90th percentiles for 2001
+returns.perc <- data.table(quantile(na.omit(reason.data[year == 2001]$return_1yr, c(0.1, 0.25, 0.5, 0.75, 0.9))))
+#Creating a Loop to do the same (+binding columns) for 2002-19 years
+for (i in (2002:2019)){
+  returns.perc <- cbind(returns.perc, data.table(quantile(na.omit(reason.data[year == i]$return_1yr, c(0.1, 0.25, 0.5, 0.75, 0.9)))))
+}
+#View(returns.perc)
+
+#Adding 2020 returns
+urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
+returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions) 
+returns_2020$mva_billions_19 <- as.numeric(returns_2020$mva_billions_19) 
+returns_2020$arr <- as.numeric(returns_2020$arr) 
+returns_2020$`2020_return` <- as.numeric(returns_2020$`2020_return`)
+#View(returns.perc)
+returns.perc <- cbind(returns.perc, data.table(quantile(na.omit(returns_2020$`2020_return`, c(0.1, 0.25, 0.5, 0.75, 0.9)))))
+
+
+#Renaming columns + transposing the table
+colnames(returns.perc) <- as.character(seq(2001, 2020, by = 1))
+returns.perc <- t(returns.perc)
+colnames(returns.perc) <- as.character(c("10th", "25th", "50th", "75th", "90th"))
+#View(returns.perc)
+
+############
 
 ui <- fluidPage(
   img(src = base64enc::dataURI(file = "https://raw.githubusercontent.com/ANiraula/PublicPlansData/master/reason_logo.png"), width = 200, height = 55),
@@ -113,12 +143,13 @@ ui <- fluidPage(
         tabPanel('Investment Returns by Plan', DT::DTOutput('plot_Returns'),
                       style = "font-size:80%; width:50%"),
                   #https://community.rstudio.com/t/color-cells-in-dt-datatable-in-shiny/2288),
-        tabPanel('Return Distribution', plotly::plotlyOutput("plot_Return_Distribution")),
-  
+        tabPanel("2020 Return Distribution", plotly::plotlyOutput("plot_Return_Distribution")),
+        tabPanel("2001-20 Return Variance", plotly::plotlyOutput("plot_InvReturns")),
         tags$div(htmlOutput("text1")))#Adjusting font size & width
       )
     )
   )
+
 ##########################
 ######Shiny app[server] -------------------------------------------------
 
@@ -160,7 +191,6 @@ server <- function(input, output, session){
           returns_2020 %>% arrange(returns_2020[,1])
         }
         )
-    
     
     #returns_2020 <- datatable(returns_2020) %>% formatPercentage(c("FY19-20 Returns Return", "Assumed Rate of Return"), 1)
     #http://www.stencilled.me/post/2019-04-18-editable/
@@ -222,9 +252,9 @@ server <- function(input, output, session){
                                 line = list(color = "black",
                                             width = 2))) %>% 
       
-      add_trace(x = d1$x,
-                y = 100*(d1$y/sum(d1$y)),
-                type="scatter",mode = 'lines', fill = 'toze roy', showlegend = F) %>%
+      #add_trace(x = d1$x,
+      #          y = 100*(d1$y/sum(d1$y)),
+      #          type="scatter",mode = 'line+markers', fill = 'toze roy', showlegend = F) %>%
       
 
      # add_trace(x = fit$x, y = fit$y, mode = "lines", fill = "tozeroy", yaxis = "y2", name = "Density") %>% 
@@ -232,18 +262,19 @@ server <- function(input, output, session){
       add_segments(x = quantile[2], 
                    xend =  quantile[2], y = 0.01, yend = 0.47, showlegend = T, 
                    name = "50th Percentile", line = list(color = palette_reason$Yellow)) %>%
+      
       add_segments(x = quantile[1], 
                    xend =  quantile[1], y = 0.01, yend = 0.47, showlegend = T, 
                    name ="25th Percentile", line = list(color = palette_reason$SatBlue)) %>%
-      
+
       add_segments(x = quantile[3], 
                    xend =  quantile[3], y = 0.01, yend = 0.47, showlegend = T, 
-                   name ="75th Percentile", line = list(color = palette_reason$GreyBlue)) %>%
+                   name ="75th Percentile", line = list(color = palette_reason$Green)) %>%
     
-      add_boxplot(x = na.omit(returns_2020[,3]), y =  d1, jitter = 0, pointpos = 0, boxpoints = F,
-                  marker = list(color = 'rgb(7,40,89)'),
-                  line = list(color = 'rgb(7,40,89)'),
-                  name = "All Points") %>%
+      #add_boxplot(x = na.omit(returns_2020[,3]), y =  d1, jitter = 0, pointpos = 0, boxpoints = F,
+      #            marker = list(color = 'rgb(7,40,89)'),
+      #            line = list(color = 'rgb(7,40,89)'),
+      #            name = "All Points") %>%
       
       layout(title = "Probability Distribution of <br> FY2019-20 State Pension Plan Returns",
              xaxis = list(title = "Buckets of FY2019-20 Returns", dtick = 0.01, 
@@ -268,8 +299,162 @@ server <- function(input, output, session){
     
   })
   
+  output$plot_InvReturns <- plotly::renderPlotly({
+    
+    reason.data <- pullStateData(2001)
+    reason.data <- filterData(reason.data, 2001)
+    reason.data <- reason.data %>% select(year, plan_name, state,return_1yr)
+    reason.data$return_1yr <- as.numeric(reason.data$return_1yr)
+    reason.data$year <- as.numeric(reason.data$year)
+    reason.data <- data.table(reason.data)
+    years <- seq(2001, 2020, by = 1)
+    
+    #boxplot(reason.data$return_1yr)
+    
+    #Creating a vector w/ 10th, 25th, 50th, 75th, and 90th percentiles for 2001
+    returns.perc <- data.table(quantile(na.omit(reason.data[year == 2001]$return_1yr, c(0.1, 0.25, 0.5, 0.75, 0.9))))
+    #Creating a Loop to do the same (+binding columns) for 2002-19 years
+    for (i in (2002:2019)){
+      returns.perc <- cbind(returns.perc, data.table(quantile(na.omit(reason.data[year == i]$return_1yr, c(0.1, 0.25, 0.5, 0.75, 0.9)))))
+    }
+    #View(returns.perc)
+    
+    #Adding 2020 returns
+    urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
+    returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+    returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions) 
+    returns_2020$mva_billions_19 <- as.numeric(returns_2020$mva_billions_19) 
+    returns_2020$arr <- as.numeric(returns_2020$arr) 
+    returns_2020$`2020_return` <- as.numeric(returns_2020$`2020_return`)
+    #View(returns.perc)
+    returns.perc <- cbind(returns.perc, data.table(quantile(na.omit(returns_2020$`2020_return`, c(0.1, 0.25, 0.5, 0.75, 0.9)))))
+    
+    #Renaming columns + transposing the table
+    colnames(returns.perc) <- as.character(seq(2001, 2020, by = 1))
+    returns.perc <- t(returns.perc)
+    colnames(returns.perc) <- as.character(c("10th", "25th", "50th", "75th", "90th"))
+    ##########
+    
+    trace1 <- list(
+      uid = "2983cb", 
+      fill = "none", 
+      line = list(
+        shape = "spline", 
+        width = 0, 
+        smoothing = 0.6
+      ), 
+      mode = "lines", 
+      name = "10th Percentile", 
+      type = "scatter", 
+      x = years, 
+      y = returns.perc[,1], 
+      connectgaps = FALSE
+    )
+    trace2 <- list(
+      uid = "324d0c", 
+      fill = "tonexty", 
+      line = list(
+        shape = "spline", 
+        width = 0, 
+        smoothing = 0.6
+      ), 
+      mode = "lines", 
+      name = "25th Percentile", 
+      type = "scatter", 
+      x = years, 
+      y = returns.perc[,2], 
+      fillcolor = "rgba(159, 197, 232, 0.63)", 
+      connectgaps = FALSE
+    )
+    trace3 <- list(
+      uid = "a3a908", 
+      fill = "tonexty", 
+      line = list(
+        color = "rgb(31, 119, 180)", 
+        shape = "spline", 
+        smoothing = 0.6
+      ), 
+      mode = "lines", 
+      name = "Median", 
+      type = "scatter", 
+      x = years, 
+      y = returns.perc[,3], 
+      fillcolor = "rgba(31, 119, 180, 0.5)", 
+      connectgaps = FALSE
+    )
+    trace4 <- list(
+      uid = "fdf1b8", 
+      fill = "tonexty", 
+      line = list(
+        shape = "spline", 
+        width = 0, 
+        smoothing = 0.6
+      ), 
+      mode = "lines", 
+      name = "75th Percentile", 
+      type = "scatter", 
+      x = years, 
+      y = returns.perc[,4],   
+      fillcolor = "rgba(31, 119, 180, 0.5)", 
+      connectgaps = FALSE
+    )
+    trace5 <- list(
+      uid = "9ae1f4", 
+      fill = "tonexty", 
+      line = list(
+        shape = "spline", 
+        width = 0, 
+        smoothing = 0.6
+      ), 
+      mode = "lines", 
+      name = "90th Percentile", 
+      type = "scatter", 
+      x = years, 
+      y = returns.perc[,5], 
+      fillcolor = "rgba(159, 197, 232, 0.63)", 
+      connectgaps = FALSE
+    )
+    
+    data <- list(trace1, trace2, trace3, trace4, trace5)
+    layout <- list(
+      width = 1100, 
+      xaxis = list(
+        type = "category", 
+        range = c(0, 95), 
+        showgrid = TRUE, 
+        zeroline = TRUE, 
+        autorange = TRUE, 
+        gridwidth = 1
+      ), 
+      yaxis = list(
+        type = "linear", 
+        range = c(-0.3, 0.3), 
+        showgrid = TRUE, 
+        zeroline = TRUE, 
+        autorange = TRUE, 
+        gridwidth = 1
+      ), 
+      height = 590, 
+      autosize = TRUE
+    )
+    p <- plot_ly()
+    p <- add_trace(p, uid=trace1$uid, fill=trace1$fill, line=trace1$line, mode=trace1$mode, name=trace1$name, 
+                   type=trace1$type, x=trace1$x, y=trace1$y, connectgaps=trace1$connectgaps)
+    p <- add_trace(p, uid=trace2$uid, fill=trace2$fill, line=trace2$line, mode=trace2$mode, name=trace2$name, 
+                   type=trace2$type, x=trace2$x, y=trace2$y, fillcolor=trace2$fillcolor, connectgaps=trace2$connectgaps)
+    p <- add_trace(p, uid=trace3$uid, fill=trace3$fill, line=trace3$line, mode=trace3$mode, name=trace3$name, 
+                   type=trace3$type, x=trace3$x, y=trace3$y, fillcolor=trace3$fillcolor, connectgaps=trace3$connectgaps)
+    p <- add_trace(p, uid=trace4$uid, fill=trace4$fill, line=trace4$line, mode=trace4$mode, name=trace4$name, 
+                   type=trace4$type, x=trace4$x, y=trace4$y, fillcolor=trace4$fillcolor, connectgaps=trace4$connectgaps)
+    p <- add_trace(p, uid=trace5$uid, fill=trace5$fill, line=trace5$line, mode=trace5$mode, name=trace5$name, 
+                   type=trace5$type, x=trace5$x, y=trace5$y, fillcolor=trace5$fillcolor, connectgaps=trace5$connectgaps)
+    p <- layout(p, width=layout$width, xaxis=layout$xaxis, yaxis=layout$yaxis, height=layout$height, autosize=layout$autosize)
+    p <- layout(p, yaxis = list(title = "FY2001-20 Actual Investment Returns", dtick = 0.02, tick0 = -0.3, 
+                                tickmode = "linear", tickformat = "%", zeroline = FALSE)) %>%
+      layout(hovermode = 'compare')# setting "compare" hover option as a default
+    
+  })
+    
 }
-help(hist)
 #rsconnect::appDependencies()
 shinyApp(ui = ui, server = server)
-help(rnorm)
