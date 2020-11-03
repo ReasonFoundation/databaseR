@@ -1,0 +1,68 @@
+,master_attribute_id,Section,master_attribute_name,attribute_column_name,priority,plan_attribute_id,data_source_name,Data Format
+1,1,CAFR,Market Value of Assets Dollar,mva,100,10996,Reason,$numeric
+2,2,Actuarial Valuation,Actuarially Accrued Liabilities Dollar,aal,100,10990,Reason,$numeric
+3,3,Actuarial Valuation,Covered Payroll Dollar,payroll,100,10993,Reason,$numeric
+4,4,Actuarial Valuation,1 Year Investment Return Percentage,market_return,100,10981,Reason,Percentage point
+5,25,Actuarial Valuation,Actuarial Funded Ratio Percentage,fundedratio_old,100,10992,Reason,integer
+6,30,Actuarial Valuation,Actuarial Value of Assets Dollar,ava,100,10989,Reason,$numeric
+7,32,GASB 68,Actuarially Determined Contribution Dollar,adec_amt,100,10885,Reason,$numeric
+8,33,GASB 68,Actuarially Determined Contribution Missed Dollar,adec_missed,100,10887,Reason,$numeric
+9,36,CAFR,Actuarially Required Contribution Dollar,arc,100,10984,Reason,$numeric
+10,36,#N/A,Actuarially Required Contribution Dollar,arc_inferred,300,11008,Reason,$numeric
+11,37,CAFR,Actuarially Required Contribution Paid Percentage,arc_pct,100,10987,Reason,$numeric
+12,137,#N/A,Employee Contribution Dollar,EE_Total_Amt,100,10705,Reason,integer
+13,245,GASB 68,Net Pension Liability Dollar,npl,400,10877,Reason,$numeric
+14,374,GASB 68,Total Pension Liability Dollar,tpl,400,10875,Reason,$numeric
+15,379,Actuarial Valuation,Unfunded Actuarially Accrued Liabilities Dollar,ual,300,10991,Reason,$numeric
+16,395,Actuarial Valuation,Discount Rate Assumption,assum_discountrate,100,10976,Reason,Percentage point
+17,399,Actuarial Valuation,Investment Return Assumption for GASB Reporting,assum_returnrate,100,10978,Reason,Percentage point
+18,400,Actuarial Valuation,Statutory Payment Dollar,statutory_amt_er,100,10842,Reason,$numeric
+19,401,Actuarial Valuation,Statutory Payment Percentage,statutory_pct_er,100,10843,Reason,integer
+20,402,Actuarial Valuation,Investment Experience Dollar,Investment_Experience,100,10801,Reason,$numeric
+21,403,Actuarial Valuation,Age of Retirement Experience Dollar,Age_of_Retirement_Experience,100,10802,Reason,$numeric
+22,404,Actuarial Valuation,Disability Claim Experience Active Dollar,Disability_Claim_Experience_Active,100,10803,Reason,$numeric
+23,405,Actuarial Valuation,Disability Claim Experience Inactive Dollar,Disability_Claim_Experience_Inactive,100,10804,Reason,$numeric
+24,406,Actuarial Valuation,Disability Claim Experience Retired Dollar,Disability_Claim_Experience_Retired,100,10805,Reason,$numeric
+25,407,Actuarial Valuation,Disability Claim Experience Total Dollar,Disability_Claim_Experience_Total,100,10806,Reason,$numeric
+26,408,Actuarial Valuation,Mortality Rate Experience Active Dollar,Mortality_Rate_Experience_Active,100,10807,Reason,$numeric
+27,409,Actuarial Valuation,Mortality Rate Experience Inactive Dollar,Mortality_Rate_Experience_Inactive,100,10808,Reason,$numeric
+28,410,Actuarial Valuation,Mortality Rate Experience Retired Dollar,Mortality_Rate_Experience_Retired,100,10809,Reason,$numeric
+29,411,Actuarial Valuation,Mortality Rate Experience Total Dollar,Mortality_Rate_Experience_Total,100,10810,Reason,$numeric
+30,412,Actuarial Valuation,Survivor Claim Experience Active Dollar,Survivor_Claim_Experience_Active,100,10811,Reason,$numeric
+31,413,Actuarial Valuation,Survivor Claim Experience Inactive Dollar,Survivor_Claim_Experience_Inactive,100,10812,Reason,$numeric
+32,414,Actuarial Valuation,Survivor Claim Experience Retired Dollar,Survivor_Claim_Experience_Retired,100,10813,Reason,$numeric
+33,415,Actuarial Valuation,Survivor Claim Experience Total Dollar,Survivor_Claim_Experience_Total,100,10814,Reason,$numeric
+34,416,Actuarial Valuation,Withdrawal Experience Dollar,Withdrawal_Experience,100,10815,Reason,$numeric
+35,417,Actuarial Valuation,Salary Experience Dollar,Salary_Experience,100,10816,Reason,$numeric
+36,418,Actuarial Valuation,Payroll Experience Dollar,Payroll_Experience,100,10817,Reason,$numeric
+37,419,Actuarial Valuation,New Entrant Experience Dollar,New_Entrant_Experience,100,10818,Reason,$numeric
+38,420,Actuarial Valuation,Rehire Experiennce Dollar,Rehire_Experiennce,100,10819,Reason,$numeric
+39,421,Actuarial Valuation,Other Actuarial Experience Dollar,Other_Actuarial_Experience,100,10820,Reason,$numeric
+40,422,Actuarial Valuation,Interest Smoothing Dollar,Interest_Smoothing,100,10821,Reason,$numeric
+41,423,Actuarial Valuation,Non Investment Actuarial Experience Dollar,Non_Investment_Actuarial_Experience,100,10822,Reason,$numeric
+42,424,Actuarial Valuation,Actuarial Experience Dollar,Actuarial_Experience,100,10823,Reason,$numeric
+43,425,Actuarial Valuation,Legislative Changes Dollar,Legislative_Changes,100,10824,Reason,$numeric
+44,426,Actuarial Valuation,Changes to Methods & Assumptions Dollar,Changes_to_Methods_&_Assumptions,100,10825,Reason,$numeric
+45,427,Actuarial Valuation,Interest on Debt Dollar,Interest_on_Debt,100,10826,Reason,$numeric
+46,428,Actuarial Valuation,Contribution Deficiency Dollar,Contribution_Deficiency,100,10827,Reason,$numeric
+47,430,Actuarial Valuation,Multiple Discount Rates,assum_variabledr,100,10977,Reason,"Y,N"
+48,431,CAFR,Actuarially Required Contribution Paid Dollar,arc_paid,100,10985,Reason,$numeric
+49,432,#N/A,Actual COLA,actual_COLA,100,10701,Reason,Percentage point
+50,433,#N/A,Minimum COLA,min_COLA,100,10702,Reason,Percentage point
+51,434,#N/A,Contribution Rate Effective FY,cont_rate_FY,100,10703,Reason,yyyy
+52,435,#N/A,"Amortization Payment, Total $ Amount",Amo_Total_Amt,100,10704,Reason,$numeric
+53,436,#N/A,Administrative Expenses - Percentage,Admin_Expense_Pct,100,10706,Reason,integer
+54,437,#N/A,Gain or loss due to changes in benefits,Benefit_Changes,100,10798,Reason,$numeric
+55,438,#N/A,Gain or loss due to changes in COLA Provisions,COLA_Gain_Loss,100,10799,Reason,$numeric
+56,439,#N/A,Gain or loss due to changes in PBI Provisions,PBI_Gain_Loss,100,10800,Reason,$numeric
+57,440,Actuarial Valuation,Market Investment Return (MVA Basis),actuarial_return,100,10980,Reason,Percentage point
+58,441,#N/A,ARC as a Percent of Payroll,arcpct_payroll_reason,100,11004,Reason,integer
+59,442,CAFR,ADEC as a Percent of Payroll,adec_pct_reason,100,11005,Reason,integer
+60,443,GASB 68,Net Pension Liability Assuming 1% Decrease in Discount Rate,sensitivitydollar_100bpdown,100,10904,Reason,$numeric
+61,444,GASB 68,Net Pension Liability Assuming 1% Increase in  Discount Rate,sensitivitydollar_100bpup,100,10906,Reason,$numeric
+62,445,GASB 68,Prior Measurment Date,pmd,100,10862,Reason,mm/dd/yyyy
+63,446,GASB 68,Measurment Date (MD),cmd,100,10863,Reason,mm/dd/yyyy
+64,447,GASB 68,Membership Data: Retirees and Beneficiaries,gasb_retirees,100,10864,Reason,integer
+65,448,GASB 68,Membership Data: Inactive Vested,gasb_inactivevest,100,10865,Reason,integer
+66,449,GASB 68,Membership Data: Active,gasb_active,100,10867,Reason,integer
+67,450,GASB 68,Membership Data: Total,gasb_totmembers,100,10868,Reason,integer
