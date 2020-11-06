@@ -8,9 +8,9 @@
 7,32,GASB 68,Actuarially Determined Contribution Dollar,adec_amt,100,10885,Reason,$numeric
 8,33,GASB 68,Actuarially Determined Contribution Missed Dollar,adec_missed,100,10887,Reason,$numeric
 9,36,CAFR,Actuarially Required Contribution Dollar,arc,100,10984,Reason,$numeric
-10,36,#N/A,Actuarially Required Contribution Dollar,arc_inferred,300,11008,Reason,$numeric
+10,36,Actuarial Valuation,Actuarially Required Contribution Dollar,arc_inferred,300,11008,Reason,$numeric
 11,37,CAFR,Actuarially Required Contribution Paid Percentage,arc_pct,100,10987,Reason,$numeric
-12,137,#N/A,Employee Contribution Dollar,EE_Total_Amt,100,10705,Reason,integer
+12,137,Actuarial Valuation,Employee Contribution Dollar,EE_Total_Amt,100,10705,Reason,integer
 13,245,GASB 68,Net Pension Liability Dollar,npl,400,10877,Reason,$numeric
 14,374,GASB 68,Total Pension Liability Dollar,tpl,400,10875,Reason,$numeric
 15,379,Actuarial Valuation,Unfunded Actuarially Accrued Liabilities Dollar,ual,300,10991,Reason,$numeric
@@ -47,16 +47,16 @@
 46,428,Actuarial Valuation,Contribution Deficiency Dollar,Contribution_Deficiency,100,10827,Reason,$numeric
 47,430,Actuarial Valuation,Multiple Discount Rates,assum_variabledr,100,10977,Reason,"Y,N"
 48,431,CAFR,Actuarially Required Contribution Paid Dollar,arc_paid,100,10985,Reason,$numeric
-49,432,#N/A,Actual COLA,actual_COLA,100,10701,Reason,Percentage point
-50,433,#N/A,Minimum COLA,min_COLA,100,10702,Reason,Percentage point
-51,434,#N/A,Contribution Rate Effective FY,cont_rate_FY,100,10703,Reason,yyyy
-52,435,#N/A,"Amortization Payment, Total $ Amount",Amo_Total_Amt,100,10704,Reason,$numeric
-53,436,#N/A,Administrative Expenses - Percentage,Admin_Expense_Pct,100,10706,Reason,integer
-54,437,#N/A,Gain or loss due to changes in benefits,Benefit_Changes,100,10798,Reason,$numeric
-55,438,#N/A,Gain or loss due to changes in COLA Provisions,COLA_Gain_Loss,100,10799,Reason,$numeric
-56,439,#N/A,Gain or loss due to changes in PBI Provisions,PBI_Gain_Loss,100,10800,Reason,$numeric
+49,432,Actuarial Valuation,Actual COLA,actual_COLA,100,10701,Reason,Percentage point
+50,433,Actuarial Valuation,Minimum COLA,min_COLA,100,10702,Reason,Percentage point
+51,434,Actuarial Valuation,Contribution Rate Effective FY,cont_rate_FY,100,10703,Reason,yyyy
+52,435,Actuarial Valuation,"Amortization Payment, Total $ Amount",Amo_Total_Amt,100,10704,Reason,$numeric
+53,436,Actuarial Valuation,Administrative Expenses - Percentage,Admin_Expense_Pct,100,10706,Reason,integer
+54,437,Actuarial Valuation,Gain or loss due to changes in benefits,Benefit_Changes,100,10798,Reason,$numeric
+55,438,Actuarial Valuation,Gain or loss due to changes in COLA Provisions,COLA_Gain_Loss,100,10799,Reason,$numeric
+56,439,Actuarial Valuation,Gain or loss due to changes in PBI Provisions,PBI_Gain_Loss,100,10800,Reason,$numeric
 57,440,Actuarial Valuation,Market Investment Return (MVA Basis),actuarial_return,100,10980,Reason,Percentage point
-58,441,#N/A,ARC as a Percent of Payroll,arcpct_payroll_reason,100,11004,Reason,integer
+58,441,Actuarial Valuation,ARC as a Percent of Payroll,arcpct_payroll_reason,100,11004,Reason,integer
 59,442,CAFR,ADEC as a Percent of Payroll,adec_pct_reason,100,11005,Reason,integer
 60,443,GASB 68,Net Pension Liability Assuming 1% Decrease in Discount Rate,sensitivitydollar_100bpdown,100,10904,Reason,$numeric
 61,444,GASB 68,Net Pension Liability Assuming 1% Increase in  Discount Rate,sensitivitydollar_100bpup,100,10906,Reason,$numeric

@@ -51,47 +51,12 @@ library(jsonlite)
 #install.packages(c("httr", "jsonlite"))
 #devtools::install_github("ropensci/plotly")
 
-urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
-returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions) 
-returns_2020$mva_billions_19 <- as.numeric(returns_2020$mva_billions_19) 
-returns_2020$arr <- as.numeric(returns_2020$arr) 
-returns_2020 <- returns_2020 %>% filter(!is.na(returns_2020$`2020_return`))
-returns_2020 <- returns_2020 %>% filter(state != "Pennsylvania")
-returns_2020<- returns_2020 %>% arrange(plan_name)
-
-#https://community.plotly.com/t/r-plotly-overlay-density-histogram/640/3
-#returns_2020<- data.matrix(na.omit(returns_2020))
-#fit <- density(returns_2020[,3])
-
-returns_2020<- data.frame(returns_2020)
-
-#DF <- data.table(Fiscal_Year = seq(2001, 2019, by =1))
-#DF <- DF[,var1 := data.table(rnorm(19, 30, 5))]
-#DF <- DF[,var2 := data.table(rnorm(19, 60, 10))]
-#DF <- data.frame(DF)
-
-#ggplot() +
-#  geom_col(data=DF %>% pivot_longer(starts_with("var")),
-#           mapping = aes(x=Fiscal_Year, y=value,group = 1, fill = "orangered1"),
-#           color = "black", position = "dodge2")+
-#  theme_bw()
-
-urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
-returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions) 
-returns_2020$mva_billions_19 <- as.numeric(returns_2020$mva_billions_19) 
-returns_2020$arr <- as.numeric(returns_2020$arr) 
-returns_2020$`2020_return` <- as.numeric(returns_2020$`2020_return`)
-#View(na.omit(returns_2020$`2020_return`))
-
 pl <- planList()
 #https://chart-studio.plotly.com/~vigneshbabu/9/_10th-percentile-25th-percentile-median-75th-percentile-90th-percentile/#/
 reason.data <- pullStateData(2001)
 reason.data <- filterData(reason.data, 2001)
-reason.data <- reason.data %>% select(year, plan_name, state,return_1yr)
-reason.data$return_1yr <- as.numeric(reason.data$return_1yr)
-reason.data$year <- as.numeric(reason.data$year)
+reason.data <- reason.data %>% select(year, plan_name, state,return_1yr, arr)
+reason.data <- reason.data %>% dplyr::mutate_all(dplyr::funs(as.numeric))
 reason.data <- data.table(reason.data)
 years <- seq(2001, 2020, by = 1)
 
@@ -111,16 +76,31 @@ returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_
 returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions) 
 returns_2020$mva_billions_19 <- as.numeric(returns_2020$mva_billions_19) 
 returns_2020$arr <- as.numeric(returns_2020$arr) 
+
 returns_2020$`2020_return` <- as.numeric(returns_2020$`2020_return`)
 #View(returns.perc)
 returns.perc <- cbind(returns.perc, data.table(quantile(na.omit(returns_2020$`2020_return`, c(0.1, 0.25, 0.5, 0.75, 0.9)))))
-
 
 #Renaming columns + transposing the table
 colnames(returns.perc) <- as.character(seq(2001, 2020, by = 1))
 returns.perc <- t(returns.perc)
 colnames(returns.perc) <- as.character(c("10th", "25th", "50th", "75th", "90th"))
 #View(returns.perc)
+arr.perc <- data.table(reason.data[,median(na.omit(arr)), by = list(year)])
+
+urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
+returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions) 
+returns_2020$mva_billions_19 <- as.numeric(returns_2020$mva_billions_19) 
+returns_2020$arr <- as.numeric(returns_2020$arr) 
+arr.2020 <- data.table("2020",median(na.omit(returns_2020$arr)))
+#View(arr.2020)
+arr.perc <- rbind(arr.perc,arr.2020, fill=T)
+arr.perc[20,1] <- as.numeric("2020")
+arr.perc[20,2] <- as.numeric(median(na.omit(returns_2020$arr)))
+arr.perc <- arr.perc[,!3]
+#View(arr.perc)
+arr.perc$V1 <- as.numeric(arr.perc$V1)
 
 ############
 
@@ -144,7 +124,11 @@ ui <- fluidPage(
                       style = "font-size:80%; width:50%"),
                   #https://community.rstudio.com/t/color-cells-in-dt-datatable-in-shiny/2288),
         tabPanel("2020 Return Distribution", plotly::plotlyOutput("plot_Return_Distribution")),
-        tabPanel("2001-20 Return Variance", plotly::plotlyOutput("plot_InvReturns")),
+        tabPanel("2001-20 Return Variance", 
+                 radioButtons("lines", "Select Lines", 
+                 choices = c("None", "Median Assumed Rate of Return (ARR)")), selected = "None",
+                 plotly::plotlyOutput("plot_InvReturns")),
+                 
         tags$div(htmlOutput("text1")))#Adjusting font size & width
       )
     )
@@ -162,9 +146,8 @@ server <- function(input, output, session){
       "Methodology: 'Approximate Recognized Investment Loss' is calculated by","<br>", 
       "taking plan's FY2018-19 'Market Value of Assets' and multiplying it by the difference between 'Assumed Rate of Return' and 'FY2019-20 Return'. 
       Values are meant as an approximation of recognized losses due to in FY19-20 returns deviating from assumed return","<br>", "<br>",
-      "**Preliminary returns",sep="\n")
+      "*Aggregate state pension data' return","<br>","**Preliminary returns", sep="\n")
   })
-  
   
   output$plot_Returns <- DT::renderDataTable({
    
@@ -200,11 +183,11 @@ server <- function(input, output, session){
       formatPercentage(c("FY19-20 Returns", "Assumed Rate of Return"),2)
     #set to TRUE to allow editing
     
-    
     #returns_2020 <- as.data.table(returns_2020)
     #returns_2020[,one_year_gain_loss := (returns_2020$mva_billions * (returns_2020$arr - returns_2020$`2020_return`))]
-  })
-  output$plot_Return_Distribution <- plotly::renderPlotly({
+    })
+  
+    output$plot_Return_Distribution <- plotly::renderPlotly({
     
     urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
     returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
@@ -213,6 +196,8 @@ server <- function(input, output, session){
     returns_2020$arr <- as.numeric(returns_2020$arr) 
     returns_2020 <- returns_2020 %>% filter(!is.na(returns_2020$`2020_return`))
     returns_2020 <- returns_2020 %>% filter(state != "Pennsylvania")
+    returns_2020 <- returns_2020 %>% filter(plan_name != "Tennessee Consolidated Retirement System, Teachers Pension Plan (TCRS)")
+    returns_2020 <- returns_2020 %>% filter(plan_name != "Indiana Public Employees Retirement Fund (PERF)")
     returns_2020<- returns_2020 %>% arrange(plan_name)
     
     #https://community.plotly.com/t/r-plotly-overlay-density-histogram/640/3
@@ -261,7 +246,7 @@ server <- function(input, output, session){
       #
       add_segments(x = quantile[2], 
                    xend =  quantile[2], y = 0.01, yend = 0.47, showlegend = T, 
-                   name = "50th Percentile", line = list(color = palette_reason$Yellow)) %>%
+                   name = "Median", line = list(color = palette_reason$Yellow)) %>%
       
       add_segments(x = quantile[1], 
                    xend =  quantile[1], y = 0.01, yend = 0.47, showlegend = T, 
@@ -303,9 +288,7 @@ server <- function(input, output, session){
     
     reason.data <- pullStateData(2001)
     reason.data <- filterData(reason.data, 2001)
-    reason.data <- reason.data %>% select(year, plan_name, state,return_1yr)
-    reason.data$return_1yr <- as.numeric(reason.data$return_1yr)
-    reason.data$year <- as.numeric(reason.data$year)
+    reason.data <- reason.data %>% dplyr::mutate_all(dplyr::funs(as.numeric))
     reason.data <- data.table(reason.data)
     years <- seq(2001, 2020, by = 1)
     
@@ -317,6 +300,7 @@ server <- function(input, output, session){
     for (i in (2002:2019)){
       returns.perc <- cbind(returns.perc, data.table(quantile(na.omit(reason.data[year == i]$return_1yr, c(0.1, 0.25, 0.5, 0.75, 0.9)))))
     }
+    
     #View(returns.perc)
     
     #Adding 2020 returns
@@ -345,7 +329,6 @@ server <- function(input, output, session){
       ), 
       mode = "lines", 
       name = "10th Percentile", 
-      type = "scatter", 
       x = years, 
       y = returns.perc[,1], 
       connectgaps = FALSE
@@ -360,7 +343,6 @@ server <- function(input, output, session){
       ), 
       mode = "lines", 
       name = "25th Percentile", 
-      type = "scatter", 
       x = years, 
       y = returns.perc[,2], 
       fillcolor = "rgba(159, 197, 232, 0.63)", 
@@ -376,7 +358,6 @@ server <- function(input, output, session){
       ), 
       mode = "lines", 
       name = "Median", 
-      type = "scatter", 
       x = years, 
       y = returns.perc[,3], 
       fillcolor = "rgba(31, 119, 180, 0.5)", 
@@ -392,7 +373,6 @@ server <- function(input, output, session){
       ), 
       mode = "lines", 
       name = "75th Percentile", 
-      type = "scatter", 
       x = years, 
       y = returns.perc[,4],   
       fillcolor = "rgba(31, 119, 180, 0.5)", 
@@ -408,7 +388,6 @@ server <- function(input, output, session){
       ), 
       mode = "lines", 
       name = "90th Percentile", 
-      type = "scatter", 
       x = years, 
       y = returns.perc[,5], 
       fillcolor = "rgba(159, 197, 232, 0.63)", 
@@ -417,7 +396,6 @@ server <- function(input, output, session){
     
     data <- list(trace1, trace2, trace3, trace4, trace5)
     layout <- list(
-      width = 1100, 
       xaxis = list(
         type = "category", 
         range = c(0, 95), 
@@ -434,7 +412,6 @@ server <- function(input, output, session){
         autorange = TRUE, 
         gridwidth = 1
       ), 
-      height = 590, 
       autosize = TRUE
     )
     p <- plot_ly()
@@ -448,8 +425,20 @@ server <- function(input, output, session){
                    type=trace4$type, x=trace4$x, y=trace4$y, fillcolor=trace4$fillcolor, connectgaps=trace4$connectgaps)
     p <- add_trace(p, uid=trace5$uid, fill=trace5$fill, line=trace5$line, mode=trace5$mode, name=trace5$name, 
                    type=trace5$type, x=trace5$x, y=trace5$y, fillcolor=trace5$fillcolor, connectgaps=trace5$connectgaps)
+    
+    #if(input$lines %in% "Zero"){p <- add_segments(p, x = years, 
+    #                  xend =  2020, y = 0, yend = 0, showlegend = F,
+    #                  name = "", line = list(color ="black"))
+    #}
+    
+    if(input$lines == "Median Assumed Rate of Return (ARR)"){
+      p <- add_lines(p, x = trace5$x, 
+              xend =  max(trace5$x), y = round(arr.perc$V1,2), yend = last(round(arr.perc$V1,2)), showlegend = T,
+              name = "Median ARR", line = list(color = palette_reason$SpaceGrey))
+    }
+    
     p <- layout(p, width=layout$width, xaxis=layout$xaxis, yaxis=layout$yaxis, height=layout$height, autosize=layout$autosize)
-    p <- layout(p, yaxis = list(title = "FY2001-20 Actual Investment Returns", dtick = 0.02, tick0 = -0.3, 
+    p <- layout(p, yaxis = list(title = "FY2001-20 Actual Investment Returns", dtick = 0.03, tick0 = -0.3, 
                                 tickmode = "linear", tickformat = "%", zeroline = FALSE)) %>%
       layout(hovermode = 'compare')# setting "compare" hover option as a default
     

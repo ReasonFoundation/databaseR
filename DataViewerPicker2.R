@@ -290,58 +290,54 @@ reason.data <- reason.data[,cols[i] := as.numeric(cols[i])]
 #View(test)
 
 reason.data <- data.table(reason.data)
-payrollUS <- reason.data[, sum(na.omit(payroll)), by=list(year)] %>% arrange(year)
-aalUS <- reason.data[, sum(na.omit(aal)), by=list(year)] %>% arrange(year)
-payrollUS <- reason.data[, sum(na.omit(payroll)), by=list(year)] %>% arrange(year)
+#payrollUS <- reason.data[, sum(na.omit(payroll)), by=list(year)] %>% arrange(year)
+#aalUS <- reason.data[, sum(na.omit(aal)), by=list(year)] %>% arrange(year)
+#payrollUS <- reason.data[, sum(na.omit(payroll)), by=list(year)] %>% arrange(year)
 #View(aalUS)
-years <- seq(2001, 2018, by = 1)
-aal.pct.ch <- matrix(0,1,17)
+#years <- seq(2001, 2018, by = 1)
+#aal.pct.ch <- matrix(0,1,17)
 #aal.pct.ch
 
-for(i in(1:17)){
-  aal.pct.ch[,i] <-  (aalUS[year == years[i+1]]$V1-aalUS[year == years[i]]$V1)/aalUS[year == years[i]]$V1
-}
-colnames(aal.pct.ch) <- seq(2002, 2018, by = 1)
-aal.pct.ch <- t(aal.pct.ch)
-colnames(aal.pct.ch) <- c("aal.pct.change")
+#for(i in(1:17)){
+#  aal.pct.ch[,i] <-  (aalUS[year == years[i+1]]$V1-aalUS[year == years[i]]$V1)/aalUS[year == years[i]]$V1
+#}
+#colnames(aal.pct.ch) <- seq(2002, 2018, by = 1)
+#aal.pct.ch <- t(aal.pct.ch)
+#colnames(aal.pct.ch) <- c("aal.pct.change")
 #View(aalUS$V1)
 
-urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/GDP.FRED.csv"
+#urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/GDP.FRED.csv"
 #SOurce: https://fred.stlouisfed.org/series/GDP#0
-gdp.pct <- data.table(
-  read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
-gdp.pct <- gdp.pct[year>2001 & year < 2019]
+#gdp.pct <- data.table(
+#  read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
+#gdp.pct <- gdp.pct[year>2001 & year < 2019]
 #View(gdp.pct)
 #View(aal.pct.ch)
-gdp.aal <- cbind(gdp.pct,round(aal.pct.ch*100,1))
+#gdp.aal <- cbind(gdp.pct,round(aal.pct.ch*100,1))
 #View(gdp.aal)
-gdp.aal$gdp.pct.change <- as.numeric(gdp.aal$gdp.pct)
-gdp.aal[,avg.aal := mean(aal.pct.ch)*100]
-gdp.aal[,avg.gdp := mean(gdp.pct.change)]
+#gdp.aal$gdp.pct.change <- as.numeric(gdp.aal$gdp.pct)
+#gdp.aal[,avg.aal := mean(aal.pct.ch)*100]
+#gdp.aal[,avg.gdp := mean(gdp.pct.change)]
 
-gdp.pct <- data.table(gdp.pct)
+#gdp.pct <- data.table(gdp.pct)
 
-urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/GDP.csv"
+#urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/GDP.csv"
 #Source: https://fred.stlouisfed.org/series/GDP#0
-gdp.level <- data.table(
-  read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
-gdp.level <- gdp.level[DATE>2001 & DATE < 2019]
+#gdp.level <- data.table(
+#  read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
+#gdp.level <- gdp.level[DATE>2001 & DATE < 2019]
 #View(gdp.level)
-gdp.level$GDP <- as.numeric(gdp.level$GDP)
-gdp.level$GDP
+#gdp.level$GDP <- as.numeric(gdp.level$GDP)
+#gdp.level$GDP
 #View(aalUS)
-gdp.level$GDP/1000*30
-gdpvsaal.level <-(aalUS[year>2001 & year < 2019]$V1/1000000000000)/(gdp.level$GDP/1000)
-gdpvsaal.level <- data.table(gdpvsaal.level)
-gdpvsaal.level[,year := seq(2002, 2018, by = 1)]
+#gdp.level$GDP/1000*30
+#gdpvsaal.level <-(aalUS[year>2001 & year < 2019]$V1/1000000000000)/(gdp.level$GDP/1000)
+#gdpvsaal.level <- data.table(gdpvsaal.level)
+#gdpvsaal.level[,year := seq(2002, 2018, by = 1)]
 #View(gdpvsaal.level)
-gdpvsaal.30 <-(aalUS[year>2001 & year < 2019]$V1/1000000000000)/((gdp.level$GDP/1000)*30)
-gdpvsaal.30 <- data.table(gdpvsaal.30)
-gdpvsaal.30[,year := seq(2002, 2018, by = 1)]
-
-
-
-#View(codebook)
+#gdpvsaal.30 <-(aalUS[year>2001 & year < 2019]$V1/1000000000000)/((gdp.level$GDP/1000)*30)
+#gdpvsaal.30 <- data.table(gdpvsaal.30)
+#gdpvsaal.30[,year := seq(2002, 2018, by = 1)]
 
 #View(gdpvsaal.30)
 #gdp.pct
@@ -374,19 +370,19 @@ ui <- fluidPage(
       uiOutput("thirdSelection"),
       uiOutput("forthSelection"),
       em("NOTES: "),
-      br(),
       em("Filtered data is available for major state plans."),
       br(),
-      em("Upd#1 Added DR & AVA return data (Filtered option)."),
       br(),
-      em("Upd#2 Added multiple column selection (Filtered option)."),
+      em("Upd#1 Added DR & AVA return data +",),
+      br(), 
+      em("multiple column selection (Filtered option)."),
       br(),
-      em("Upd#3 Added Database Codebook explaining variables (download below)."),
+      em("Upd#2 Added Database Codebook explaining variables (download below)."),
       br(),
       br(),
       #textOutput('plot_2019Updates'),
       # Button
-      downloadButton("downloadData", "Download"),#, width = 3
+      downloadButton("downloadData", "Download Data"),#, width = 3
       actionButton("show_note", "Note"), 
       downloadButton("downloadCodeBook", "Download CodeBook"),
       
@@ -589,7 +585,7 @@ server <- function(input, output, session){
     Plan <- as.data.table(
       pullSourceData(pl, input$y, input$year))
     x <- data.matrix(Plan[data_source_name %in% "Reason" & year == 2018])
-    y <- as.data.table(x)
+    y <- data.table(x)
     y <- sum(!is.na(y)==1)
     if(y<1){
       paste("*No Reason Data (Latest: ", Updt.2019, "FY)", sep = "")}
@@ -829,84 +825,84 @@ server <- function(input, output, session){
     k
   })
   
-  output$plot_GDPvsAAL <- plotly::renderPlotly({
-    Data <- data.frame(gdp.aal)
-    Data[,1] <- as.numeric(Data[,1])
-    Data[,2] <- as.numeric(Data[,2])
-    Data[,3] <- as.numeric(Data[,3])
+  #output$plot_GDPvsAAL <- plotly::renderPlotly({
+  #  Data <- data.frame(gdp.aal)
+  #  Data[,1] <- as.numeric(Data[,1])
+  #  Data[,2] <- as.numeric(Data[,2])
+  #  Data[,3] <- as.numeric(Data[,3])
     #View(gdp.aal)
     
     #View(UAL)
-    k <- ggplot() +
-      ggtitle(label = paste0("State AAL vs GDP Change (Y%)"))+
-      geom_line(data=Data, aes(x=Data[,1], y=Data[,2], 
-                               color="US GDP Change", group =1,
-                               text = paste0("Fiscal Year: ", Data[,1],
-                                             "<br>Annual US GDP Change: ",Data[,2], "%")),
-                size = 1.00, fill="royalblue")+
-      geom_line(data=Data, aes(x=Data[,1], y=Data[,3], 
-                               color="State-Level AAL Change", group =1,
-                               text = paste0("Fiscal Year: ", Data[,1],
-                                             "<br>Annual State-Level AAL Change: ",Data[,3], "%")),
-                size = 1.00)+
-      geom_line(data=Data, aes(x=Data[,1], y=Data[,4], 
-                               color="Average AAL Change", group =1,
-                               text = paste0("Fiscal Year: ", Data[,1],
-                                             "<br>Average AAL Change: ",round(Data[,4],1), "%")),
-                size = 1.00)+
-      geom_line(data=Data, aes(x=Data[,1], y=Data[,5], 
-                               color="Average GDP Change", group =1,
-                               text = paste0("Fiscal Year: ", Data[,1],
-                                             "<br>Average GDP Change: ",round(Data[,5],1), "%")),
-                size = 1.00)+
-      scale_colour_manual(values=c(palette_reason$Orange, palette_reason$Blue, palette_reason$LightOrange, palette_reason$LightBlue))+
-      scale_y_continuous(labels = function(x) paste0(x,"%"), name = "",
-                         breaks = seq(-3, 10, by = 1), limits = c(-3, 10))+
-      scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
-                         breaks = seq(2002, 2018, by = 1), limits = c(2002, 2018))+
-      theme_bw()+
-      plotTheme#+
-    
-    k <- ggplotly(k, tooltip = c("text"))
-    k <- k %>% layout(autosize = TRUE, legend = list(orientation = "v", x=0.01, y = 0.01))
-    k
-  })
+   # k <- ggplot() +
+  #    ggtitle(label = paste0("State AAL vs GDP Change (Y%)"))+
+  #    geom_line(data=Data, aes(x=Data[,1], y=Data[,2], 
+  #                             color="US GDP Change", group =1,
+  #                             text = paste0("Fiscal Year: ", Data[,1],
+  #                                           "<br>Annual US GDP Change: ",Data[,2], "%")),
+  #              size = 1.00, fill="royalblue")+
+  #    geom_line(data=Data, aes(x=Data[,1], y=Data[,3], 
+  #                             color="State-Level AAL Change", group =1,
+  #                             text = paste0("Fiscal Year: ", Data[,1],
+  #                                           "<br>Annual State-Level AAL Change: ",Data[,3], "%")),
+  #              size = 1.00)+
+  #    geom_line(data=Data, aes(x=Data[,1], y=Data[,4], 
+  #                             color="Average AAL Change", group =1,
+  #                             text = paste0("Fiscal Year: ", Data[,1],
+  #                                           "<br>Average AAL Change: ",round(Data[,4],1), "%")),
+  #              size = 1.00)+
+  #    geom_line(data=Data, aes(x=Data[,1], y=Data[,5], 
+  #                             color="Average GDP Change", group =1,
+  #                             text = paste0("Fiscal Year: ", Data[,1],
+  #                                           "<br>Average GDP Change: ",round(Data[,5],1), "%")),
+  #              size = 1.00)+
+  #    scale_colour_manual(values=c(palette_reason$Orange, palette_reason$Blue, palette_reason$LightOrange, palette_reason$LightBlue))+
+  #    scale_y_continuous(labels = function(x) paste0(x,"%"), name = "",
+  #                       breaks = seq(-3, 10, by = 1), limits = c(-3, 10))+
+  #    scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
+  #                       breaks = seq(2002, 2018, by = 1), limits = c(2002, 2018))+
+  #    theme_bw()+
+  #    plotTheme#+
+  #  
+  #  k <- ggplotly(k, tooltip = c("text"))
+  #  k <- k %>% layout(autosize = TRUE, legend = list(orientation = "v", x=0.01, y = 0.01))
+  #  k
+  #})
   
-  output$plot_GDPlevel <- plotly::renderPlotly({
-    Data <- data.frame(gdpvsaal.level)
-    Data[,1] <- as.numeric(Data[,1])
-    
-    Data2 <- data.frame(gdpvsaal.30)
-    Data2[,1] <- as.numeric(Data2[,1])
+  #output$plot_GDPlevel <- plotly::renderPlotly({
+  #  Data <- data.frame(gdpvsaal.level)
+  #  Data[,1] <- as.numeric(Data[,1])
+  #  
+  #  Data2 <- data.frame(gdpvsaal.30)
+  #  Data2[,1] <- as.numeric(Data2[,1])
     #View(Data)
     #View(Data2)
     #View(gdp.aal)
     
     #View(UAL)
-    k <- ggplot() +
-      ggtitle(label = paste0("State AAL-to-GDP Level Ratio"))+
-      geom_line(data=Data, aes(x=Data[,2], y=Data[,1], 
-                               color="AAL-to-GDP Ratio", group =1,
-                               text = paste0("Fiscal Year: ", Data[,2],
-                                             "<br>AAL-to-GDP Ratio: ",round(Data[,1],4))),
-                size = 1.00, fill=palette_reason$LightBlue)+
-      geom_line(data=Data2, aes(x=Data2[,2], y=Data2[,1], 
-                                color="AAL-to-GDP(x30) Ratio", group =1,
-                                text = paste0("Fiscal Year: ", Data2[,2],
-                                              "<br>AAL-to-GDP(x30) Ratio: ",round(Data2[,1],4))),
-                size = 1.00, fill=palette_reason$LightBlue)+
-      scale_colour_manual(values=c(palette_reason$Orange, palette_reason$LightOrange))+
-      scale_y_continuous(labels = function(x) paste0(round(x,3)), name = "",
-                         breaks = seq(0, 0.3, by = 0.03), limits = c(0, 0.3))+
-      scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
-                         breaks = seq(2002, 2018, by = 1), limits = c(2002, 2018))+
-      theme_bw()+
-      plotTheme#+
-    
-    k <- ggplotly(k, tooltip = c("text"))
-    k <- k %>% layout(autosize = TRUE, legend = list(orientation = "v", x=0.01, y = 1))
-    k
-  })
+   # k <- ggplot() +
+  #    ggtitle(label = paste0("State AAL-to-GDP Level Ratio"))+
+  #    geom_line(data=Data, aes(x=Data[,2], y=Data[,1], 
+  #                             color="AAL-to-GDP Ratio", group =1,
+  #                             text = paste0("Fiscal Year: ", Data[,2],
+  #                                           "<br>AAL-to-GDP Ratio: ",round(Data[,1],4))),
+  #              size = 1.00, fill=palette_reason$LightBlue)+
+  #    geom_line(data=Data2, aes(x=Data2[,2], y=Data2[,1], 
+  #                              color="AAL-to-GDP(x30) Ratio", group =1,
+  #                              text = paste0("Fiscal Year: ", Data2[,2],
+  #                                            "<br>AAL-to-GDP(x30) Ratio: ",round(Data2[,1],4))),
+  #              size = 1.00, fill=palette_reason$LightBlue)+
+  #    scale_colour_manual(values=c(palette_reason$Orange, palette_reason$LightOrange))+
+  #    scale_y_continuous(labels = function(x) paste0(round(x,3)), name = "",
+  #                       breaks = seq(0, 0.3, by = 0.03), limits = c(0, 0.3))+
+  #    scale_x_continuous(labels = function(x) paste0(x, ""), name = "Fiscal Year",
+  #                       breaks = seq(2002, 2018, by = 1), limits = c(2002, 2018))+
+  #    theme_bw()+
+  #    plotTheme#+
+  #  
+  #  k <- ggplotly(k, tooltip = c("text"))
+  #  k <- k %>% layout(autosize = TRUE, legend = list(orientation = "v", x=0.01, y = 1))
+  #  k
+  #})
   
   output$plot_Filtered_Contr <- plotly::renderPlotly({
     UAL5 <- data.table(PlanData()) 
@@ -1172,7 +1168,7 @@ server <- function(input, output, session){
   
   codebook <- reactive({
     x <- read_csv(url(
-      "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/Reason_Database_CodeBook.csv"), 
+      "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/Reason_Database_CodeBook.csv"), 
       col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
     x <- data.table(x)
     x
