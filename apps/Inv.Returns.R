@@ -434,11 +434,11 @@ server <- function(input, output, session){
     if(input$lines == "Median Assumed Rate of Return (ARR)"){
       p <- add_lines(p, x = trace5$x, 
               xend =  max(trace5$x), y = round(arr.perc$V1,2), yend = last(round(arr.perc$V1,2)), showlegend = T,
-              name = "Median ARR", line = list(color = palette_reason$SpaceGrey))
+              name = "Median ARR", line = list(color = palette_reason$LightOrange))
     }
     
     p <- layout(p, width=layout$width, xaxis=layout$xaxis, yaxis=layout$yaxis, height=layout$height, autosize=layout$autosize)
-    p <- layout(p, yaxis = list(title = "FY2001-20 Actual Investment Returns", dtick = 0.03, tick0 = -0.3, 
+    p <- layout(p, yaxis = list(title = "Market Valued Returns (Actual)", dtick = 0.03, tick0 = -0.3, 
                                 tickmode = "linear", tickformat = "%", zeroline = FALSE)) %>%
       layout(hovermode = 'compare')# setting "compare" hover option as a default
     
