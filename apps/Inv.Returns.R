@@ -125,7 +125,7 @@ ui <- fluidPage(
                   #https://community.rstudio.com/t/color-cells-in-dt-datatable-in-shiny/2288),
         tabPanel("2020 Return Distribution", plotly::plotlyOutput("plot_Return_Distribution")),
         tabPanel("2001-20 Return Variance", 
-                 radioButtons("lines", "Select Lines", 
+                 radioButtons("lines", "Add Lines", 
                  choices = c("None", "Median Assumed Rate of Return (ARR)")), selected = "None",
                  plotly::plotlyOutput("plot_InvReturns")),
                  
@@ -146,7 +146,7 @@ server <- function(input, output, session){
       "Methodology: 'Approximate Recognized Investment Loss' is calculated by","<br>", 
       "taking plan's FY2018-19 'Market Value of Assets' and multiplying it by the difference between 'Assumed Rate of Return' and 'FY2019-20 Return'. 
       Values are meant as an approximation of recognized losses due to in FY19-20 returns deviating from assumed return","<br>", "<br>",
-      "*Aggregate state pension data' return","<br>","**Preliminary returns", sep="\n")
+      "*Aggregate state-level return","<br>","**Preliminary returns", sep="\n")
   })
   
   output$plot_Returns <- DT::renderDataTable({
