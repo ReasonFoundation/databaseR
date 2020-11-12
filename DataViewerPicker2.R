@@ -372,6 +372,7 @@ ui <- fluidPage(
       em("NOTES: "),
       em("Filtered data is available for major state plans."),
       br(),
+      tags$div(htmlOutput("text1")),
       br(),
       em("Upd#1 Added DR & AVA return data +",),
       br(), 
@@ -431,6 +432,12 @@ server <- function(input, output, session){
   observeEvent(input$show_note,{
     showModal(modalDialog(note_text))
   })
+  
+  output$text1 <- renderText({
+    paste(tags$a(href="https://github.com/ReasonFoundation/databaseR/blob/master/DataViewerPicker2.R", "*R Code"),"<br>",
+       sep="\n")
+  })
+  
   
   output$secondSelection <- renderUI({
     pl <- data.table(pl)

@@ -38,6 +38,7 @@ library(dplyr)
 #######################
 ###Check postgreSQL mapping
 
+masterView <- function(source = NULL, expand = FALSE){
   con <- RPostgres::dbConnect(
     RPostgres::Postgres(),
     dbname = "d629vjn37pbl3l",
@@ -48,7 +49,10 @@ library(dplyr)
     sslmode = "require")
   # define the query to retrieve the plan data
 
-    query <- paste("select * from master_priority_view")
+    query <- paste("select * from", 
+                   if(isTRUE(expand)){paste("plan_attribute")}
+                      else{paste("master_priority_view")}
+                      )
     
     result <- RPostgres::dbSendQuery(con, query)
     #RPostgres::dbBind(result, list(1))
@@ -57,7 +61,38 @@ library(dplyr)
     RPostgres::dbClearResult(result)
     RPostgres::dbDisconnect(con)
     
+    all_data <- data.table(all_data)
+    
+    if(is.null(source)){
+      all_data <- data.table(all_data)
+      
+    }else if(!is.null(source) & !isTRUE(expand)){
+    all_data <- all_data[ data_source_name == source]
+    
+    }else if(!is.null(source) & source == "Reason" & isTRUE(expand)){
+      all_data <- all_data[ data_source_id == 3]}
+    
+    else{all_data <- data.table(all_data)
+    }
+    
+}
+
+
+View(masterView())
+View(masterView(source = "Reason"))
+View(masterView(source = "Public Plans Database"))
+View(masterView(expand = TRUE))
+View(masterView(source = "Reason", expand = TRUE))
+
+    #Check pulled data
     View(all_data)
+    #Check pulled data
+    View(all_data[ data_source_name == "Reason"])
+    
+    ###All variables
+    #query <- paste("select * from plan_attribute")
+    #View(all_data[ data_source_id == 3])
+    
     write.csv(all_data, file = "/Users/anilniraula/Downloads/attribute.names.csv")
 #######################
 
