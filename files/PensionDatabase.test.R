@@ -76,11 +76,16 @@ masterView <- function(source = NULL, expand = FALSE){
     
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 399a30950d86810119074ccb599dda55f9097668
 #View(masterView())
 #View(masterView(source = "Reason"))
 #View(masterView(source = "Public Plans Database"))
 #View(masterView(expand = TRUE))
 #View(masterView(source = "Reason", expand = TRUE))
+<<<<<<< HEAD
     
     ###All variables
     #query <- paste("select * from plan_attribute")
@@ -111,3 +116,9 @@ masterView <- function(source = NULL, expand = FALSE){
     
 #######################
 #########
+=======
+    
+#    write.csv(all_data, file = "/Users/anilniraula/Downloads/attribute.names.csv")
+#######################
+#########
+>>>>>>> 399a30950d86810119074ccb599dda55f9097668
