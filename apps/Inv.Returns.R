@@ -29,6 +29,7 @@ library(base64enc)
 #Shiny-----------
 library(shiny)
 library(shinyWidgets)
+library(shinyjs)
 #library(shinyFiles)
 library(DT)
 library(plotly)
@@ -86,15 +87,13 @@ colnames(returns.perc) <- as.character(seq(2001, 2020, by = 1))
 returns.perc <- t(returns.perc)
 colnames(returns.perc) <- as.character(c("10th", "25th", "50th", "75th", "90th"))
 #View(returns.perc)
-arr.perc <- data.table(reason.data[,median(na.omit(arr)), by = list(year)])
 
-urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
-returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions) 
-returns_2020$mva_billions_19 <- as.numeric(returns_2020$mva_billions_19) 
-returns_2020$arr <- as.numeric(returns_2020$arr) 
+#Calculating median ARR for 2001-19
+arr.perc <- data.table(reason.data[,median(na.omit(arr)), by = list(year)])
+#Calculating median ARR for 2020
 arr.2020 <- data.table("2020",median(na.omit(returns_2020$arr)))
 #View(arr.2020)
+
 arr.perc <- rbind(arr.perc,arr.2020, fill=T)
 arr.perc[20,1] <- as.numeric("2020")
 arr.perc[20,2] <- as.numeric(median(na.omit(returns_2020$arr)))
@@ -109,13 +108,7 @@ ui <- fluidPage(
   titlePanel("State Pension 2019-20 Returns"),
   # CODE BELOW: Add select inputs on state and plan_names to choose between different pension plans in Reason database
   theme = shinythemes::shinytheme("spacelab"),
-  sidebarLayout(
-    sidebarPanel(width = 5, 
-      radioGroupButtons("filter", "Sort by", 
-          choices = c("Plan Name", "Highest returns", "Assumed Rate of Return", "Asset size"), 
-          selected = c("Plan Name"), status = "primary")
-      #buttons --> http://shinyapps.dreamrs.fr/shinyWidgets/
-    ),
+
     mainPanel(
       ###Remove error messages
       tags$style(type="text/css",
@@ -123,14 +116,19 @@ ui <- fluidPage(
                  ".shiny-output-error:before { visibility: hidden; }"
       ),
       tabsetPanel(
-         tabPanel('2020 Investment Returns', DT::DTOutput('plot_Returns'),
-                      style = "font-size:80%; width:50%"),
+         tabPanel('2020 Investment Returns', width = 5, 
+                  radioGroupButtons("filter", "Sort by", 
+                  choices = c("Plan Name", "Highest returns", "Assumed Rate of Return", "Asset size"), 
+                  selected = c("Plan Name"), status = "primary"),
+                  DT::DTOutput('plot_Returns'),
+                  style = "font-size:80%; width:50%"
+          ),
                   #https://community.rstudio.com/t/color-cells-in-dt-datatable-in-shiny/2288),
         tabPanel("2020 Return Distribution", 
-                 switchInput(
-                   inputId = "perc",
-                   label = "Percentiles", 
-                   labelWidth = "70px"
+                  switchInput(
+                  inputId = "perc",
+                  label = "Percentiles", 
+                  labelWidth = "70px"
           ),
                  plotly::plotlyOutput("plot_Return_Distribution")),
         tabPanel("2001-20 Return Distribution", 
@@ -138,11 +136,16 @@ ui <- fluidPage(
                  prettyRadioButtons("lines", "Add Lines", 
                  choices = c("None", "Median Assumed Rate of Return (ARR)"), selected = "None", status = "warning"),
                  plotly::plotlyOutput("plot_InvReturns")),
+        
+        tags$div(htmlOutput("text1")),
                  
-        tags$div(htmlOutput("text1")))#Adjusting font size & width
+    id = "tabset"
+  ), 
+  id="main"
+
       )
     )
-  )
+
 
 ##########################
 ######Shiny app[server] -------------------------------------------------
@@ -156,8 +159,15 @@ server <- function(input, output, session){
       "Methodology: 'Approximate Recognized Investment Loss' is calculated by","<br>", 
       "taking plan's FY2018-19 'Market Value of Assets' and multiplying it by the difference between 'Assumed Rate of Return' and 'FY2019-20 Return'. 
       Values are meant as an approximation of recognized losses due to FY2019-20 return deviating from the assumption.","<br>", 
-      "Probability Distribution is based on `normalized` probability distribution function, with probabilities summing up to 100%.", "<br>","<br>",
-      "*Aggregate state-level return","<br>","**Preliminary returns", sep="\n")
+      "Probability Distribution is based on `normalized` probability density function, with all probabilities summing up to 100%.", "<br>","<br>",
+      "*Aggregate state-level data","<br>","**Preliminary returns", sep="\n")
+  })
+  
+  observeEvent(input[["tabset"]], {
+    
+      hideElement(selector = "#sidebar")
+      removeCssClass("main", "col-sm-8")
+      addCssClass("main", "col-sm-12")
   })
   
   output$plot_Returns <- DT::renderDataTable({
@@ -167,6 +177,7 @@ server <- function(input, output, session){
     returns_2020 <- returns_2020 %>% filter(state != "Pennsylvania")
     returns_2020<- returns_2020 %>% arrange(plan_name)
     returns_2020<- data.table(returns_2020)
+    #Calculating Approximate Investment Loss
     returns_2020[, inv_gain_loss := mva_billions_19*(arr-`2020_return`)]
     returns_2020$inv_gain_loss <- round(returns_2020$inv_gain_loss,3)
     returns_2020$mva_billions <- round(returns_2020$mva_billions,1)
@@ -268,11 +279,9 @@ server <- function(input, output, session){
       #          y = 100*(d1$y/sum(d1$y)),
       #          type="scatter",mode = 'line+markers', fill = 'toze roy', showlegend = F) %>%
       
-
      # add_trace(x = fit$x, y = fit$y, mode = "lines", fill = "tozeroy", yaxis = "y2", name = "Density") %>% 
       #
 
-    
     #add_boxplot(x = na.omit(returns_2020[,3]), y =  d1, jitter = 0, pointpos = 0, boxpoints = F,
     #            marker = list(color = 'rgb(7,40,89)'),
     #            line = list(color = 'rgb(7,40,89)'),
@@ -288,27 +297,29 @@ server <- function(input, output, session){
                         range = c(0,0.35),dtick = 0.05, 
                         zeroline = FALSE)) %>% 
      
-      layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
-                                y = 0.35, x = 0, text = "reason.org/pensions",
-                                xanchor='right', yanchor='auto', xshift=0, yshift=0,
-                                font=list(size=9, color="black")))  %>%
+           layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
+                        y = 0.35, x = 0, text = "reason.org/pensions",
+                        xanchor='right', yanchor='auto', xshift=0, yshift=0,
+                        font=list(size=9, color="black")))  %>%
       
-      layout(hovermode="unified", 
-             if((sum(input$perc) > 0) == T){annotations= list(annotation)})
+           layout(hovermode="unified", 
+                       if((sum(input$perc) > 0) == T){annotations= list(annotation)})
     
+    #Adding ercentiles per user input
       if((sum(input$perc) > 0) == T){
         histogram <- histogram %>% 
           add_segments(x = quantile[1], 
                    xend = quantile[1], y = 0.005, yend = 0.33, showlegend = T, 
                    name = paste0("25th Percentile (", round(quantile[1]*100,1), "%)"), line = list(color = palette_reason$SatBlue)) %>%
+          
           add_segments(x = quantile[2], 
                    xend = quantile[2], y = 0.005, yend = 0.33, showlegend = T, 
                    name = paste0("Median (", round(quantile[2]*100,1), "%)"), line = list(color = palette_reason$Yellow)) %>%
-        add_segments(x = quantile[3], 
+          
+          add_segments(x = quantile[3], 
                    xend = quantile[3], y = 0.005, yend = 0.33, showlegend = T, 
                    name = paste0("75th Percentile (", round(quantile[3]*100,1), "%)"), line = list(color = palette_reason$Green)) 
      
-    
    }
     
     
@@ -327,8 +338,6 @@ server <- function(input, output, session){
   })
   
   output$plot_InvReturns <- plotly::renderPlotly({
-    
-    
     reason.data <- data.table(reason.data)
     years <- seq(min(input$year,2018), 2020, by = 1)
     
@@ -366,8 +375,9 @@ server <- function(input, output, session){
       uid = "2983cb", 
       fill = "none", 
       line = list(
+        color = palette_reason$Orange, 
         shape = "spline", 
-        width = 0, 
+        width = 1, 
         smoothing = 0.6
       ), 
       mode = "lines", 
@@ -381,8 +391,9 @@ server <- function(input, output, session){
       uid = "324d0c", 
       fill = "tonexty", 
       line = list(
+        color = palette_reason$Red, 
         shape = "spline", 
-        width = 0, 
+        width = 1, 
         smoothing = 0.6
       ), 
       mode = "lines", 
@@ -411,8 +422,9 @@ server <- function(input, output, session){
       uid = "fdf1b8", 
       fill = "tonexty", 
       line = list(
+        color = palette_reason$Red, 
         shape = "spline", 
-        width = 0, 
+        width = 1, 
         smoothing = 0.6
       ), 
       mode = "lines", 
@@ -426,9 +438,11 @@ server <- function(input, output, session){
       uid = "9ae1f4", 
       fill = "tonexty", 
       line = list(
+        color = palette_reason$Orange, 
         shape = "spline", 
-        width = 0, 
+        width = 1, 
         smoothing = 0.6
+        
       ), 
       mode = "lines", 
       name = "90th Percentile", 
