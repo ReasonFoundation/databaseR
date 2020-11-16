@@ -439,7 +439,6 @@ server <- function(input, output, session){
        sep="\n")
   })
   
-  
   output$secondSelection <- renderUI({
     pl <- data.table(pl)
     pl1 <- data.table(pl %>% filter(state == input$x))
