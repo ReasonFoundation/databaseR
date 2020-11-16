@@ -434,7 +434,8 @@ server <- function(input, output, session){
   })
   
   output$text1 <- renderText({
-    paste(tags$a(href="https://github.com/ReasonFoundation/databaseR/blob/master/DataViewerPicker2.R", "*R Code"),"<br>",
+    paste(tags$a(href="https://github.com/ReasonFoundation/databaseR/blob/master/DataViewerPicker2.R", "*R Code"), " / ",
+          tags$a(href="https://www.dropbox.com/home/Asana%20Dropbox/pension_reform/research/data_analytics/NonShared_PensionSheet/HGarb_Updates_2020", "*Data Templates"),"<br>",
        sep="\n")
   })
   

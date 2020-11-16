@@ -102,8 +102,10 @@ arr.perc <- arr.perc[,!3]
 arr.perc$V1 <- as.numeric(arr.perc$V1)
 
 ############
+######Shiny app[ui] -------------------------------------------------
 
 ui <- fluidPage(
+  br(),
   img(src = base64enc::dataURI(file = "https://raw.githubusercontent.com/ANiraula/PublicPlansData/master/reason_logo.png"), width = 200, height = 55),
   titlePanel("State Pension 2019-20 Returns"),
   # CODE BELOW: Add select inputs on state and plan_names to choose between different pension plans in Reason database
@@ -121,14 +123,14 @@ ui <- fluidPage(
                   choices = c("Plan Name", "Highest returns", "Assumed Rate of Return", "Asset size"), 
                   selected = c("Plan Name"), status = "primary"),
                   DT::DTOutput('plot_Returns'),
-                  style = "font-size:80%; width:50%"
+                  style = "font-size:100%; width:50%"
           ),
                   #https://community.rstudio.com/t/color-cells-in-dt-datatable-in-shiny/2288),
         tabPanel("2020 Return Distribution", 
                   switchInput(
                   inputId = "perc",
                   label = "Percentiles", 
-                  labelWidth = "70px"
+                  labelWidth = "70px",
           ),
                  plotly::plotlyOutput("plot_Return_Distribution")),
         tabPanel("2001-20 Return Distribution", 
@@ -154,12 +156,12 @@ server <- function(input, output, session){
   
   output$text1 <- renderText({
     paste(HTML(
-      "Source:"), tags$a(href="https://reason.org/topics/pension-reform/", "Pension Integrity Project at Reason Foundation"),"<br>", 
-      "analysis of state pension plan repoted returns, CAFRs and valuation reports.","<br>", "<br>", 
-      "Methodology: 'Approximate Recognized Investment Loss' is calculated by","<br>", 
+      "<b>Source</b>:"), tags$a(href="https://reason.org/topics/pension-reform/", "Pension Integrity Project at Reason Foundation"),"<br>", 
+      "analysis of CAFRs and valuation reports.","<br>", "<br>", 
+      "<b>Methodology</b>: 'Approximate Recognized Investment Loss' is calculated by","<br>", 
       "taking plan's FY2018-19 'Market Value of Assets' and multiplying it by the difference between 'Assumed Rate of Return' and 'FY2019-20 Return'. 
-      Values are meant as an approximation of recognized losses due to FY2019-20 return deviating from the assumption.","<br>", 
-      "Probability Distribution is based on `normalized` probability density function, with all probabilities summing up to 100%.", "<br>","<br>",
+      Values are meant as an approximation of recognized losses due to FY2019-20 return deviating from the assumption.",
+      "Probability Distribution is based on `normalized` probability density function, with all probabilities summing up to 100%.", "<br>", "<br>", 
       "*Aggregate state-level data","<br>","**Preliminary returns", sep="\n")
   })
   
@@ -199,15 +201,18 @@ server <- function(input, output, session){
     
     
     returns_2020 <- as.data.frame(returns_2020) 
+    returns_2020[,3:6] <- returns_2020[,3:6] %>% dplyr::mutate_all(dplyr::funs(as.numeric))
+    #View(returns_2020)
+    
     #http://www.stencilled.me/post/2019-04-18-editable/
     returns_2020 <- DT::datatable(returns_2020, editable = FALSE, options = list(
-      "pageLength" = 40, autoWidth = TRUE)) %>% 
-      formatStyle(returns_2020$`2020_return`, 
-                  background = styleColorBar(range(na.omit(returns_2020$`2020_return`)), "#339fff"),
+      "pageLength" = 40, autoWidth = TRUE), rownames= FALSE) %>% 
+      formatStyle(names(returns_2020[,3:4]), 
+                  background = styleColorBar(range(returns_2020[,3:4]), palette_reason$LightBlue),
                   backgroundSize = '98% 88%',
                   backgroundRepeat = 'no-repeat',
-                  backgroundPosition = 'center') %>%
-      formatStyle(1, fontWeight = styleEqual(10, "bold")) %>%
+                  backgroundPosition = 'center',
+                  fontWeight = styleEqual(10, "bold")) %>%
       formatPercentage(c("FY19-20 Returns", "Assumed Rate of Return"),2)
       
     #set to TRUE to allow editing
