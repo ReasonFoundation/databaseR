@@ -158,7 +158,7 @@ server <- function(input, output, session){
     paste(HTML(
       "<b>Source</b>:"), tags$a(href="https://reason.org/topics/pension-reform/", "Pension Integrity Project at Reason Foundation"),"<br>", 
       "analysis of CAFRs and valuation reports.","<br>", "<br>", 
-      "<b>Methodology</b>: 'Approximate Recognized Investment Loss' is calculated by","<br>", 
+      "<b>Methodology</b>: 'Approximate Recognized Investment Loss' is calculated by",
       "taking plan's FY2018-19 'Market Value of Assets' and multiplying it by the difference between 'Assumed Rate of Return' and 'FY2019-20 Return'. 
       Values are meant as an approximation of recognized losses due to FY2019-20 return deviating from the assumption.",
       "Probability Distribution is based on `normalized` probability density function, with all probabilities summing up to 100%.", "<br>", "<br>", 
