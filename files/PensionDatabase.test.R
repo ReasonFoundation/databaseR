@@ -33,25 +33,27 @@ library(dplyr)
   #`source` allows to filter for a given data source (e.g. "Reason", "Public Plans Database", "Census")
   #`expand` allows to trigger SQL function that either shos mapped variables (FALSE - default) or all available variables (TRUE)
 
+#Testing    
     library(devtools)
     library(roxygen2)
-    masterView.test <- source_url("https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/masterView.R")
-    
-#View all mapped variables
-    View(masterView.test$value())
 
-#View Reason source mapped variables
-    #View(masterView.test$value(source = "Reason"))
+#Load fucntion from GitHub    
+masterView.test <- source_url("https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/masterView.R")
+    
+#1) View all mapped variables
+    View(masterView.test$value())
+#2) View Reason source mapped variables
+    View(masterView.test$value(source = "Reason"))
 #View PPD mapped variables
-    #View(masterView.test$value(source = "Public Plans Database"))
+    View(masterView.test$value(source = "Public Plans Database"))
 #View expanded list of available variables
-    #View(masterView.test$value(expand = TRUE))
+    View(masterView.test$value(expand = TRUE))
 #View expanded list of Reason variables
     #View(masterView.test$value(source = "Reason", expand = TRUE))
     
 #######################
 #########
-\
+
     
 #    write.csv(all_data, file = "/Users/anilniraula/Downloads/attribute.names.csv")
 #######################

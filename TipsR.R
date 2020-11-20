@@ -2,19 +2,21 @@
 ## Data: Pension Database
 # By: Anil
 
+#Clean environment
 rm(list=ls())
+
 ###Load/install packages
-#R.Version()
-#https://github.com/ReasonFoundation/pensionviewr
-#Create token -> usethis::edit_r_environ() -> restart -> Sys.getenv("GITHUB_PAT")
+
+#To install `reasontheme` & `pensionviewr` packages you first want to load `devtools`
 #install.packages('devtools')
 #library(devtools)
+
 #devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
 #devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
 library(reasontheme)
 library(pensionviewr)
 #library(janitor)
-library(grid)#https://bookdown.org/rdpeng/RProgDA/the-grid-package.html
+library(grid)
 library(tidyverse)
 #library(openxlsx)
 library(tseries)
@@ -33,34 +35,26 @@ library(DT)
 library(plotly)
 library(rlang)
 library(purrr)
+library(rpart)
 
 #Pull state-level data from the database
 reason.data <- pullStateData(2001)
 #Filter data
 reason.data <- data.table(filterData(reason.data, 2001))
-#View(reason.data)
-#Save 1st 3 columns
-x <- reason.data[,1:3]
 
-#Mutate all columns to "numeric" type
-###
-reason.data <- data.table(reason.data) %>% dplyr::mutate_all(dplyr::funs(as.numeric))
-###
-reason.data[,1:3] <- x
 #View(reason.data)
 
 pl <- planList()
-
 #filter for PERSI
 PERSI.data<- reason.data %>% filter(plan_name == "Idaho Public Employee Retirement System")
-View(PERSI.data)
+
+#View(PERSI.data)
 
 #Transforming from wide to long format w/ "melt"
 ###
 PERSI.data.long <- data.table(melt(PERSI.data, id.vars="year"))
 ###
 View(PERSI.data.long)
-
 
 #### Tidyverse update ####
 ### dplyr 1.0
@@ -71,11 +65,14 @@ View(PERSI.data.long)
 PERSI.data.long <- PERSI.data %>% 
   select(year, state, plan_name, return_1yr, arr, ava, aal)
 
+#Convert column data to numeric
+PERSI.data[,4:7] <- data.table(PERSI.data[4:7]) %>% dplyr::mutate_all(dplyr::funs(as.numeric))
+
 #View(PERSI.data.long)
 
 #Relocate() is like reordering columns
 View(PERSI.data.long %>% 
-  relocate(state, plan_name, year, return_1yr))
+     relocate(state, plan_name, year, return_1yr))
 
 #Move one column before/after another column
 View(PERSI.data.long %>% 
@@ -95,11 +92,24 @@ View(PERSI.data.long %>%
 
 #### Manipulate data ####
 
-## data.table & dplyr
-#data.table -- [, fns, by = list]
-View(reason.data[, median(na.omit(arr)), by = list(year, state)])
+PERSI.data.long <- data.table(melt(PERSI.data, id.vars="year"))
 
-#dplyr -- across()
+## data.table & dplyr
+
+#1.data.table package 
+#-- [, fns, by = list]
+reason.data$arr <- as.numeric(reason.data$arr)
+reason.data$ava <- as.numeric(reason.data$ava)
+reason.data$aal <- as.numeric(reason.data$aal)
+reason.data$return_1yr <- as.numeric(reason.data$return_1yr)
+
+View(reason.data[, median(na.omit(arr)), by = list(year, state)])
+View(reason.data[, median(na.omit(return_1yr)), by = list(year, state)])
+View(reason.data[, sum(na.omit(ava))/sum(na.omit(aal)), by = list(year, state)])
+View(reason.data)
+
+#dplyr package
+#-- across(variables, .fns)
 View(reason.data %>%
   group_by(state, year) %>%
   summarise(
@@ -120,4 +130,4 @@ View(reason.data %>%
            )),
          .groups = "drop")
 )
-###
+### END
