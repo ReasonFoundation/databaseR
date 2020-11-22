@@ -62,6 +62,7 @@ pl <- planList()
 reason.data <- pullStateData(2001)
 reason.data <- filterData(reason.data, 2001)
 reason.data <- reason.data %>% select(year, plan_name, state,return_1yr, arr)
+reason.data <- reason.data %>% filter(state != "Pennsylvania")
 reason.data <- data.table(reason.data)
 reason.data[,4:5] <- reason.data[,4:5] %>% dplyr::mutate_all(dplyr::funs(as.numeric))
 reason.data[,1] <- reason.data[,1] %>% dplyr::mutate_all(dplyr::funs(as.numeric))
@@ -82,6 +83,7 @@ for (i in (2002:2019)){
 #Adding 2020 returns
 urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
 returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+returns_2020 <- returns_2020 %>% filter(state != "Pennsylvania")
 returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions) 
 returns_2020$mva_billions_19 <- as.numeric(returns_2020$mva_billions_19) 
 returns_2020$arr <- as.numeric(returns_2020$arr) 
@@ -286,8 +288,8 @@ server <- function(input, output, session){
       #            line = list(color = 'rgb(7,40,89)'),
     #            name = "All Points") %>%
     
-    layout(title = "Probability Distribution of <br> FY", paste(input$year2), "State Pension Plan Returns",
-           xaxis = list(title = "Range of FY", paste(input$year2), "Returns", dtick = 0.05, 
+    layout(title = paste("Probability Distribution of <br> FY", paste(input$year2), "State Pension Plan Returns"),
+           xaxis = list(title = paste("Range of FY", paste(input$year2), "Returns"), dtick = 0.05, 
                         tick0 = -0.05, 
                         tickmode = "linear", tickformat = "%",
                         range = c(-0.3,0.3),
@@ -356,6 +358,7 @@ server <- function(input, output, session){
     #Adding 2020 returns
     urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
     returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+    returns_2020 <- returns_2020 %>% filter(state != "Pennsylvania")
     returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions) 
     returns_2020$mva_billions_19 <- as.numeric(returns_2020$mva_billions_19) 
     returns_2020$arr <- as.numeric(returns_2020$arr) 

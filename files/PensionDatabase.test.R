@@ -4,6 +4,12 @@
 #Clean Global Environment
 rm(list = ls())
 
+library(tidyverse)
+library(plyr)
+library(data.table)
+library(devtools)
+library(roxygen2)
+
 ### Load R Packages ###
 #install.packages('devtools')
 #library(devtools)

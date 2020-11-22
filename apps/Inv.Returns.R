@@ -165,7 +165,7 @@ server <- function(input, output, session){
       "<b>Methodology</b>: 'Approximate Recognized Investment Loss' is calculated by","<br>", 
       "taking plan's FY2018-19 'Market Value of Assets' and multiplying it by the difference between 'Assumed Rate of Return' and 'FY2019-20 Return'. 
       Values are meant as an approximation of recognized losses due to FY2019-20 return deviating from the assumption.",
-      "Probability Distribution is based on `normalized` probability density function, with all probabilities summing up to 100%.", "<br>", "<br>", 
+      "Probability Distribution is based on `normalized` probability density function, with all probabilities (i.e. bars) summing up to 100%.", "<br>", "<br>", 
       "*Aggregate state-level data","<br>","**Preliminary returns", sep="\n")
   })
   
