@@ -111,7 +111,7 @@ arr.perc$V1 <- as.numeric(arr.perc$V1)
 ui <- fluidPage(
   br(),
   img(src = base64enc::dataURI(file = "https://raw.githubusercontent.com/ANiraula/PublicPlansData/master/reason_logo.png"), width = 200, height = 55),
-  titlePanel("State Pension 2019-20 Returns"),
+  titlePanel("State Public Pension Investment Returns (Updated)"),
   # CODE BELOW: Add select inputs on state and plan_names to choose between different pension plans in Reason database
   theme = shinythemes::shinytheme("spacelab"),
 
@@ -152,19 +152,20 @@ ui <- fluidPage(
       )
     )
 
-
 ##########################
 ######Shiny app[server] -------------------------------------------------
 
 server <- function(input, output, session){
   
   output$text1 <- renderText({
-    paste(HTML(
+    paste(
+      "<b>Note</b>: We will be updating our return data regularly, as more state pension plans report their FY2019-20 returns.","<br>", "<br>", 
+      HTML(
       "<b>Source</b>:"), tags$a(href="https://reason.org/topics/pension-reform/", "Pension Integrity Project at Reason Foundation"),"<br>", 
       "analysis of CAFRs and valuation reports.","<br>", "<br>", 
-      "<b>Methodology</b>: 'Approximate Recognized Investment Loss' is calculated by","<br>", 
-      "taking plan's FY2018-19 'Market Value of Assets' and multiplying it by the difference between 'Assumed Rate of Return' and 'FY2019-20 Return'. 
-      Values are meant as an approximation of recognized losses due to FY2019-20 return deviating from the assumption.",
+      "<b>Methodology</b>: 'Estimated Investment Loss' is calculated by
+      taking plan's FY2018-19 'Market Value of Assets' and multiplying it by the difference between 'Assumed Rate of Return' and 'FY2019-20 Return'. 
+      Estimated values are meant to approximate total amounts of investment loss that plans would fully & directly recognize this year due to FY2019-20 return deviating from the assumption.",
       "Probability Distribution is based on `normalized` probability density function, with all probabilities (i.e. bars) summing up to 100%.", "<br>", "<br>", 
       "*Aggregate state-level data","<br>","**Preliminary returns", sep="\n")
   })
@@ -174,6 +175,7 @@ server <- function(input, output, session){
       hideElement(selector = "#sidebar")
       removeCssClass("main", "col-sm-8")
       addCssClass("main", "col-sm-12")
+      
   })
   
   output$plot_Returns <- DT::renderDataTable({
@@ -189,9 +191,9 @@ server <- function(input, output, session){
     returns_2020$inv_gain_loss <- round(returns_2020$inv_gain_loss,3)
     returns_2020$mva_billions <- round(returns_2020$mva_billions,1)
     returns_2020$mva_billions_19 <- as.character(round(returns_2020$mva_billions_19,1))
-    colnames(returns_2020) <- c("Pension Plan", "State", "FY19-20 Returns", "Assumed Rate of Return", "Market Assets (Billions)", "2019 Market Assets (Billions)", "Source", "Approximate Recognized Investment Loss (Billions)")
+    colnames(returns_2020) <- c("Pension Plan", "State", "FY19-20 Returns", "Assumed Rate of Return", "Market Assets (Billions)", "2019 Market Assets (Billions)", "Source", "Estimated Investment Loss (Billions)")
     returns_2020[,8] <- round(returns_2020[,8],1)
-    returns_2020 <- returns_2020 %>% select("Pension Plan", "State", "FY19-20 Returns", "Assumed Rate of Return", "Market Assets (Billions)", "Approximate Recognized Investment Loss (Billions)", "Source")
+    returns_2020 <- returns_2020 %>% select("Pension Plan", "State", "FY19-20 Returns", "Assumed Rate of Return", "Market Assets (Billions)", "Estimated Investment Loss (Billions)", "Source")
     returns_2020 <- (returns_2020 %>% arrange(desc(returns_2020[,3])))
       #    if(input$filter == "Highest returns"){
       #     returns_2020 %>% arrange(desc(returns_2020[,3]))
@@ -208,17 +210,36 @@ server <- function(input, output, session){
     returns_2020 <- as.data.frame(returns_2020) 
     returns_2020[,3:6] <- returns_2020[,3:6] %>% dplyr::mutate_all(dplyr::funs(as.numeric))
     #View(returns_2020)
+    returns_2020 <- data.table(returns_2020)
+
+    #Converting web links to active hyperlinks (named "Source") for each plan
+    for(i in (1:length(returns_2020$Source))){
+    returns_2020$Source[i] <- paste0("<a href=", paste0(returns_2020$Source[i]),">Source</a>")
+    }
     
+    returns_2020 <- as.data.frame(returns_2020) 
+    #for(i in (1:length(na.omit(returns_2020$source)))){
+    #  na.omit(returns_2020$source)[i] <- <a href="http://rstudio.com">RStudio</a>)
+    #}
+    #returns_2020[,7] <- <a href="http://rstudio.com">RStudio</a>
     #http://www.stencilled.me/post/2019-04-18-editable/
-    returns_2020 <- DT::datatable(returns_2020, editable = FALSE, options = list(
-      "pageLength" = 40, autoWidth = TRUE), rownames= FALSE) %>% 
-      formatStyle(names(returns_2020[,3:4]), 
-                  background = styleColorBar(range(returns_2020[,3:4]), palette_reason$LightBlue),
+    #https://rstudio.github.io/DT/
+    returns_2020 <- DT::datatable(returns_2020, escape = FALSE, filter = "top", editable = FALSE, 
+              options = list(pageLength = 40, autoWidth = TRUE, dom = 't'), rownames= FALSE) %>% 
+      #escape = FALSE keeps the a href links
+      #filter = "top" add quick search bars below column titles
+      #dom = 't' removes list and search bars at the top
+      
+      formatStyle("FY19-20 Returns", 
+                  background = styleColorBar(returns_2020[,3], palette_reason$LightBlue),
                   backgroundSize = '98% 88%',
                   backgroundRepeat = 'no-repeat',
-                  backgroundPosition = 'center',
+                  backgroundPosition = 'right',
                   fontWeight = styleEqual(10, "bold")) %>%
-      formatPercentage(c("FY19-20 Returns", "Assumed Rate of Return"),2)
+      
+      formatPercentage(c("FY19-20 Returns", "Assumed Rate of Return"),2) %>%
+      
+      formatCurrency(c("Market Assets (Billions)", "Estimated Investment Loss (Billions)"))
       
     #set to TRUE to allow editing
     
@@ -312,7 +333,7 @@ server <- function(input, output, session){
                         y = 0.35, x = 0, text = "reason.org/pensions",
                         xanchor='right', yanchor='auto', xshift=0, yshift=0,
                         font=list(size=9, color="black")))  %>%
-      
+           layout(autosize = T) %>%
            layout(hovermode="unified", 
                        if((sum(input$perc) > 0) == T){annotations= list(annotation)})
     
