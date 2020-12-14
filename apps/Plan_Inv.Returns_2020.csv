@@ -1,13 +1,13 @@
 plan_name,state,2020_return,arr,mva_billions,mva_billions_19,source
 Alabama Employees' Retirement System (ERS),Alabama,,,,,
 Alabama Teachers' Retirement System (TRS),Alabama,,,,,
-Alaska Public Employees Retirement System (PERS),Alaska,,,,,
-Alaska Teachers Retirement System (TRS),Alaska,,,,,
+Alaska Public Employees Retirement System (PERS),Alaska,0.0383,0.0738,9.3445,9.4894,https://treasury.dor.alaska.gov/Portals/3/docs/Investment%20Results/Investment%20Performance%2006.30.20.pdf
+Alaska Teachers Retirement System (TRS),Alaska,0.0382,0.0738,5.3757,5.5119,https://treasury.dor.alaska.gov/Portals/3/docs/Investment%20Results/Investment%20Performance%2006.30.20.pdf
 Arizona Corrections Officers Retirement Plan (CORP),Arizona,,,,,
 Arizona Public Safety Personnel Retirement System (PSPRS)**,Arizona,0.005,0.073,10.7,7.83,https://www.pionline.com/pension-funds/arizona-public-safety-personnel-returns-05-fiscal-year-below-benchmark
-Arizona State Retirement System (ASRS),Arizona,,,,,
+Arizona State Retirement System (ASRS),Arizona,0.008,0.075,42.1917,41.5568,https://www.azasrs.gov/sites/default/files/2020_ASRS_CAFR_Web.pdf
 Arkansas Public Employees System (APERS),Arkansas,0.024,0.072,9,8.833,https://www.pionline.com/pension-funds/arkansas-public-employees-returns-24-fiscal-year
-Arkansas Teachers Retirement Plan (ATRS),Arkansas,,,,,
+Arkansas Teachers Retirement Plan (ATRS),Arkansas,-0.014,0.075,16.6653,17.7416,https://www.artrs.gov/BoardMinutes/Minutes2020/09_28_2020_BOT_Packet.pdf
 California State Teachers Retirement System (CalSTRS),California,0.039,0.07,246,238.86,https://www.calstrs.com/news-release/calstrs-returns-39-2019-20-amid-volatile-markets
 CalPERS - California Public Employees Retirement Fund (CalPERS),California,0.047,0.07,396.9,372.61,https://www.calpers.ca.gov/page/newsroom/calpers-news/2020/calpers-preliminary-investment-return-2019-20
 "Colorado PERA, Local Division Fund",Colorado,,,,,
@@ -16,17 +16,17 @@ CalPERS - California Public Employees Retirement Fund (CalPERS),Californi
 Connecticut Municipal Employees Retirement Plan,Connecticut,,,,,
 Connecticut State Employees Retirement System (SERS),Connecticut,,,,,
 Connecticut Teachers Retirement System (TRS),Connecticut,,,,,
-Delaware State Employees’ Pension Plan (PERS),Delaware,,,,,
+Delaware State Employees’ Pension Plan (PERS),Delaware,0.1,0.07,9.6388,9.1165,https://open.omb.delaware.gov/FinancialReports/financials/fy-20-CAFR-FINAL.pdf
 Employee Retirement System of Hawaii (ERS),Hawaii,0.013,0.07,17.2,17.227,https://www.pionline.com/pension-funds/hawaii-system-returns-13-fiscal-year-topping-benchmark
 Employees Retirement System of Texas - Law Enforcement and Custodial Officer Supplemental Retirement Fund,Texas,,,,,
-Florida Retirement System (FRS),Florida,,,,,
+Florida Retirement System (FRS),Florida,0.033,0.072,161.6,163.5737,http://edr.state.fl.us/Content/conferences/actuarial/2020FRSActuarialAssumptionConferenceMillimanPresentation.pdf
 Georgia Employees’ Retirement System (GAERS),Georgia,0.055,0.073,16.7,13.617,https://www.pionline.com/pension-funds/georgia-employees-returns-55-fiscal-year
-Georgia Teachers Retirement System (GATRS),Georgia,,,,,
+Georgia Teachers Retirement System (GATRS),Georgia,0.054,0.0725,81.1616,78.7889,https://www.trsga.com/uploads/TRS%20CAFR_2020%20-%20Final.pdf
 Idaho Public Employee Retirement System (PERS),Idaho,0.028,0.07,18.7,17.28,https://www.pionline.com/pension-funds/idaho-public-employees-posts-28-return-fiscal-year
 Illinois Municipal Employees Retirement System,Illinois,,,,,
 Illinois State Employees Retirement System (SERS),Illinois,,,,,
 Illinois Teachers Retirement System (TRS),Illinois,0.006,0.07,51.6,53.263,https://www.pionline.com/pension-funds/illinois-teachers-ekes-out-06-fiscal-year-return
-Illinois State University Retirement System,Illinois,,,,,
+Illinois State University Retirement System,Illinois,0.0264,0.0675,22.4337,22.447,http://www.surs.com/sites/default/files/pdfsx/sursinvplan.pdf
 Indiana Public Employees Retirement Fund (PERF),Indiana,0.026,0.068,30.7,30.371,https://www.pionline.com/pension-funds/indiana-public-retirement-sees-net-26-return-fiscal-year
 Illinois Teachers Retirement System (TRS),Indiana,0.026,0.068,30.7,30.371,https://www.pionline.com/pension-funds/indiana-public-retirement-sees-net-26-return-fiscal-year
 Iowa Municipal Fire and Police Retirement System (MFPRSI),Iowa,0.023,0.075,2.613,2.593,http://www.mfprsi.org/site_media/publications/actuarial_report_2020_1.pdf
@@ -35,68 +35,68 @@ Kansas Public Employees' Retirement System (PERS),Kansas,,,,,
 Kentucky County Employees Retirement System,Kentucky,0.008,0.063,9.42,9.67,https://kyret.ky.gov/Investments/documents/June%202020%20Monthly%20Update.pdf
 Kentucky Employees Retirement System (ERS),Kentucky,0.024,0.053,3.01,2.97,https://kyret.ky.gov/Investments/documents/June%202020%20Monthly%20Update.pdf
 Kentucky Teachers' Retirement System (TRS),Kentucky,0.058,0.075,20.5,20.372,https://www.pionline.com/pension-funds/kentucky-teachers-chalks-58-fiscal-year-return
-Louisiana Municipal Police Retirement System,Louisiana,,,,,
+Louisiana Municipal Police Retirement System,Louisiana,0.027,0.0713,2.1885,2.2243,https://www.lampers.org/sites/default/files/fileattachments/general/page/911/2020_06_louisiana_mpers_supplemental_flash.pdf
 Louisiana Parochial Employee Retirement System,Louisiana,,,,,
-Louisiana School Employees’ Retirement System (LSERS),Louisiana,,,,,
+Louisiana School Employees’ Retirement System (LSERS),Louisiana,-0.0042,0.07,1.8456,1.9404,https://lsers.net/wp-content/uploads/2020/10/2020_Valuation.pdf
 Louisiana State Employees Retirement System (LASERS),Louisiana,-0.038,0.08,10.7,12.283,https://www.pionline.com/pension-funds/louisiana-state-employees-posts-38-fiscal-year-return
-Maine Public Employees Retirement System - Consolidated Plan for Participating Local Districts,Maine,0.018,0.068,15.1,14.989,https://www.pionline.com/pension-funds/maine-public-employees-returns-18-fiscal-year
-Maine Public Employees Retirement System (PERS) Defined Benefit Plan,Maine,0.018,0.068,15.1,14.989,https://www.pionline.com/pension-funds/maine-public-employees-returns-18-fiscal-year
+Maine Public Employees Retirement System - Consolidated Plan for Participating Local Districts*,Maine,0.018,0.068,15.1,14.989,https://www.pionline.com/pension-funds/maine-public-employees-returns-18-fiscal-year
+Maine Public Employees Retirement System (PERS) Defined Benefit Plan*,Maine,0.018,0.068,15.1,14.989,https://www.pionline.com/pension-funds/maine-public-employees-returns-18-fiscal-year
 Maryland State Retirement and Pension System (ERS & TRS),Maryland,0.036,0.074,54.8,54.24,https://sra.maryland.gov/post/maryland-state-retirement-and-pension-system-earns-36-during-volatile-fy-2020
 Massachusetts State Employees’ Retirement System (MSERS),Massachusetts,,,,,
 Massachusetts Teachers’ Retirement System (MTRS),Massachusetts,,,,,
 Michigan Municipal Retirement System,Michigan,,,,,
 Michigan Public School Employees Retirement System (MIPSERS),Michigan,,,,,
 Michigan State Employees Retirement System (SERS),Michigan,,,,,
-Minnesota Public Employees Retirement Association (MPERA) General Employees Retirement Fund,Minnesota,0.042,0.075,71.053,64.559,https://mn.gov/sbi/performance/MSBI%20Comprehensice%20Performance%20Report_Quarter%20Ending%20June%2030_2020.pdf
-Minnesota Public Employees Retirement Association (MPERA) Police and Fire Fund,Minnesota,0.042,0.075,71.053,64.559,https://mn.gov/sbi/performance/MSBI%20Comprehensice%20Performance%20Report_Quarter%20Ending%20June%2030_2020.pdf
-Minnesota State Retirement System (MSRS) General State Employees Retirement Plan,Minnesota,0.042,0.075,71.053,64.559,https://mn.gov/sbi/performance/MSBI%20Comprehensice%20Performance%20Report_Quarter%20Ending%20June%2030_2020.pdf
-Minnesota Teachers Retirement Association (TRA),Minnesota,0.042,0.075,71.053,64.559,https://mn.gov/sbi/performance/MSBI%20Comprehensice%20Performance%20Report_Quarter%20Ending%20June%2030_2020.pdf
-Missouri Local Government Employees Retirement System (LAGERS),Missouri,,,,,
-Missouri MoDOT & Patrol Employees’ Retirement System,Missouri,,,,,
-Missouri Public Education Employee Retirement System (PEERS),Missouri,,,,,
-Missouri Public School Retirement System (PSRS),Missouri,,,,,
-Montana Public Employees’ Retirement System - Defined Benefit Retirement Plan (PERS),Montana,,,,,
-Montana Teachers' Retirement System (TRS),Montana,,,,,
-Missouri State Employees Pension Plan (MOSERS),Missouri,,,,,
-Nebraska School Retirement System (NPERS),Nebraska,,,,,
-Nevada Public Employees Retirement System (NVPERS),Nevada,0.072,0.075,46.6,34.24,https://www.pionline.com/pension-funds/nevada-public-employees-returns-72-fiscal-year
-New Hampshire Retirement System (RS),New Hampshire,0.011,0.073,9.054,9.171,https://www.nhrs.org/docs/default-source/investment-documents/nhrs-fy-2020-investment-returns.pdf?sfvrsn=7b560fb4_2
-New Jersey Public Employees Retirement System (PERS),New Jersey,,,,,
-New Jersey Teachers’ Pension & Annuity Fund (TRS),New Jersey,,,,,
+Minnesota Public Employees Retirement Association (MPERA) General Employees Retirement Fund*,Minnesota,0.042,0.075,71.053,64.559,https://mn.gov/sbi/performance/MSBI%20Comprehensice%20Performance%20Report_Quarter%20Ending%20June%2030_2020.pdf
+Minnesota Public Employees Retirement Association (MPERA) Police and Fire Fund*,Minnesota,0.042,0.075,71.053,64.559,https://mn.gov/sbi/performance/MSBI%20Comprehensice%20Performance%20Report_Quarter%20Ending%20June%2030_2020.pdf
+Minnesota State Retirement System (MSRS) General State Employees Retirement Plan*,Minnesota,0.042,0.075,71.053,64.559,https://mn.gov/sbi/performance/MSBI%20Comprehensice%20Performance%20Report_Quarter%20Ending%20June%2030_2020.pdf
+Minnesota Teachers Retirement Association (TRA)*,Minnesota,0.042,0.075,71.053,64.559,https://mn.gov/sbi/performance/MSBI%20Comprehensice%20Performance%20Report_Quarter%20Ending%20June%2030_2020.pdf
+Missouri Local Government Employees Retirement System (LAGERS),Missouri,0.0163,0.055,8.8547,8.8537,https://www.molagers.org/wp-content/uploads/2020/11/CAFR-2020-FINAL-maybe.pdf
+Missouri MoDOT & Patrol Employees’ Retirement System,Missouri,-0.0046,0.07,2.3616,2.4233,https://www.mpers.org/wp-content/uploads/CAFR-FY-2020.pdf
+Missouri Public Education Employee Retirement System (PEERS)*,Missouri,0.0371,0.075,5.1188,5.0185,https://www.psrs-peers.org/docs/default-source/investments-documents/2020-cafr/investments.pdf?sfvrsn=3c5a5f0d_2
+Missouri Public School Retirement System (PSRS)*,Missouri,0.0371,0.075,40.7103,40.5938,https://www.psrs-peers.org/docs/default-source/investments-documents/2020-cafr/investments.pdf?sfvrsn=3c5a5f0d_2
+Montana Public Employees’ Retirement System - Defined Benefit Retirement Plan (PERS),Montana,0.0273,0.075,5.8455,5.9056,http://mpera.mt.gov/Portals/175/documents/Actuarial_Info/2020/2020_PERS.pdf
+Montana Teachers' Retirement System (TRS),Montana,0.0272,0.0765,4.1678,4.2203,https://trs.mt.gov/miscellaneous/PdfFiles/Information/ActuarialValuations/2020_TRSvaluation.pdf
+Missouri State Employees Pension Plan (MOSERS),Missouri,0.052,0.0695,8.0781,8.0748,https://www.mosers.org/docs/default-source/funding/annual-reports/2020-comprehensive-annual-financial-report.pdf?sfvrsn=25f8d9ae_4
+Nebraska School Retirement System (NPERS),Nebraska,0.024,0.075,12.2857,12.215,https://npers.ne.gov/SelfService/public/howto/publications/ActuarialReports/ActuarySchool2020.pdf
+Nevada Public Employees Retirement System (NVPERS),Nevada,0.072,0.075,46.6,34.24,https://www.nvpers.org/sites/default/files/2020-08/PERS-Investment-Performance.pdf
+New Hampshire Retirement System (NHRS),New Hampshire,0.011,0.073,9.054,9.171,https://www.nhrs.org/docs/default-source/investment-documents/nhrs-fy-2020-investment-returns.pdf?sfvrsn=7b560fb4_2
+New Jersey Public Employees Retirement System (PERS)*,New Jersey,0.0121,0.075,23.676,29.848,https://www.nj.gov/treasury/doinvest/pdf/DirectorsReport/2020/June.pdf
+New Jersey Teachers’ Pension & Annuity Fund (TRS)*,New Jersey,0.0121,0.075,27.873107.0,26.9673,https://sunlightpolicynj.org/covid-hits-nj-pensions-investments-earn-1-2-teachers-pension-funding-likely-down-to-25/
 New Mexico Educational Retirement Board (ERB),New Mexico,-0.01,0.073,12.8,13.5,https://www.pionline.com/pension-funds/new-mexico-educational-gives-staff-reins-manager-consultant-hirings
 New Mexico Public Employees Retirement Association (PERA),New Mexico,-0.015,0.073,14.3,15.508,https://www.pionline.com/pension-funds/new-mexico-pera-matches-benchmark-15-return-fiscal-year
-New York State & Local Employees Retirement System,New York,,,,,
-New York State & Local Police & Fire Retirement System,New York,,,,,
-New York State Teachers' Retirement System (TRS),New York,,,,,
-North Carolina Local Government Retirement System,North Carolina,0.044,0.07,103.9,101.374,https://www.pionline.com/pension-funds/north-carolina-posts-44-fiscal-year-above-benchmark
-North Carolina Teachers' and State Employees' Retirement System (TSERS),North Carolina,0.044,0.07,103.9,101.374,https://www.pionline.com/pension-funds/north-carolina-posts-44-fiscal-year-above-benchmark
-North Dakota Public Employees Retirement System (PERS),North Dakota,,,,,
-North Dakota Teachers' Fund for Retirement (TRS),North Dakota,,,,,
-Ohio Police and Fire Pension Fund,Ohio,,,,,
-Ohio Public Employees Retirement System (OPERS) Traditional Defined Benefit Pension Plan,Ohio,,,,,
-Ohio School Employees Retirement System (SERS),Ohio,,,,,
-Ohio State Teachers Retirement System (TRS),Ohio,0.031,0.075,78.8,74.096,https://www.strsoh.org/publications/newsletters/retirees/finance.html
+New York State & Local Employees Retirement System*,New York,-0.027,0.068,168.1157,182.7181,https://www.osc.state.ny.us/files/retirement/resources/pdf/comprehensive-annual-financial-report-2020.pdf
+New York State & Local Police & Fire Retirement System*,New York,-0.027,0.068,29.9641,32.386,https://www.osc.state.ny.us/files/retirement/resources/pdf/comprehensive-annual-financial-report-2020.pdf
+New York State Teachers' Retirement System (TRS),New York,0.035,0.0725,120.5,122.5,https://www.nystrs.org/NYSTRS/media/PDF/NYSTRS_Numbers.pdf
+North Carolina Local Government Retirement System*,North Carolina,0.044,0.07,103.9,101.374,https://www.pionline.com/pension-funds/north-carolina-posts-44-fiscal-year-above-benchmark
+North Carolina Teachers' and State Employees' Retirement System (TSERS)*,North Carolina,0.044,0.07,103.9,101.374,https://www.pionline.com/pension-funds/north-carolina-posts-44-fiscal-year-above-benchmark
+North Dakota Public Employees Retirement System (PERS)**,North Dakota,0.034,0.075,3.2,3.0967,https://www.rio.nd.gov/sites/www/files/documents/PDFs/SIB/Board/Materials/sibmat20200828.pdf
+North Dakota Teachers' Fund for Retirement (TRS)**,North Dakota,0.034,0.075,2.6,2.6162,https://www.rio.nd.gov/sites/www/files/documents/PDFs/SIB/Board/Materials/sibmat20200828.pdf
+Ohio Police and Fire Pension Fund,Ohio,-0.0057,0.08,14.98,16.5153,http://www.orsc.org/Assets/Reports/1413.pdf
+Ohio Public Employees Retirement System (OPERS) Traditional Defined Benefit Pension Plan,Ohio,0.02,0.072,86.2,91.1216,http://www.orsc.org/Assets/Reports/1413.pdf
+Ohio School Employees Retirement System (SERS),Ohio,0.0296,0.075,14.518,15.4372,http://www.orsc.org/Assets/Reports/1413.pdf
+Ohio State Teachers Retirement System (TRS),Ohio,0.031,0.075,77.1,74.096,https://www.strsoh.org/publications/newsletters/retirees/finance.html
 Oklahoma Public Employees Retirement System (PERS),Oklahoma,0.045,0.075,10.1,9.958,https://www.pionline.com/pension-funds/oklahoma-public-employees-garners-45-return-fiscal-year
 Oklahoma Police Pension and Retirement System,Oklahoma,0.019,0.07,2.6,2.619,https://www.pionline.com/pension-funds/oklahoma-police-returns-19-fiscal-year
 Oklahoma Teachers Retirement System (TRS),Oklahoma,0.013,0.075,17,17.28,https://www.pionline.com/pension-funds/oklahoma-teachers-returns-13-fiscal-year-below-benchmark
-Oregon Public Employees Retirement System (PERS),Oregon,,,,,
+Oregon Public Employees Retirement System (PERS),Oregon,0.0052,0.072,68.3193,70.2037,https://www.oregon.gov/pers/Documents/Financials/CAFR/2020-CAFR.pdf
 Pennsylvania Municipal Retirement System,Pennsylvania,,,,,
 Pennsylvania Public School Employees' Retirement System (PSERS),Pennsylvania,0.011,0.073,58.734,59,https://www.media.pa.gov/pages/Public-School-Employees-Retirement-System_details.aspx?newsid=110
 Pennsylvania State Employees' Retirement System (SERS),Pennsylvania,0.188,0.07,31.1,23.49,https://www.pionline.com/pension-funds/pennsylvania-state-employees-returns-188-2019
-Police & Firemens Retirement System Of New Jersey (PFRS),New Jersey,,,,,
+Police & Firemens Retirement System Of New Jersey (PFRS)*,New Jersey,0.0121,0.075,25.2,"27.792420945	",https://www.nj.gov/treasury/doinvest/pdf/DirectorsReport/2020/June.pdf
 Public Employees Retirement System of Nevada - Police and Firefighters Plan,Nevada,,,,,
 Public Employees' Retirement System of Mississippi (PERS),Mississippi,0.034,0.075,28.2,28.207,https://www.pers.ms.gov/Content/InvestmentReport/investment_report.pdf
-Rhode Island Employees Retirement System (ERS),Rhode Island,0.038,0.07,8.47,6.36,https://www.pionline.com/pension-funds/rhode-island-employees-returns-38-fiscal-year
+Rhode Island Employees Retirement System (ERS),Rhode Island,0.038,0.07,6.3444,6.36,https://www.ai-cio.com/news/rhode-island-pension-returns-3-8-2020-hit-record-high-asset-value/
 Rhode Island Municipal Employees Retirement System,Rhode Island,,,,,
-South Carolina Police Officers Retirement System (PORS),South Carolina,,,,,
+South Carolina Police Officers Retirement System (PORS),South Carolina,-0.0158,0.0725,4.8158,4.7302,https://peba.sc.gov/sites/default/files/pors_val_2020.pdf
 South Carolina Retirement Systems (SCRS),South Carolina,-0.016,0.073,30.983,27.239,https://www.rsic.sc.gov/Reporting/QuarterlyReports/PDFs/FY20-Q4.pdf
-South Dakota Retirement System (RS),South Dakota,,,,,
+South Dakota Retirement System (RS),South Dakota,,0.065,,,
 Teachers’ Retirement System of Louisiana (TRSL),Louisiana,-0.012,0.08,20,21.652,http://drupal.prod.pionline.com/pension-funds/louisiana-teachers-sees-12-preliminary-net-return?adobe_mc=MCMID%3D30827783173323028994059042685931420815%7CMCORGID%3D138FFF2554E6E7220A4C98C6%2540AdobeOrg%7CTS%3D1604975428
-"Tennessee Consolidated Retirement System, Public Employee Retirement System (LECOS)",Tennessee,0.049,0.073,53.4,52.1,https://treasury.tn.gov/Explore-Your-TN-Treasury/Communications/Press-Room/tennessee-consolidated-retirement-systems-fy20-investments-out-earn-pension-peers-despite-challenging-economy
-"Tennessee Consolidated Retirement System, Teachers Pension Plan (TCRS)",Tennessee,0.049,0.073,53.4,52.1,https://treasury.tn.gov/Explore-Your-TN-Treasury/Communications/Press-Room/tennessee-consolidated-retirement-systems-fy20-investments-out-earn-pension-peers-despite-challenging-economy
-Texas County and District Retirement System,Texas,,,,,
+"Tennessee Consolidated Retirement System, Public Employee Retirement System (LECOS)*",Tennessee,0.049,0.073,53.4,52.1,https://treasury.tn.gov/Explore-Your-TN-Treasury/Communications/Press-Room/tennessee-consolidated-retirement-systems-fy20-investments-out-earn-pension-peers-despite-challenging-economy
+"Tennessee Consolidated Retirement System, Teachers Pension Plan (TCRS)*",Tennessee,0.049,0.073,53.4,52.1,https://treasury.tn.gov/Explore-Your-TN-Treasury/Communications/Press-Room/tennessee-consolidated-retirement-systems-fy20-investments-out-earn-pension-peers-despite-challenging-economy
+Texas County and District Retirement System,Texas,-0.031,0.08,30.7,30.5538,https://ers.texas.gov/about-ers/ers-investments-overview/performance
 Texas Employees Retirement System (ERS),Texas,0.003,0.07,27.4,27.351,https://www.pionline.com/pension-funds/texas-employees-03-return-trails-benchmark-year
-Texas Municipal Retirement System (TMRS),Texas,,,,,
+Texas Municipal Retirement System (TMRS)**,Texas,0.007,0.0675,30,31.8138,https://www.pionline.com/pension-funds/texas-municipal-returns-top-benchmarks
 Texas Teacher Retirement System (TRS),Texas,0.018,0.073,155.2,157.978,https://www.pionline.com/pension-funds/texas-teachers-1-year-return-fails-beat-its-benchmark
 University of California Retirement System (UCRP),California,,,,,
 "Utah Retirement Systems, Noncontributory Retirement System (URS)",Utah,,,,,
@@ -104,10 +104,10 @@ University of California Retirement System (UCRP),California,,,,,
 Vermont State Retirement System (VSRS),Vermont,0.04,0.075,4.6,3.814,https://www.vermonttreasurer.gov/sites/treasurer/files/Retirement/PDF/2020/VSERS%20Summer%202020.pdf
 Vermont State Teachers' Retirement System (VSTRS),Vermont,0.04,0.075,4.6,3.814,https://www.vermonttreasurer.gov/sites/treasurer/files/Retirement/PDF/2020/VSERS%20Summer%202020.pdf
 Virginia Retirement System (VRS),Virginia,0.014,0.068,81.6,77.393,https://www.pionline.com/pension-funds/virginia-returns-14-fiscal-year
-Washington Law Enforcement Officers’ and Firefighters Retirement System Plan 2 (LEOFF Plan 2),Washington,,,,,
-Washington State Patrol Retirement System (PERS 2/3),Washington,,,,,
-Washington School Employees’ Retirement System (Plan 2/3),Washington,,,,,
-Washington Teachers Retirement System Plan 2 & 3 (Plan 2/3),Washington,,,,,
+Washington Law Enforcement Officers’ and Firefighters Retirement System (LEOFF)*,Washington,0.0371,0.074,114.5,110,https://www.drs.wa.gov/wp-content/uploads/2020/10/2020-CAFR.pdf
+Washington Public Employees' Retirement System (PERS)*,Washington,0.0371,0.074,114.5,110,https://www.drs.wa.gov/wp-content/uploads/2020/10/2020-CAFR.pdf
+Washington School Employees’ Retirement System (SERS)*,Washington,0.0371,0.075,114.5,110,https://www.drs.wa.gov/wp-content/uploads/2020/10/2020-CAFR.pdf
+Washington Teachers Retirement System�(TRS)*,Washington,0.0371,0.075,114.5,110,https://www.drs.wa.gov/wp-content/uploads/2020/10/2020-CAFR.pdf
 West Virginia Public Employees Retirement System (PERS),West Virginia,,,,,
 West Virginia Teachers’ Retirement System (TRS),West Virginia,,,,,
 Wisconsin Retirement System (RS),Wisconsin,,,,,

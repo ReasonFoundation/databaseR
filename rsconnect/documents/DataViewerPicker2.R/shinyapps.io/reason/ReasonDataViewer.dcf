@@ -5,9 +5,9 @@ account: reason
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2451127
-bundleId: 3867926
+bundleId: 3910114
 url: https://reason.shinyapps.io/ReasonDataViewer/
-when: 1605550882.95307
+when: 1606420053.55034
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: .Rbuildignore|.RData|APERS_Dashboard.R|Arizona EORP.csv|DataViewerPicker.R|Inv.Returns.PERSI.jpeg|Inv.Returns.Test.R|Reason_Database_CodeBook.csv|Reason_State_Names_Mod.csv|Reason_State_Names_Mod2.csv|RPension_Database.Rmd|shiny.rda|TipsR.R|data-raw/palette_reason.R|apps|files
+ignoredFiles: .Rbuildignore|.RData|APERS_Dashboard.R|Arizona EORP.csv|DataViewer.R|DataViewerPicker.R|Inv.Returns.2001-20.R|Inv.Returns.PERSI.jpeg|Inv.Returns.Test.R|masterView.R|Reason_Database_CodeBook.csv|Reason_State_Names_Mod.csv|Reason_State_Names_Mod2.csv|RPension_Database.Rmd|shiny.rda|TipsR.R|data-raw/palette_reason.R|apps|files
