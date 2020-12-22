@@ -36,7 +36,6 @@ library(plotly)
 library(httr)
 library(jsonlite)
 
-
 #https://publicplansdata.org/public-plans-database/api/#examples
 #https://www.earthdatascience.org/courses/earth-analytics/get-data-using-apis/API-data-access-r/
 #url_ppd <- 'http://publicplansdata.org/api/'
@@ -53,15 +52,12 @@ library(jsonlite)
 pl <- planList()
 #https://chart-studio.plotly.com/~vigneshbabu/9/_10th-percentile-25th-percentile-median-75th-percentile-90th-percentile/#/
 
-
-
-
 ############
 ######Shiny app[ui] -------------------------------------------------
 
 ui <- fluidPage(
   br(),
-  img(src = base64enc::dataURI(file = "https://raw.githubusercontent.com/ANiraula/PublicPlansData/master/reason_logo.png"), width = 200, height = 55),
+  #img(src = base64enc::dataURI(file = "https://raw.githubusercontent.com/ANiraula/PublicPlansData/master/reason_logo.png"), width = 200, height = 55),
   titlePanel("State Public Pension Investment Return Results"),
   # CODE BELOW: Add select inputs on state and plan_names to choose between different pension plans in Reason database
   theme = shinythemes::shinytheme("spacelab"),
@@ -86,7 +82,7 @@ ui <- fluidPage(
                   switchInput(
                   inputId = "perc",
                   label = "Percentiles", 
-                  labelWidth = "70px",
+                  labelWidth = "70px"
           ),
                  plotly::plotlyOutput("plot_Return_Distribution")),
       # tabPanel("2001-20 Return Distribution", 
@@ -111,18 +107,17 @@ server <- function(input, output, session){
   
   output$text1 <- renderText({
     paste("<br>","<br>",
-      "<b>Notes</b>: This was last updated on 12/14/2020.", "<br>", 
-      "Investment returns are for full Fiscal Year periods, and Net of Fees, if not stated otherwise.", "<br>", 
-      "We will be updating our return data regularly, as more state pension plans report their FY2019-20 returns.","<br>", "<br>",
-      HTML(
-      "<b>Source</b>:"), tags$a(href="https://reason.org/topics/pension-reform/", "Pension Integrity Project at Reason Foundation"),"<br>", 
-      "analysis of CAFRs and valuation reports.","<br>", "<br>", 
-      "<b>Methodology</b>: 'Estimated Investment Gain/(Loss)' is calculated by
+      "<b>Notes</b>: This table and chart were last updated on 12/14/2020 to reflect 84 of 114 major state-managed pension plans reporting their FY19-20 investment return results.","<br>", "<br>",  
+      "Each bar of the Return Distribution chart shows the percentage of state plans with officially reported results that fall within each two percent investment return range." ,"<br>", "<br>",
+      #HTML(
+      #"<b>Source</b>:"), tags$a(href="https://reason.org/topics/pension-reform/", "Pension Integrity Project at Reason Foundation"),"<br>", 
+      #"analysis of CAFRs and valuation reports.","<br>", "<br>", 
+      "<b>Methodology</b>: 'Estimated Investment Loss (Billions)' is calculated by
       taking plan's FY2018-19 'Market Value of Assets' (Defined Benefit retirement funds) and multiplying it by the difference between 'Assumed Rate of Return' and 'FY2019-20 Return'. 
       Estimated values are meant to approximate total amounts of investment loss that plans would fully & directly recognize this year due to FY2019-20 return deviating from the assumption.",
-      "'Asset-Weighted Return' is calculated by weighting FY2019-20 retuns by each plans' portion of the 2019 total market value of assets.",
+      "'Asset-Weighted Return' is calculated by weighting FY2019-20 retuns by each plans' portion of the 2019 total market value of assets. Investment returns shown are Net of Fees, if not stated otherwise.",
       "Probability Distribution is based on `normalized` probability density function, with all probabilities (i.e. bars) summing up to 100%.", "<br>", "<br>", 
-      "*Aggregate state-level data","<br>","**Preliminary returns", sep="\n")
+      "*Includes aggregate state-level data","<br>","**Preliminary returns","<br>", "***Gross of fees", sep="\n")
   })
   
   observeEvent(input[["tabset"]], {
@@ -138,8 +133,6 @@ server <- function(input, output, session){
     #Adding 2020 returns
     urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020_v2.csv"
     returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-    #View(returns_2020)
-  
   
     returns_2020 <- data.table(returns_2020)
     returns_2020 <- returns_2020 %>% filter(!is.na(returns_2020$`2020_return`))
@@ -148,13 +141,14 @@ server <- function(input, output, session){
     #Calculating Approximate Investment Loss
     returns_2020 <- data.table(returns_2020)
     returns_2020[, inv_gain_loss := -(mva_billions_19*(arr-`2020_return`))]
-    returns_2020$inv_gain_loss <- round(as.numeric(returns_2020$inv_gain_loss),3)
+    returns_2020$inv_gain_loss <- round(as.numeric(returns_2020$inv_gain_loss),1)
     returns_2020$mva_billions <- round(as.numeric(returns_2020$mva_billions),1)
     returns_2020$mva_billions_19 <- round(as.numeric(returns_2020$mva_billions_19),1)
-    colnames(returns_2020) <- c("Pension Plan", "State", "FY19-20 Return", "Assumed Rate of Return", "Market Assets (Billions)", "2019 Market Assets (Billions)", "Source", "Estimated Investment Gain/(Loss) (Billions)")
+    colnames(returns_2020) <- c("Pension Plan", "State", "FY19-20 Return", "Assumed Rate of Return", "Market Assets (Billions)", "2019 Market Assets (Billions)", "Source", "Estimated Investment Loss (Billions)")
     returns_2020[,8] <- round(returns_2020[,8],1)
-    returns_2020 <- returns_2020 %>% select("Pension Plan", "State", "FY19-20 Return", "Assumed Rate of Return", "Market Assets (Billions)", "Estimated Investment Gain/(Loss) (Billions)", "Source")
-    returns_2020 <- (returns_2020 %>% arrange(desc(returns_2020[,3])))
+    returns_2020 <- returns_2020 %>% select("Pension Plan", "State", "FY19-20 Return", "Assumed Rate of Return", "Market Assets (Billions)", "Estimated Investment Loss (Billions)", "Source")
+    returns_2020 <- (returns_2020 %>% arrange(returns_2020[,2]))
+
     #View(returns_2020)
       #    if(input$filter == "Highest returns"){
       #     returns_2020 %>% arrange(desc(returns_2020[,3]))
@@ -174,7 +168,7 @@ server <- function(input, output, session){
     #Converting web links to active hyperlinks (named "Source") for each plan
     
     for(i in (1:length(returns_2020$Source))){
-    returns_2020$Source[i] <- paste0("<a href=", paste0(returns_2020$Source[i]),">Source</a>")
+    returns_2020$Source[i] <- paste0("<a href=", paste0(returns_2020$Source[i])," target='_blank'",">Source</a>")
     }
     
     returns_2020 <- as.data.frame(returns_2020) 
@@ -185,10 +179,10 @@ server <- function(input, output, session){
     #http://www.stencilled.me/post/2019-04-18-editable/
     #https://rstudio.github.io/DT/
     #View(returns_2020)
-    returns_2020 <- DT::datatable(returns_2020, escape = FALSE, editable = FALSE, filter = 'top', rownames= FALSE,
+    returns_2020 <- DT::datatable(returns_2020, escape = FALSE, editable = FALSE, rownames= FALSE,
                                   
               options = list(
-                dom = 'Btp',
+                dom = 'Bftp',
                 pageLength = 30, info = FALSE,
                 autoWidth = TRUE#
                 #columnDefs = list(list(searchable = FALSE, targets = 7))
@@ -207,9 +201,10 @@ server <- function(input, output, session){
                   #backgroundPosition = 'right',
                   fontWeight = styleEqual(10, "bold")) %>%
       
-      formatPercentage(c("FY19-20 Return", "Assumed Rate of Return"),2) %>%
+      formatPercentage(columns = c("FY19-20 Return"),digits = 1) %>%
+      formatPercentage(columns = c("Assumed Rate of Return"),digits = 2) %>%
       
-      formatCurrency(c("Market Assets (Billions)", "Estimated Investment Gain/(Loss) (Billions)"))
+      formatCurrency(columns = c("Market Assets (Billions)", "Estimated Investment Loss (Billions)"),digits = 1)
 
     #set to TRUE to allow editing
     
@@ -295,40 +290,40 @@ server <- function(input, output, session){
                         zeroline = FALSE)) %>% 
            
            ## Annotations
-           layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
-                        y = 0.4, x = 0, text = "reason.org/pensions",
-                        xanchor='right', yanchor='auto', xshift=0, yshift=0,
-                        font=list(size=9, color="black")))  %>%
+          # layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
+          #              y = 0.4, x = 0, text = "reason.org/pensions",
+          #             xanchor='right', yanchor='auto', xshift=0, yshift=0,
+          #              font=list(size=9, color="black")))  %>%
      
            layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
                                 y = 0.49, x = 0, text = paste("Asset-Weighted", "<br>", "Return = ", round(sum(na.omit(returns_2020[,3]*returns_2020[,6]))/sum(na.omit(returns_2020[,6])),3)*100, "%"),
                                 xanchor='right', yanchor='auto', xshift=0, yshift=0,
                                 font=list(size=11, color="black")))  %>%
 
-           layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
-                                y = 0.8, x = 0.08, text = paste(
-                                  "Given the economic and market volatility", "<br>", 
-                                  "spurred by the COVID-19 crisis, many    ", "<br>", 
-                                  "expected U.S. public pension plans’     ", "<br>", 
-                                  "investment returns in FY2019-20 to fall ", "<br>", 
-                                  "well into a negative territory. Yet, per", "<br>", 
-                                  "our analysis of reported returns so far ", "<br>", 
-                                  "show that yields are mainly fall within a", "<br>", 
-                                  "positive 1%-4% range, with median   ", "<br>", 
-                                  "at 2.8%, and 25th and 75th percentiles  ", "<br>", 
-                                  "at 1.2% and 4.0% returns, respectively. ", "<br>", "<br>", 
-                                  "Each Histogram bar shows probability    ", "<br>", 
-                                  "of state plans reporting returns within ", "<br>", 
-                                  "each 2 percentage point range on X-axis.", "<br>", 
-                                  "Aternatively, bars show proportion of   ", "<br>", 
-                                  "plans with returns within these ranges. ", "<br>", 
-                                  "All bar probabilities stack up to 100%. "
-                                ),
-                                xanchor='left', yanchor='top', xshift=0, yshift=0,
-                                font=list(size=10, color="black")))  %>%
+          # layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
+          #                      y = 0.8, x = 0.08, text = paste(
+          #                        "Given the economic and market volatility", "<br>", 
+          #                        "spurred by the COVID-19 crisis, many    ", "<br>", 
+          #                        "expected U.S. public pension plans’     ", "<br>", 
+          #                        "investment returns in FY2019-20 to fall ", "<br>", 
+          #                        "well into a negative territory. Yet, per", "<br>", 
+          #                        "our analysis of reported returns so far ", "<br>", 
+          #                        "show that yields are mainly fall within a", "<br>", 
+          #                        "positive 1%-4% range, with median   ", "<br>", 
+          #                        "at 2.8%, and 25th and 75th percentiles  ", "<br>", 
+          #                        "at 1.2% and 4.0% returns, respectively. ", "<br>", "<br>", 
+          #                        "Each Histogram bar shows probability    ", "<br>", 
+          #                        "of state plans reporting returns within ", "<br>", 
+          #                        "each 2 percentage point range on X-axis.", "<br>", 
+          #                        "Aternatively, bars show proportion of   ", "<br>", 
+          #                        "plans with returns within these ranges. ", "<br>", 
+          #                        "All bar probabilities stack up to 100%. "
+          #                      ),
+          #                      xanchor='left', yanchor='top', xshift=0, yshift=0,
+          #                      font=list(size=10, color="black")))  %>%
           ## Margins + hovermode
          layout(autosize = T, 
-             margin = list(l = 30, r = 150, t = 60, b = 10)) %>%
+             margin = list(l = 30, r = 60, t = 60, b = 10)) %>%
       
          layout(autosize = T) %>%
            layout(hovermode="unified", 
@@ -365,179 +360,6 @@ server <- function(input, output, session){
     #Converting X-axis values to % (https://stackoverflow.com/questions/47603495/r-histogram-display-x-axis-ticks-as-percentages)
     
   })
-  
-  #output$plot_InvReturns <- plotly::renderPlotly({
-  #  reason.data <- data.table(reason.data)
-  #  years <- seq(min(input$year,2018), 2020, by = 1)
-  #  
-  #  #boxplot(reason.data$return_1yr)
-  #  
-  #  #Creating a vector w/ 10th, 25th, 50th, 75th, and 90th percentiles for 2001
-  #  returns.perc <- data.table(quantile(na.omit(reason.data[year == min(input$year,2018)]$return_1yr, c(0.1, 0.25, 0.5, 0.75, 0.9))))
-  #  #Creating a Loop to do the same (+binding columns) for 2002-19 years
-  #  for (i in ((min(input$year,2018) + 1):2019)){
-  #    returns.perc <- cbind(returns.perc, data.table(quantile(na.omit(reason.data[year == i]$return_1yr, c(0.1, 0.25, 0.5, 0.75, 0.9)))))
-  #  }
-  #  
-  #  #View(returns.perc)
-  #  
-  #  #Adding 2020 returns
-  #  urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020.csv"
-  #  returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-  #  returns_2020$mva_billions <- as.numeric(returns_2020$mva_billions) 
-  #  returns_2020$mva_billions_19 <- as.numeric(returns_2020$mva_billions_19) 
-  #  returns_2020$arr <- as.numeric(returns_2020$arr) 
-  #  returns_2020$`2020_return` <- as.numeric(returns_2020$`2020_return`)
-  #  #View(returns.perc)
-  #  returns.perc <- cbind(returns.perc, data.table(quantile(na.omit(returns_2020$`2020_return`, c(0.1, 0.25, 0.5, 0.75, 0.9)))))
-  #  returns.perc <- data.frame(returns.perc )
-  #  returns.perc <- returns.perc %>% dplyr::mutate_all(dplyr::funs(as.numeric))
-  #  returns.perc <- data.table(returns.perc)
-  #  #Renaming columns + transposing the table
-  #  colnames(returns.perc) <- as.character(seq(min(input$year,2018), 2020, by = 1))
-  #  returns.perc <- t(returns.perc)
-  #  colnames(returns.perc) <- as.character(c("10th", "25th", "50th", "75th", "90th"))
-  #  
-  #  ##########
-  #  
-  #  trace1 <- list(
-  #    uid = "2983cb", 
-  #    fill = "none", 
-  #    line = list(
-  #      color = palette_reason$Orange, 
-  #      shape = "spline", 
-  #      width = 1, 
-  #      smoothing = 0.6
-  #    ), 
-  #    mode = "lines", 
-  #    name = "10th Percentile", 
-  #    x = years, 
-  #    y = round(returns.perc[,1],2), 
-  #    fillcolor = "rgba(159, 197, 232, 0.63)", 
-  #    connectgaps = FALSE
-  #  )
-  #  trace2 <- list(
-  #    uid = "324d0c", 
-  #    fill = "tonexty", 
-  #    line = list(
-  #      color = palette_reason$Red, 
-  #      shape = "spline", 
-  #      width = 1, 
-  #      smoothing = 0.6
-  #    ), 
-  #    mode = "lines", 
-  #    name = "25th Percentile", 
-  #    x = years, 
-  #    y = round(returns.perc[,2],2), 
-  #    fillcolor = "rgba(159, 197, 232, 0.63)", 
-  #    connectgaps = FALSE
-  #  )
-  #  trace3 <- list(
-  #    uid = "a3a908", 
-  #    fill = "tonexty", 
-  #    line = list(
-  #      color = "rgb(31, 119, 180)", 
-  #      shape = "spline", 
-  #      smoothing = 0.6
-  #    ), 
-  #    mode = "lines", 
-  #    name = "Median", 
-  #    x = years, 
-  #    y = round(returns.perc[,3],2), 
-  #    fillcolor = "rgba(31, 119, 180, 0.5)", 
-  #    connectgaps = FALSE
-  #  )
-  #  trace4 <- list(
-  #    uid = "fdf1b8", 
-  #    fill = "tonexty", 
-  #    line = list(
-  #      color = palette_reason$Red, 
-  #      shape = "spline", 
-  #      width = 1, 
-  #      smoothing = 0.6
-  #    ), 
-  #    mode = "lines", 
-  #    name = "75th Percentile", 
-  #    x = years, 
-  #    y = round(returns.perc[,4],2),   
-  #    fillcolor = "rgba(31, 119, 180, 0.5)", 
-  #    connectgaps = FALSE
-  #  )
-  #  trace5 <- list(
-  #    uid = "9ae1f4", 
-  #    fill = "tonexty", 
-  #    line = list(
-  #      color = palette_reason$Orange, 
-  #      shape = "spline", 
-  #      width = 1, 
-  #      smoothing = 0.6
-  #      
-  #    ), 
-  #    mode = "lines", 
-  #    name = "90th Percentile", 
-  #    x = years, 
-  #    y = round(returns.perc[,5],2), 
-  #    fillcolor = "rgba(159, 197, 232, 0.63)", 
-  #    connectgaps = FALSE
-  #  )
-  #  
-  #  data <- list(trace1, trace2, trace3, trace4, trace5)
-  #  layout <- list(
-  #    xaxis = list(
-  #      type = "category", 
-  #      range = c(0.0, 95.0), 
-  #      showgrid = TRUE, 
-  #      zeroline = TRUE, 
-  #      autorange = TRUE, 
-  #      gridwidth = 1
-  #    ), 
-  #    yaxis = list(
-  #      type = "linear", 
-  #      range = c(-0.30, 0.30), 
-  #      showgrid = TRUE, 
-  #     zeroline = TRUE, 
-  #      autorange = TRUE, 
-  #      gridwidth = 1
-  #   ), 
-  #   autosize = TRUE
-  #  )
-  #  p <- plot_ly()
-  #  p <- add_trace(p, uid=trace1$uid, fill=trace1$fill, line=trace1$line, mode=trace1$mode, name=trace1$name, 
-  #                 type=trace1$type, x=trace1$x, y=round(trace1$y,2), connectgaps=trace1$connectgaps)
-  #  p <- add_trace(p, uid=trace2$uid, fill=trace2$fill, line=trace2$line, mode=trace2$mode, name=trace2$name, 
-  #                type=trace2$type, x=trace2$x, y=round(trace2$y,2), fillcolor=trace2$fillcolor, connectgaps=trace2$connectgaps)
-  #  p <- add_trace(p, uid=trace3$uid, fill=trace3$fill, line=trace3$line, mode=trace3$mode, name=trace3$name, 
-  #                 type=trace3$type, x=trace3$x, y=round(trace3$y,2), fillcolor=trace3$fillcolor, connectgaps=trace3$connectgaps)
-  # p <- add_trace(p, uid=trace4$uid, fill=trace4$fill, line=trace4$line, mode=trace4$mode, name=trace4$name, 
-  #                 type=trace4$type, x=trace4$x, y=round(trace4$y,2), fillcolor=trace4$fillcolor, connectgaps=trace4$connectgaps)
-  #  p <- add_trace(p, uid=trace5$uid, fill=trace5$fill, line=trace5$line, mode=trace5$mode, name=trace5$name, 
-  #                 type=trace5$type, x=trace5$x, y=round(trace5$y,2), fillcolor=trace5$fillcolor, connectgaps=trace5$connectgaps)
-  #  
-    #if(input$lines %in% "Zero"){p <- add_segments(p, x = years, 
-    #                  xend =  2020, y = 0, yend = 0, showlegend = F,
-    #                  name = "", line = list(color ="black"))
-    #}
-    
-    #https://rstudio.github.io/DT/010-style.html
-    #https://stackoverflow.com/questions/49636423/how-to-change-the-cell-color-of-a-cell-of-an-r-shiny-data-table-dependent-on-it
-    
-  #  if(input$lines == "Median Assumed Rate of Return (ARR)"){
-  #    p <- add_lines(p, x = trace5$x, 
-  #            xend =  max(trace5$x), y = round(arr.perc[year >= min(input$year,2018)]$V1,2), 
-  #            yend = last(round(arr.perc[year >= min(input$year,2018)]$V1,2)), showlegend = T,
-  #            name = "Median ARR", line = list(color = palette_reason$LightOrange))
-  #  }
-  #  
-  #  p <- layout(p, width=layout$width, xaxis=layout$xaxis, yaxis=layout$yaxis, height=layout$height, autosize=layout$autosize)
-  #  p <- layout(p, yaxis = list(title = "Market Valued Returns (Actual)", dtick = 0.03, tick0 = -0.3, 
-  #                              tickmode = "linear", tickformat = "%", zeroline = FALSE)) %>%
-  #    layout(hovermode = 'compare') %>%
-  #    layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
-  #                              y = 0.01, x = 2018, text = "reason.org/pensions",
-  #                              xanchor='right', yanchor='auto', xshift=0, yshift=0,
-  #                              font=list(size=9, color="black"))) # setting "compare" hover option as a default
-  #  
-  #})
     
 }
 #rsconnect::appDependencies()

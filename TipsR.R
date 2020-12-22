@@ -1,4 +1,4 @@
-### TipsR ###
+#### TipsR ####
 ## Data: Pension Database
 # By: Anil
 
@@ -36,11 +36,48 @@ library(plotly)
 library(rlang)
 library(purrr)
 library(rpart)
+library(vip)
 
 #Pull state-level data from the database
-reason.data <- pullStateData(2001)
-#Filter data
-reason.data <- data.table(filterData(reason.data, 2001))
+pl <- planList()
+reason.data <- pullData(pl, "Teachers’ Retirement System of Louisiana")
+reason.data <- 
+
+
+reason.data <- data.table(
+  reason.data  %>%
+    filter(year > 2000) %>%
+    select(year, display_name, state, investment_experience_dollar, gain_or_loss_due_to_changes_in_pbi_provisions)
+)
+
+#View(colnames(reason.data))
+View(reason.data)
+#investment_experience_dollar
+
+
+#Filter for state and local plan data for 2014 period
+
+reason.data <- data.table(
+  filterData(reason.data, 2014, "state and local")
+  )
+
+#Keep plans w/ statutory contributions
+reason.data <- data.table(
+  reason.data[!is.na(statutory)] %>%
+    select(year, plan_name, state, adec, adec_paid_pct, statutory, statutory_pct)
+  )
+#View(reason.data)
+
+#
+View(masterView("Public Plans Database"))
+View(masterView("Public Plans Database", TRUE))
+x <- masterView("Reason")
+x <- x %>% filter(plan_attribute_id >= 10798)
+#10798-10829
+
+View(x)
+#Check PPD "RequiredContribution" vs. Statutory for 2015+ period for 2-3 plans that we don;t Have Reason data yet (e.g. Wyoming)
+pl <- planList()
 
 #View(reason.data)
 

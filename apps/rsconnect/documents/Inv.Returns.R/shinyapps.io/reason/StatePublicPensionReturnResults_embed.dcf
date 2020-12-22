@@ -1,13 +1,13 @@
-name: StatePublicPensionReturnResults
-title: StatePublicPensionReturnResults
+name: StatePublicPensionReturnResults_embed
+title: StatePublicPensionReturnResults_embed
 username:
 account: reason
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 3327343
-bundleId: 4002752
-url: https://reason.shinyapps.io/StatePublicPensionReturnResults/
-when: 1608234059.13941
+appId: 3401745
+bundleId: 4002771
+url: https://reason.shinyapps.io/StatePublicPensionReturnResults_embed/
+when: 1608234362.42512
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: APERS_data.csv|APERS_GL.csv|APERS_numeric.csv|APERS.GL.R|Arkansas_PERS_draft_081220.R|Dist.Inv.Returns.R|FundedDumbbell.R|FundedDumbbell2.R|PERSI.GL.R|Plan_Inv.Returns_2020_v2.csv|Plan_Inv.Returns_2020_v2.R|Plan_Inv.Returns_2020.csv|Plan_Inv.Returns_2020.numbers|proj.2019.R|reason_logo.png|reason.data.2019.csv|UALapp.reason.R

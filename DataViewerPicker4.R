@@ -342,7 +342,7 @@ source_data("https://github.com/ReasonFoundation/databaseR/blob/master/shiny.rda
 ######Shiny app[interface] ----------------------------------------------
 
 ui <- fluidPage(
-  titlePanel("Reason Database Viewer (V3.0)"),
+  titlePanel("Reason Database Viewer (V4.0)"),
   # CODE BELOW: Add select inputs on state and plan_names to choose between different pension plans in Reason database
   theme = shinythemes::shinytheme("spacelab"),
   sidebarLayout(

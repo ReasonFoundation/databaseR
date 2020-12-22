@@ -1,13 +1,13 @@
-name: ReasonDataViewer
-title: ReasonDataViewer
+name: ReasonDataViewer4
+title: ReasonDataViewer4
 username:
-account: reason
+account: anil-niraula
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 2451127
-bundleId: 4016891
-url: https://reason.shinyapps.io/ReasonDataViewer/
-when: 1608591954.28057
+appId: 3425127
+bundleId: 4019381
+url: https://anil-niraula.shinyapps.io/ReasonDataViewer4/
+when: 1608654853.7735
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: .Rbuildignore|.RData|APERS_Dashboard.R|Arizona EORP.csv|DataViewer.R|DataViewerPicker.R|Inv.Returns.2001-20.R|Inv.Returns.PERSI.jpeg|Inv.Returns.Test.R|masterView.R|Reason_Database_CodeBook.csv|Reason_State_Names_Mod.csv|Reason_State_Names_Mod2.csv|RPension_Database.Rmd|shiny.rda|TestAPI.R|TipsR.R|data-raw/palette_reason.R|apps|files
