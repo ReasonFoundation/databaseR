@@ -525,8 +525,9 @@ server <- function(input, output, session){
     x <- data.table(PlanData())
     if(input$filter == "Filtered"){
       x <- x %>% select(year, plan_name, state, input$pk)}
+    View(x)
       x  <- DT::datatable(x, editable = FALSE, options = list(
-      "pageLength" = 20, autoWidth = TRUE))
+      "pageLength" = 20, autoWidth = TRUE)) 
       x
   })
   
