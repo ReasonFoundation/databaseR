@@ -5,8 +5,6 @@ PensionActuarialCosts,Employee group id.  ,EEGroupID,,00-99,
 PensionActuarialCosts,Tier id.  ,TierID,,00-99,
 PensionActuarialCosts,Fiscal year.  ,fy,Fiscal year,yyyy,
 PensionActuarialCosts,Fiscal Year in which calculated actuarial contributions are to be paid.  ,ContributionFY,Contribution FY,yyyy,
-PensionActuarialCosts,Data source.  ,source_ActCosts,,text,
-PensionActuarialCosts,Notes for Data Entry.  ,notes_ActCosts,,text,
 PensionActuarialCosts,"Total normal cost rate (% of payroll).  The normal cost is the present value of benefits actuarially accrued in a given year.  It is calculated by apportioning the total present value of an employee's expected benefits in retirement to each year of an employee's worklife, based on a specific actuarial cost method.",NormCostRate_tot,Total Normal Cost,integer,
 PensionActuarialCosts,Member contribution rate (% of payroll).  ,NormCostRate_EE,Member Normal Cost,integer,
 PensionActuarialCosts,Employer normal cost rate (% of payroll).  The employer normal cost is equal to the total normal cost minus member contributions.,NormCostRate_ER,Employer Normal Cost,integer,
@@ -324,7 +322,7 @@ PensionPlanBasics,Employer Type.  ,EmployerType,Employer Type,"1,2,3","1=single,
 PensionPlanBasics,Cost Sharing.  ,CostSharing,Cost Sharing,"0,1,2","0-Agency, 1-Cost Sharing, 2-Risk Pools"
 PensionPlanBasics,Plan full name,PlanFullName,,,
 PensionPlanBasics,Plan is in public funds survey.,InPFS,,0-1,"yes (1), no (0)"
-PensionPlanBasics,Fiscal year type,FiscalYearType,,1-2,"1=mid-year, 2=year-end"
+PensionPlanBasics,Fiscal year type,FiscalYearType,,2-Jan,"1=mid-year, 2=year-end"
 PensionPlanBasics,Listed in PPD directory,ppd_directory_listed,ppd_directory_listed,0-1,"yes (1), no (0)"
 PensionPlanBasics,Website for benefit descriptions,BenefitsWebsite,,text,
 PensionReportingDates,Public Plans Database ID.  ,ppd_id,,0000-9999,
