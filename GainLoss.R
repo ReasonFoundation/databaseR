@@ -74,6 +74,8 @@ reason.data <- data.table(
 
 ####
 #Some columns are not filled (especially demographic (e.g. mortality, new entrants, disability, payroll))
+#Look into the Code aggregating Survival, Mortality, Survival, Disability data for actives, retired, inactives, total
+#Compare Net Change to UAL vs. Actual UAL change for 5-10 plans
 
 #View(reason.data)
 reason.data <- data.table(reason.data)
@@ -98,16 +100,18 @@ reason.data <- reason.data %>% select(!interest_on_debt_dollar &
 #         across(c(colnames(reason.data[,4:13])),  .fns = list(sum)))
 #)
 
-#Add Total column by Year
+#Calculate Total G/L by Year
 for(i in (1:(max(reason.data$year)-min(reason.data$year)))){
   reason.data$total[i] <- sum(reason.data[i,4:13])
   
 }
+#View(reason.data)
 
-#net Change to UAL for 2001+ period (in $Billions)
+#Net Change to UAL for 2001+ period (in $Billions)
 gl.change <- sum(reason.data[1:19]$total)/1000000000
+#Actual change in UAL for 2001+ period (in $Billions)
 ual.change <- (max(ual)-ual[2])/1000000000
-#Difference between cumulative G/L and actual change in UAL (2002-2019)
-(ual.change - gl.change)*1000 # in $Millions
+#Difference between cumulative G/L (2002-2019) & actual change in UAL (2001-2019)
+round((ual.change - gl.change),4)*1000 # in $Millions
 ############
 ############
