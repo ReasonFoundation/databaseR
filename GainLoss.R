@@ -37,6 +37,10 @@ library(purrr)
 library(rpart)
 library(vip)
 
+
+#view <- masterView("Reason", TRUE)
+#View(view)
+
 #Pull state-level data from the database
 pl <- planList()
 #View(pl)
@@ -57,19 +61,72 @@ reason.data <- data.table(
            gain_or_loss_due_to_changes_in_benefits,
            gain_or_loss_due_to_changes_in_cola_provisions,
            gain_or_loss_due_to_changes_in_pbi_provisions,
+           #gain_or_loss_due_to_changes_in_normal_cost_prior_year,
+           #gain_or_loss_due_to_changes_in_other_interest,
            #age_of_retirement_experience_dollar,
+           #disability_claim_experience_active_dollar,
+           #disability_claim_experience_inactive_dollar,
+           #disability_claim_experience_retired_dollar,
            #disability_claim_experience_total_dollar,
+           #mortality_rate_experience_active_dollar,
+           #mortality_rate_experience_inactive_dollar,
+           #mortality_rate_experience_retired_dollar,
            #mortality_rate_experience_total_dollar,
+           #survival_claim_experience_active_dollar,
+           #survival_claim_experience_inactive_dollar,
+           #survival_claim_experience_retired_dollar,
+           #survival_claim_experience_total_dollar",
            #new_entrant_experience_dollar,
            salary_experience_dollar,
            #payroll_experience_dollar,
            #withdrawal_experience_dollar,
+           #rehire_experiennce_dollar,
            contribution_deficiency_dollar,
+           #interest_smoothing_dollar,
        ###Extra non-G/L columns
            amortization_payment_total_amount,
            unfunded_actuarially_accrued_liabilities_dollar)
 )
 
+#View(masterView("Public Plans Database"))
+#View(masterView("Public Plans Database", TRUE))
+x <- masterView("Reason")
+x <- x %>% filter(plan_attribute_id >= 10798)
+#10798-10829
+#View(x$master_attribute_name[19:63])
+
+gain.loss.names <- c("investment_experience_dollar",
+                     "age_of_retirement_experience_dollar",
+                     "disability_claim_experience_active_dollar",
+                     "disability_claim_experience_inactive_dollar",
+                     "disability_claim_experience_retired_dollar",
+                     "disability_claim_experience_total_dollar",
+                     "mortality_rate_experience_active_dollar",
+                     "mortality_rate_experience_inactive_dollar",
+                     "mortality_rate_experience_retired_dollar",
+                     "mortality_rate_experience_total_dollar",
+                     "survival_claim_experience_active_dollar",
+                     "survival_claim_experience_inactive_dollar",
+                     "survival_claim_experience_retired_dollar",
+                     "survival_claim_experience_total_dollar",
+                     "withdrawal_experience_dollar",
+                     "salary_experience_dollar",
+                     "payroll_experience_dollar",
+                     "new_entrant_experience_dollar",
+                     "rehire_experiennce_dollar",
+                     "other_actuarial_experience_dollar",
+                     "interest_smoothing_dollar",
+                     "non_investment_actuarial_experience_dollar",
+                     "actuarial_experience_dollar",
+                     "legislative_changes_dollar",
+                     "changes_to_methods_&_assumptions_dollar",
+                     "interest_on_debt_dollar_dollar",
+                     "gain_or_loss_due_to_changes_in_benefits",
+                     "gain_or_loss_due_to_changes_in_COLA_provisions",
+                     "gain_or_loss_due_to_changes_in_PBI_provisions",
+                     "gain_or_loss_due_to_changes_in_normal_cost_prior_year",
+                     "gain_or_loss_due_to_changes_in_other_interest",
+                     "contribution_deficiency_dollar")
 #View(colnames(reason.data))
 
 ####
