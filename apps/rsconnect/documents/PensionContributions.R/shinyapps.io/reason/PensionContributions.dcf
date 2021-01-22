@@ -1,0 +1,13 @@
+name: PensionContributions
+title: PensionContributions
+username:
+account: reason
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3507521
+bundleId: 4130254
+url: https://reason.shinyapps.io/PensionContributions/
+when: 1611332171.35784
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: APERS_data.csv|APERS_GL.csv|APERS_numeric.csv|APERS.GL.R|Arkansas_PERS_draft_081220.R|Dist.Inv.Returns.R|FundedDumbbell.R|FundedDumbbell2.R|Inv.Returns.R|PERSI.GL.R|Plan_Inv.Returns_2020_v2.csv|Plan_Inv.Returns_2020_v2.R|Plan_Inv.Returns_2020.csv|Plan_Inv.Returns_2020.numbers|proj.2019.R|reason_logo.png|reason.data.2019.csv|UALapp.reason.R
