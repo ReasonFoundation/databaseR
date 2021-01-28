@@ -1,5 +1,5 @@
 #### GainLoss Analysis ####
-### by Anil
+### by Anil & Swaroop
 ## Reason Database
 
 rm(list=ls())
