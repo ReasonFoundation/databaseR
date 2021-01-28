@@ -41,7 +41,83 @@ library(vip)
 #Pull state-level data from the database
 pl <- planList()
 View(pl)
-reason.data <- pullData(pl, "Louisiana State Employees Retirement System")
+az.eorp <- pullData(pl, "Arizona Elected Officials Retirement Plan") %>% filter(year >=2001)
+View(az.eorp)
+#View(pl)
+reason.data <- pullStateData(2001)
+reason.data <- filterData(reason.data,2001)
+reason.data <- reason.data %>% filter(year == 2019)
+reason.data <- reason.data %>% select(year, state, plan_name
+  #,adec
+  #,adec_paid_pct
+  ,statutory_pct
+  #,er_nc_pct
+  ,er_proj_adec_pct
+  ,ee_nc_pct
+  ,total_amortization_payment_pct
+  ,total_nc_pct
+  ,total_proj_adec_pct)
+  
+View(reason.data)
+
+
+contributions_2019 <- DT::datatable(returns_2020, escape = FALSE, filter = "top", editable = FALSE, 
+                              options = list(pageLength = 40, autoWidth = TRUE, dom = 't'), rownames= FALSE) %>% 
+  #escape = FALSE keeps the a href links
+  #filter = "top" add quick search bars below column titles
+  #dom = 't' removes list and search bars at the top
+  
+  formatStyle("FY19-20 Returns", 
+              #background = styleColorBar(returns_2020[,3], palette_reason$LightBlue),
+              #backgroundSize = '98% 88%',
+              #backgroundRepeat = 'no-repeat',
+              #backgroundPosition = 'right',
+              fontWeight = styleEqual(10, "bold")) %>%
+  
+  formatPercentage(c("FY19-20 Returns", "Assumed Rate of Return"),2) %>%
+  
+  formatCurrency(c("Market Assets (Billions)", "Estimated Investment Loss (Billions)"))
+
+#adec_paid_pct
+#statutory_pct
+#ee_nc_pct
+#er_nc_pct
+#er_proj_adec_pct
+#total_amortization_payment_pct
+#total_nc_pct
+#total_proj_adec_pct
+
+reason.data <- reason.data %>% filter(!is.na(funded_ratio))
+
+reason.data$arr <- as.numeric(reason.data$arr)
+reason.data$year <- as.numeric(reason.data$year)
+reason.data$funded_ratio <- as.numeric(reason.data$funded_ratio)
+
+reason.data <- reason.data %>% 
+  group_by(year, state) %>%
+  transmute(funded.median = median(na.omit(funded_ratio)))
+
+ggplot(reason.data, aes(x = year, y = funded.median, color = state)) +
+  geom_line()
+
+
+########
+reason.data <- pullStateData(2001)
+reason.data <- filterData(reason.data,2001)
+reason.data <- reason.data %>% filter(!is.na(arr))
+
+reason.data$arr <- as.numeric(reason.data$arr)
+reason.data$year <- as.numeric(reason.data$year)
+reason.data$funded_ratio <- as.numeric(reason.data$funded_ratio)
+
+reason.data <- reason.data %>% 
+  group_by(year, type_of_employees_covered) %>%
+  transmute(arr.median = median(na.omit(arr)))
+
+ggplot(reason.data, aes(x = year, y = arr.median, color = type_of_employees_covered)) +
+  geom_line()
+
+View(reason.data)
 #View(colnames(reason.data))
 #View(reason.data$amortization_payment_total_amount)
 

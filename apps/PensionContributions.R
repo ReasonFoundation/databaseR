@@ -70,8 +70,11 @@ reason.data <- reason.data %>% select(year, state, plan_name
                                       ,total_nc_pct)
 #,total_proj_adec_pct)
 reason.data <- reason.data %>% 
-arrange(desc(er_proj_adec_pct, year, state))
-
+arrange(desc(er_proj_adec_pct, year, state)) %>% filter(year == 2019)
+reason.data$year <- as.numeric(reason.data$year)
+reason.data$er_proj_adec_pct <- as.numeric(reason.data$er_proj_adec_pct)
+mean(na.omit(reason.data$er_proj_adec_pct))
+View(reason.data)
 #View(reason.data)
 #write.csv(reason.data, "reason.data.csv", row.names = FALSE)
 
