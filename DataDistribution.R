@@ -206,19 +206,3 @@ fit.logis$aic
 #Given the AIC values for the four distributions, our data is best represented by lognormal distribution, 
 #folowed by exponential, logistic, and then by normal distributions
 #https://en.wikipedia.org/wiki/Log-normal_distribution
-
-###########
-library(ggstatsplot)
-#https://github.com/IndrajeetPatil/ggstatsplot
-
-#set.seed(123)
-reason.data <- data.table(pullStateData(2001))
-reason.data <- filterData(reason.data, 2001)
-reason.data$actuarial_funded_ratio_percentage <- as.numeric(reason.data$actuarial_funded_ratio_percentage)
-
-reason.data <- data.table(reason.data)
-reason.data[type_of_employees_covered == "Plan covers police and/or fire"]$type_of_employees_covered <- "Police and/or Fire"
-reason.data[type_of_employees_covered == "Plan covers state and local employees"]$type_of_employees_covered <- "State and Local"
-reason.data[type_of_employees_covered == "Plan covers teachers"]$type_of_employees_covered <- "Teachers"
-reason.data[type_of_employees_covered == "Plan covers local employees"]$type_of_employees_covered <- "Local"
-reason.data[type_of_employees_covered == "Plan covers state employees"]$type_of_employees_covered <- "State"
