@@ -55,7 +55,8 @@ library(vip)
 
 #Pull plan-specific data from the database
 pl <- planList()
-reason.data <- pullData(pl, "Louisiana State Employees Retirement System")# (2002-2020)
+reason.data <- pullData(pl, "Dallas Police and Fire Pension System") %>% filter(year > 2000)# (2002-2020)
+View(reason.data)
 #reason.data <- pullData(pl, "Louisiana State Employees Retirement System")# (2002-2019)
 #reason.data <- pullData(pl, "New Mexico Public Employees Retirement Association")# (2002-2019)
 #reason.data <- pullData(pl, "Teachers’ Retirement System of Louisiana")# (2002-2019)
@@ -134,6 +135,7 @@ reason.data <- reason.data %>%
   select(year, state, plan_name, gain.loss.names) %>%
   filter(year > 2000)
 
+#View(reason.data)
 #View(masterView("Public Plans Database", TRUE))
 #x <- masterView("Reason")
 #x <- x %>% filter(plan_attribute_id >= 10798)
@@ -176,7 +178,7 @@ reason.data <- reason.data %>% select(!interest_on_debt_dollar &
                                         !fiscal_year_of_contribution &
                                         !payroll2)
 
-#View(reason.data)
+View(reason.data)
 #View(reason.data %>%
 #       summarise(
 #         across(c(colnames(reason.data[,4:13])),  .fns = list(sum)))
@@ -187,11 +189,12 @@ x <- length(reason.data)
 for(i in (1:reason.data[,.N])){
   reason.data$total[i] <- sum(reason.data[i,4:x])
 }
-#View(reason.data)
+View(reason.data)
 ## Compare ##
 
+#write.csv(reason.data, file = "DPF_GainLoss.csv", row.names = FALSE)
 # #Aggregate Gain/Loss change for 2002+ period (in $Billions)
-gl.change <- sum(reason.data[2:20]$total)/1000000000
+gl.change <- sum(reason.data[3:20]$total)/1000000000
 gl.change
 
 ## Actual change in UAL for 2001+ period (in $Billions)

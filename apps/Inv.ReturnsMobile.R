@@ -61,44 +61,44 @@ ui <- fluidPage(
   titlePanel("State Public Pension Investment Return Results"),
   # CODE BELOW: Add select inputs on state and plan_names to choose between different pension plans in Reason database
   theme = shinythemes::shinytheme("spacelab"),
-
-    mainPanel(
-      ###Remove error messages
-      tags$style(type="text/css",
-                 ".shiny-output-error { visibility: hidden; }",
-                 ".shiny-output-error:before { visibility: hidden; }"
+  
+  mainPanel(
+    ###Remove error messages
+    tags$style(type="text/css",
+               ".shiny-output-error { visibility: hidden; }",
+               ".shiny-output-error:before { visibility: hidden; }"
+    ),
+    tabsetPanel(
+      tabPanel('2020 Investment Returns', width = 5, 
+               #radioGroupButtons("filter", "Sort by", 
+               #choices = c("Plan Name", "Highest returns", "Assumed Rate of Return", "Asset size"), 
+               #selected = c("Plan Name"), status = "primary"),
+               DT::DTOutput('plot_Returns'),
+               style = "font-size:100%; width:50%"
       ),
-      tabsetPanel(
-         tabPanel('2020 Investment Returns', width = 5, 
-                  #radioGroupButtons("filter", "Sort by", 
-                  #choices = c("Plan Name", "Highest returns", "Assumed Rate of Return", "Asset size"), 
-                  #selected = c("Plan Name"), status = "primary"),
-                  DT::DTOutput('plot_Returns'),
-                  style = "font-size:100%; width:50%"
-          ),
-                  #https://community.rstudio.com/t/color-cells-in-dt-datatable-in-shiny/2288),
-        tabPanel("2020 Return Distribution", 
-                 
-                  switchInput(
-                  inputId = "perc",
-                  label = "Percentiles", 
-                  labelWidth = "70px"
-          ),
-                 plotly::plotlyOutput("plot_Return_Distribution")),
+      #https://community.rstudio.com/t/color-cells-in-dt-datatable-in-shiny/2288),
+      tabPanel("2020 Return Distribution", 
+               
+               switchInput(
+                 inputId = "perc",
+                 label = "Percentiles", 
+                 labelWidth = "70px"
+               ),
+               plotly::plotlyOutput("plot_Return_Distribution")),
       # tabPanel("2001-20 Return Distribution", 
       #           sliderInput('year', 'Select Starting Year', min = 2001, max = 2020, value = 2001, sep = ""),
       #           prettyRadioButtons("lines", "Add Lines", 
       #           choices = c("None", "Median Assumed Rate of Return (ARR)"), selected = "None", status = "warning"),
       #           plotly::plotlyOutput("plot_InvReturns")),
-        
-        tags$div(htmlOutput("text1")),
-                 
-    id = "tabset"
-  ), 
-  id="main"
-
-      )
-    )
+      
+      tags$div(htmlOutput("text1")),
+      
+      id = "tabset"
+    ), 
+    id="main"
+    
+  )
+)
 
 ##########################
 ######Shiny app[server] -------------------------------------------------
@@ -107,33 +107,33 @@ server <- function(input, output, session){
   
   output$text1 <- renderText({
     paste("<br>","<br>",
-      "<b>Notes</b>: This table and chart were last updated on 12/14/2020 to reflect 84 of 114 major state-managed pension plans reporting their FY19-20 investment return results.","<br>", "<br>",  
-      "Each bar of the Return Distribution chart shows the percentage of state plans with officially reported results that fall within each two percent investment return range." ,"<br>", "<br>",
-      #HTML(
-      #"<b>Source</b>:"), tags$a(href="https://reason.org/topics/pension-reform/", "Pension Integrity Project at Reason Foundation"),"<br>", 
-      #"analysis of CAFRs and valuation reports.","<br>", "<br>", 
-      "<b>Methodology</b>: 'Estimated Investment Loss (Billions)' is calculated by
+          "<b>Notes</b>: This table and chart were last updated on 12/14/2020 to reflect 84 of 114 major state-managed pension plans reporting their FY19-20 investment return results.","<br>", "<br>",  
+          "Each bar of the Return Distribution chart shows the percentage of state plans with officially reported results that fall within each two percent investment return range." ,"<br>", "<br>",
+          #HTML(
+          #"<b>Source</b>:"), tags$a(href="https://reason.org/topics/pension-reform/", "Pension Integrity Project at Reason Foundation"),"<br>", 
+          #"analysis of CAFRs and valuation reports.","<br>", "<br>", 
+          "<b>Methodology</b>: 'Estimated Investment Loss (Billions)' is calculated by
       taking plan's FY2018-19 'Market Value of Assets' (Defined Benefit retirement funds) and multiplying it by the difference between 'Assumed Rate of Return' and 'FY2019-20 Return'. 
       Estimated values are meant to approximate total amounts of investment loss that plans would fully & directly recognize this year due to FY2019-20 return deviating from the assumption.",
-      "'Asset-Weighted Return' is calculated by weighting FY2019-20 retuns by each plans' portion of the 2019 total market value of assets. Investment returns shown are Net of Fees, if not stated otherwise.",
-      "Probability Distribution is based on `normalized` probability density function, with all probabilities (i.e. bars) summing up to 100%.", "<br>", "<br>", 
-      "*Includes aggregate state-level data","<br>","**Preliminary returns","<br>", "***Gross of fees", sep="\n")
+          "'Asset-Weighted Return' is calculated by weighting FY2019-20 retuns by each plans' portion of the 2019 total market value of assets. Investment returns shown are Net of Fees, if not stated otherwise.",
+          "Probability Distribution is based on `normalized` probability density function, with all probabilities (i.e. bars) summing up to 100%.", "<br>", "<br>", 
+          "*Includes aggregate state-level data","<br>","**Preliminary returns","<br>", "***Gross of fees", sep="\n")
   })
   
   observeEvent(input[["tabset"]], {
     
-      hideElement(selector = "#sidebar")
-      removeCssClass("main", "col-sm-8")
-      addCssClass("main", "col-sm-12")
-      
+    hideElement(selector = "#sidebar")
+    removeCssClass("main", "col-sm-8")
+    addCssClass("main", "col-sm-12")
+    
   })
   
   output$plot_Returns <- DT::renderDataTable({
-   
+    
     #Adding 2020 returns
     urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020_v2.csv"
     returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-  
+    
     returns_2020 <- data.table(returns_2020)
     returns_2020 <- returns_2020 %>% filter(!is.na(returns_2020$`2020_return`))
     returns_2020 <- returns_2020 %>% filter(state != "Pennsylvania")
@@ -148,18 +148,18 @@ server <- function(input, output, session){
     returns_2020[,8] <- round(returns_2020[,8],1)
     returns_2020 <- returns_2020 %>% select("Pension Plan", "State", "FY19-20 Return", "Assumed Rate of Return", "Market Assets (Billions)", "Estimated Investment Loss (Billions)", "Source")
     returns_2020 <- (returns_2020 %>% arrange(returns_2020[,2]))
-
+    
     #View(returns_2020)
-      #    if(input$filter == "Highest returns"){
-      #     returns_2020 %>% arrange(desc(returns_2020[,3]))
-      #  } else if(input$filter == "Asset size"){
-      #    returns_2020 %>% arrange(desc(returns_2020[,5]))
-      #  } else if(input$filter == "Assumed Rate of Return"){
-      #    returns_2020 %>% arrange(desc(returns_2020[,4]))
-      #  } else{
-      #    returns_2020 %>% arrange(returns_2020[,1])
-      #  }
-      #  )
+    #    if(input$filter == "Highest returns"){
+    #     returns_2020 %>% arrange(desc(returns_2020[,3]))
+    #  } else if(input$filter == "Asset size"){
+    #    returns_2020 %>% arrange(desc(returns_2020[,5]))
+    #  } else if(input$filter == "Assumed Rate of Return"){
+    #    returns_2020 %>% arrange(desc(returns_2020[,4]))
+    #  } else{
+    #    returns_2020 %>% arrange(returns_2020[,1])
+    #  }
+    #  )
     
     returns_2020 <- as.data.frame(returns_2020) 
     returns_2020[,3:6] <- returns_2020[,3:6] %>% dplyr::mutate_all(dplyr::funs(as.numeric))
@@ -168,7 +168,7 @@ server <- function(input, output, session){
     #Converting web links to active hyperlinks (named "Source") for each plan
     
     for(i in (1:length(returns_2020$Source))){
-    returns_2020$Source[i] <- paste0("<a href=", paste0(returns_2020$Source[i])," target='_blank'",">Source</a>")
+      returns_2020$Source[i] <- paste0("<a href=", paste0(returns_2020$Source[i])," target='_blank'",">Source</a>")
     }
     
     returns_2020 <- as.data.frame(returns_2020) 
@@ -181,14 +181,14 @@ server <- function(input, output, session){
     #View(returns_2020)
     returns_2020 <- DT::datatable(returns_2020, escape = FALSE, editable = FALSE, rownames= FALSE,
                                   
-              options = list(
-                dom = 'Bftp',
-                pageLength = 30, info = FALSE,
-                autoWidth = TRUE#
-                #columnDefs = list(list(searchable = FALSE, targets = 7))
-                #columnDefs = list(list(targets=c(2:5), visible=TRUE, width='10px'))
-                #,scrollX = "20%"
-                )) %>% 
+                                  options = list(
+                                    dom = 'Bftp',
+                                    pageLength = 30, info = FALSE,
+                                    autoWidth = TRUE#
+                                    #columnDefs = list(list(searchable = FALSE, targets = 7))
+                                    #columnDefs = list(list(targets=c(2:5), visible=TRUE, width='10px'))
+                                    #,scrollX = "20%"
+                                  )) %>% 
       
       #escape = FALSE keeps the a href links
       #filter = "top" add quick search bars below column titles
@@ -205,14 +205,14 @@ server <- function(input, output, session){
       formatPercentage(columns = c("Assumed Rate of Return"),digits = 2) %>%
       
       formatCurrency(columns = c("Market Assets (Billions)", "Estimated Investment Loss (Billions)"),digits = 1)
-
+    
     #set to TRUE to allow editing
     
     #returns_2020 <- as.data.table(returns_2020)
     #returns_2020[,one_year_gain_loss := (returns_2020$mva_billions * (returns_2020$arr - returns_2020$`2020_return`))]
-    })
+  })
   
-    output$plot_Return_Distribution <- plotly::renderPlotly({
+  output$plot_Return_Distribution <- plotly::renderPlotly({
     
     urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Plan_Inv.Returns_2020_v2.csv"
     returns_2020 <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
@@ -223,7 +223,7 @@ server <- function(input, output, session){
     returns_2020 <- returns_2020 %>% filter(!is.na(returns_2020$`2020_return`))
     returns_2020 <- returns_2020 %>% filter(state != "Pennsylvania")
     returns_2020 <- returns_2020 %>% arrange(plan)
-   # View(returns_2020)
+    # View(returns_2020)
     
     #https://community.plotly.com/t/r-plotly-overlay-density-histogram/640/3
     #returns_2020<- data.matrix(na.omit(returns_2020))
@@ -247,22 +247,22 @@ server <- function(input, output, session){
     
     #https://chart-studio.plotly.com/~vigneshbabu/9/_10th-percentile-25th-percentile-median-75th-percentile-90th-percentile/#/
     #https://plotly.com/r/mixed-subplots/
-
+    
     annotation <- list(yref = 'paper', xref = "x", y = 0.5, x = median(round(na.omit(returns_2020[,3]),2)), text = paste("Median = ", round(median(na.omit(returns_2020[,3]))*100,1), "%"))
     
     #https://plotly.com/chart-studio-help/histogram/
     d1 <- density(na.omit(returns_2020[,3]), bw = "SJ")
-  
+    
     quantile <- quantile(na.omit(returns_2020[,3]), c(0.25, 0.5, 0.75))
     
     histogram <- plot_ly(x = na.omit(returns_2020[,3]),
                          textposition = "outside",
-                  type = "histogram",
-                  histnorm = "probability", 
-                  showlegend = FALSE,
-                  nbinsx = 13, 
-                  marker = list(color = palette_reason$LightOrange,
-                                line = list(color = "black", width = 1))) %>% 
+                         type = "histogram",
+                         histnorm = "probability", 
+                         showlegend = FALSE,
+                         nbinsx = 13, 
+                         marker = list(color = palette_reason$LightOrange,
+                                       line = list(color = "black", width = 1))) %>% 
       
       #https://mran.revolutionanalytics.com/snapshot/2016-03-14/web/packages/plotly/plotly.pdf
       #config(displayModeBar = FALSE)%>%
@@ -271,9 +271,9 @@ server <- function(input, output, session){
       #          y = 100*(d1$y/sum(d1$y)),
       #          type="scatter",mode = 'line+markers', fill = 'toze roy', showlegend = F) %>%
       
-     # add_trace(x = fit$x, y = fit$y, mode = "lines", fill = "tozeroy", yaxis = "y2", name = "Density") %>% 
+      # add_trace(x = fit$x, y = fit$y, mode = "lines", fill = "tozeroy", yaxis = "y2", name = "Density") %>% 
       #
-
+      
     #add_boxplot(x = na.omit(returns_2020[,3]), y =  d1, jitter = 0, pointpos = 0, boxpoints = F,
     #            marker = list(color = 'rgb(7,40,89)'),
     #            line = list(color = 'rgb(7,40,89)'),
@@ -288,63 +288,63 @@ server <- function(input, output, session){
            yaxis = list(title = "Proportion of Pension Plans (out of 100%)", tickformat = "%", 
                         range = c(0,0.45),dtick = 0.05, 
                         zeroline = FALSE)) %>% 
-           
-           ## Annotations
-          # layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
-          #              y = 0.4, x = 0, text = "reason.org/pensions",
-          #             xanchor='right', yanchor='auto', xshift=0, yshift=0,
-          #              font=list(size=9, color="black")))  %>%
-     
-           layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
+      
+      ## Annotations
+      # layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
+      #              y = 0.4, x = 0, text = "reason.org/pensions",
+      #             xanchor='right', yanchor='auto', xshift=0, yshift=0,
+      #              font=list(size=9, color="black")))  %>%
+      
+      layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
                                 y = 0.49, x = 0, text = paste("Asset-Weighted", "<br>", "Return = ", round(sum(na.omit(returns_2020[,3]*returns_2020[,6]))/sum(na.omit(returns_2020[,6])),3)*100, "%"),
                                 xanchor='right', yanchor='auto', xshift=0, yshift=0,
                                 font=list(size=11, color="black")))  %>%
-
-          # layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
-          #                      y = 0.8, x = 0.08, text = paste(
-          #                        "Given the economic and market volatility", "<br>", 
-          #                        "spurred by the COVID-19 crisis, many    ", "<br>", 
-          #                        "expected U.S. public pension plans’     ", "<br>", 
-          #                        "investment returns in FY2019-20 to fall ", "<br>", 
-          #                        "well into a negative territory. Yet, per", "<br>", 
-          #                        "our analysis of reported returns so far ", "<br>", 
-          #                        "show that yields are mainly fall within a", "<br>", 
-          #                        "positive 1%-4% range, with median   ", "<br>", 
-          #                        "at 2.8%, and 25th and 75th percentiles  ", "<br>", 
-          #                        "at 1.2% and 4.0% returns, respectively. ", "<br>", "<br>", 
-          #                        "Each Histogram bar shows probability    ", "<br>", 
-          #                        "of state plans reporting returns within ", "<br>", 
-          #                        "each 2 percentage point range on X-axis.", "<br>", 
-          #                        "Aternatively, bars show proportion of   ", "<br>", 
-          #                        "plans with returns within these ranges. ", "<br>", 
-          #                        "All bar probabilities stack up to 100%. "
-          #                      ),
-          #                      xanchor='left', yanchor='top', xshift=0, yshift=0,
-          #                      font=list(size=10, color="black")))  %>%
-          ## Margins + hovermode
-         layout(autosize = T, 
-             margin = list(l = 30, r = 60, t = 60, b = 10)) %>%
       
-         layout(autosize = T) %>%
-           layout(hovermode="unified", 
-                       if((sum(input$perc) > 0) == T){annotations= list(annotation)})
+      # layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
+      #                      y = 0.8, x = 0.08, text = paste(
+      #                        "Given the economic and market volatility", "<br>", 
+      #                        "spurred by the COVID-19 crisis, many    ", "<br>", 
+      #                        "expected U.S. public pension plans’     ", "<br>", 
+      #                        "investment returns in FY2019-20 to fall ", "<br>", 
+      #                        "well into a negative territory. Yet, per", "<br>", 
+      #                        "our analysis of reported returns so far ", "<br>", 
+      #                        "show that yields are mainly fall within a", "<br>", 
+      #                        "positive 1%-4% range, with median   ", "<br>", 
+    #                        "at 2.8%, and 25th and 75th percentiles  ", "<br>", 
+    #                        "at 1.2% and 4.0% returns, respectively. ", "<br>", "<br>", 
+    #                        "Each Histogram bar shows probability    ", "<br>", 
+    #                        "of state plans reporting returns within ", "<br>", 
+    #                        "each 2 percentage point range on X-axis.", "<br>", 
+    #                        "Aternatively, bars show proportion of   ", "<br>", 
+    #                        "plans with returns within these ranges. ", "<br>", 
+    #                        "All bar probabilities stack up to 100%. "
+    #                      ),
+    #                      xanchor='left', yanchor='top', xshift=0, yshift=0,
+    #                      font=list(size=10, color="black")))  %>%
+    ## Margins + hovermode
+    layout(autosize = T, 
+           margin = list(l = 30, r = 60, t = 60, b = 10)) %>%
+      
+      layout(autosize = T) %>%
+      layout(hovermode="unified", 
+             if((sum(input$perc) > 0) == T){annotations= list(annotation)})
     
-        ## Adding percentiles per user turning button ON
-      if((sum(input$perc) > 0) == T){
-        histogram <- histogram %>% 
-          add_segments(x = quantile[1], 
-                   xend = quantile[1], y = 0.005, yend = 0.4, showlegend = T, 
-                   name = paste0("25th Percentile (", round(quantile[1]*100,1), "%)"), line = list(color = palette_reason$SatBlue)) %>%
-          
-          add_segments(x = quantile[2], 
-                   xend = quantile[2], y = 0.005, yend = 0.4, showlegend = T, 
-                   name = paste0("Median (", round(quantile[2]*100,1), "%)"), line = list(color = palette_reason$Yellow)) %>%
-          
-          add_segments(x = quantile[3], 
-                   xend = quantile[3], y = 0.005, yend = 0.4, showlegend = T, 
-                   name = paste0("75th Percentile (", round(quantile[3]*100,1), "%)"), line = list(color = palette_reason$Green))
-     
-   }
+    ## Adding percentiles per user turning button ON
+    if((sum(input$perc) > 0) == T){
+      histogram <- histogram %>% 
+        add_segments(x = quantile[1], 
+                     xend = quantile[1], y = 0.005, yend = 0.4, showlegend = T, 
+                     name = paste0("25th Percentile (", round(quantile[1]*100,1), "%)"), line = list(color = palette_reason$SatBlue)) %>%
+        
+        add_segments(x = quantile[2], 
+                     xend = quantile[2], y = 0.005, yend = 0.4, showlegend = T, 
+                     name = paste0("Median (", round(quantile[2]*100,1), "%)"), line = list(color = palette_reason$Yellow)) %>%
+        
+        add_segments(x = quantile[3], 
+                     xend = quantile[3], y = 0.005, yend = 0.4, showlegend = T, 
+                     name = paste0("75th Percentile (", round(quantile[3]*100,1), "%)"), line = list(color = palette_reason$Green))
+      
+    }
     
     #1. Convert to Percentages (both Axis) -- Done
     #2. Add border lines -- Done
@@ -360,7 +360,7 @@ server <- function(input, output, session){
     #Converting X-axis values to % (https://stackoverflow.com/questions/47603495/r-histogram-display-x-axis-ticks-as-percentages)
     
   })
-    
+  
 }
 #rsconnect::appDependencies()
 shinyApp(ui = ui, server = server)

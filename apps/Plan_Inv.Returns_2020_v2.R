@@ -54,6 +54,7 @@ library(jsonlite)
 #devtools::install_github("ropensci/plotly")
 
 pl <- planList()
+View(pl)
 #https://chart-studio.plotly.com/~vigneshbabu/9/_10th-percentile-25th-percentile-median-75th-percentile-90th-percentile/#/
 reason.data <- pullStateData(2001)
 reason.data <- filterData(reason.data, 2001)
