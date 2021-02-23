@@ -67,26 +67,8 @@ plans <- as.character(unique(pl[,2]))
 ##Load & convert color palette from the package
 #palette_reason <- lapply(palette_reason, as.character)
 
-#palette_reason <- data.table(
-#  Orange = "#FF6633", 
-#  LightOrange = "#FF9900",
-#  DarkGrey = "#333333", 
-#  LightGrey = "#CCCCCC",
-#  SpaceGrey = "#A69FA1",
-#  DarkBlue = "#0066CC",
-#  GreyBlue = "#6699CC", 
-#  Yellow = "#FFCC33", 
-#  LightBlue = "#66B2FF", 
-#  SatBlue = "#3366CC", 
-#  Green = "#669900",
-#  LightGreen = "#00CC66",
-#  Red = "#CC0000",
-#  LightRed = "#FF0000")
-#palette
-
 #View(pullSourceData("Employee Retirement System of Hawaii"))
 ##Pull state Data only
-
 
 #View(pullStateData(2010))
 ##Add columns
@@ -1042,7 +1024,7 @@ server <- function(input, output, session){
       plotTheme#+
     
     f <- ggplotly(f, tooltip = c("text"))
-    f <- f %>% layout(autosize = TRUE, legend = list(orientation = "v", x=0.01, y = 0.01))
+    f <- f %>% layout(autosize = TRUE, legend = list(orientation = "v", x = 0.01, y = 0.01))
     f
   })
   

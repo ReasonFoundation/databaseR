@@ -55,9 +55,9 @@ library(vip)
 
 #Pull plan-specific data from the database
 pl <- planList()
-reason.data <- pullData(pl, "Dallas Police and Fire Pension System") %>% filter(year > 2000)# (2002-2020)
-View(reason.data)
-#reason.data <- pullData(pl, "Louisiana State Employees Retirement System")# (2002-2019)
+#reason.data <- pullData(pl, "Dallas Police and Fire Pension System") %>% filter(year > 2000)# (2002-2020)
+
+reason.data <- pullData(pl, "Louisiana State Employees Retirement System")# (2002-2019)
 #reason.data <- pullData(pl, "New Mexico Public Employees Retirement Association")# (2002-2019)
 #reason.data <- pullData(pl, "Teachers’ Retirement System of Louisiana")# (2002-2019)
 #reason.data <- pullData(pl, "Arizona Public Safety Personnel Retirement System") (2002-2019)
@@ -135,7 +135,7 @@ reason.data <- reason.data %>%
   select(year, state, plan_name, gain.loss.names) %>%
   filter(year > 2000)
 
-#View(reason.data)
+View(reason.data)
 #View(masterView("Public Plans Database", TRUE))
 #x <- masterView("Reason")
 #x <- x %>% filter(plan_attribute_id >= 10798)
@@ -189,20 +189,55 @@ x <- length(reason.data)
 for(i in (1:reason.data[,.N])){
   reason.data$total[i] <- sum(reason.data[i,4:x])
 }
-View(reason.data)
+
+#View(reason.data$total)
+## LASERS ONLY correction for Experience Account Disbursements
+#reason.data[year > 2005 & year < 2009]$total <- c(-38272000, -34856000,343427000)
+#reason.data[year > 2017 & year < 2020]$total <- c(-72193000, 263639000)
+#View(reason.data[year > 2017 & year < 2020])
+
 ## Compare ##
 
 #write.csv(reason.data, file = "DPF_GainLoss.csv", row.names = FALSE)
 # #Aggregate Gain/Loss change for 2002+ period (in $Billions)
-gl.change <- sum(reason.data[3:20]$total)/1000000000
+gl.change <- sum(reason.data[1:19]$total)/1000000000
 gl.change
 
 ## Actual change in UAL for 2001+ period (in $Billions)
-ual.change <- (max(ual[year == 2020]$unfunded_actuarially_accrued_liabilities_dollar)
+ual.change <- (max(ual[year == 2019]$unfunded_actuarially_accrued_liabilities_dollar)
                -ual[year == 2001]$unfunded_actuarially_accrued_liabilities_dollar)/1000000000
 ual.change
 
 ## Difference between cumulative G/L  & actual change in UAL
 round((ual.change - gl.change),4)*1000 # in $Millions
 ############
+############
+
+##Load PPD investment data
+urlfile= "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/PensionInvestmentPerformanceDetailed_V1.csv"
+data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types =       NULL)
+data <- as.data.table(data)# convert to data.table
+
+## Filter for columns ending w/ "_Actl"
+data <- data %>%
+  select("ppd_id",
+         "PlanName",
+         "EEGroupID",
+         "TierID", 
+         contains("_Actl"))
+
+## Convert all numbers to numeric format
+data[,5:83] <- data[,5:83] %>% mutate_all(as.numeric)
+
+## Use loop to sum up all allocations (should be 1)
+for (i in (2: length(data$total))){
+  
+  data$total[i] <- sum(data[i,5:83])  
+  
+}
+
+View(data)
+############
+
+
 ############

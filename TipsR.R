@@ -322,3 +322,105 @@ View(reason.data %>%
          .groups = "drop")
 )
 ### END
+
+
+#############
+#devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
+#devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
+library(reasontheme)
+library(pensionviewr)
+#library(janitor)
+library(grid)
+library(tidyverse)
+#library(openxlsx)
+library(tseries)
+library(plyr)
+#library(ggplot2)
+library(data.table)
+library(openxlsx)
+#library(readr)
+library(rsconnect)
+library(base64enc)
+#Shiny
+library(shiny)
+library(shinyWidgets)
+#library(shinyFiles)
+library(DT)
+library(plotly)
+library(rlang)
+library(purrr)
+library(rpart)
+library(vip)
+library(gridExtra)
+library(ggpubr)
+library(httr)
+library(jsonlite)
+
+#Pull state-level data from the database
+####
+pl <- planList()
+
+##Pull pension data from database
+reason.data <- pullStateData(2001)
+reason.data <- filterData(reason.data,2001)
+
+##Filter for all Teacher plans
+View(reason.data %>% 
+       filter(type_of_employees_covered == "Plan covers teachers", year == 2019)
+     %>% select(year, state, plan_name,type_of_employees_covered)
+)
+
+
+blended.teach <- c(
+  "Arizona State Retirement System",
+  "Delaware State Employees’ Pension Plan",
+  "District of Columbia Teachers Retirement Fund",
+  "Florida Retirement System",
+  "Employee Retirement System of Hawaii",
+  "Idaho Public Employee Retirement System",
+  "Iowa Public Employees' Retirement System",
+  "Kansas Public Employees' Retirement System",
+  "Public Employees' Retirement System of Mississippi",
+  "Nevada Public Employees Retirement System",
+  "New Hampshire Retirement System",
+  "North Carolina Teachers' and State Employees' Retirement System",
+  "Oregon Public Employees Retirement System",
+  "Rhode Island Employees Retirement System",
+  "South Carolina Retirement Systems",
+  "South Dakota Retirement System",
+  "Tennessee Consolidated Retirement System, Teachers Pension Plan",
+  "Utah Retirement Systems, Noncontributory Retirement System",
+  "Virginia Retirement System",
+  "Wisconsin Retirement System",
+  "Wyoming Retirement System, Public Employees’ Pension Plan",
+  "Maine Public Employees Retirement System (PERS) Defined Benefit Plan",
+  "Maryland State Employees’ Retirement System"
+  
+)
+
+
+reason.data <- data.table(reason.data)
+
+reason.data[plan_name %in% blended.teach]$type_of_employees_covered <- "Plan covers state, local, and teachers"
+
+#View(reason.data)
+
+
+View(reason.data %>% 
+       filter(type_of_employees_covered == "Plan covers teachers", year == 2019)
+     %>% select(year, state, plan_name,type_of_employees_covered)
+)
+##
+
+##Florida FRS 2017 data
+View(reason.data %>% 
+       filter(plan_name == "Florida Retirement System", year == 2017)
+     %>% select(year, state, plan_name, ava, aal, funded_ratio,type_of_employees_covered)
+)
+
+##New Mexico PERA 2017 data
+unique(reason.data %>% 
+       filter( year == 2017)
+     %>% select(type_of_employees_covered)
+)
+#################
