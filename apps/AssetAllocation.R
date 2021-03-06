@@ -1,7 +1,5 @@
-#### Asset Allocation ####
-### by Anil
-## Source: PPD
-
+### Asset Allocation App
+### Data: PPD
 rm(list=ls())
 
 ###Load/install packages
@@ -20,6 +18,7 @@ library(tidyverse)
 #library(openxlsx)
 library(tseries)
 library(plyr)
+library(dplyr)
 #library(ggplot2)
 library(data.table)
 library(openxlsx)
@@ -39,30 +38,7 @@ library(vip)
 
 pl <- planList()
 
-data <- pullStateData(2001)
-data <- filterData(data, 2001, blend.teacher = TRUE)
-#View(unique(data$type_of_employees_covered))
-
-#### Plan-by-Plan data ####
-data <- pullData(pl, "Dallas Police and Fire Pension System") %>% filter(year > 2000)
-#View(colnames(data))
-data <- data %>%
-  select(year, display_name, state,
-         contains("_actual"), contains("_target"), contains("_return"))
-#View(colnames(data))
-###########
-
-#### PPD raw data ####
-urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/Allocation.csv"
-allocation <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-View(allocation %>% select(contains("Allocation")))
-View(allocation)
-###########
-
-
-#### pullAssetData() function that pull all 
-#### Actual Allocation columns for all state plans
-
+######### pullAssetData() #########
 pullAssetData <- function (FY) 
 {
   
@@ -160,11 +136,13 @@ pullAssetData <- function (FY)
     dplyr::select(-.data$row_id) %>% dplyr::arrange(display_name, 
                                                     year) %>% janitor::clean_names()
 }
-
+##################
 
 assets <- pullAssetData(2001)
 assets[,5:74]  <- assets[,5:74] %>% mutate_all(as.numeric)
 #View(assets[,75])## TOTAL
+
+## Convert NA's to 0
 assets <- assets %>%
   replace(is.na(.), 0) %>%
   mutate(sum = rowSums(across(where(is.numeric))))
@@ -177,98 +155,163 @@ assets <- assets %>%
 assets <- assets[,1:74]
 assets$year <- as.numeric(assets$year)
 
-average.allocation <- assets %>%
+#for (i in (1: y)){
+#  assets$total[i] <- sum(assets[i,5:75])  
+#}
+
+equity <- data.frame(assets %>% select(contains("equity"), 
+                                       -contains("private")))
+fixed <- data.frame(assets %>% select(contains("fixed")))
+private.equity <- data.frame(assets %>% select(contains("private")))
+real.estate <- data.frame(assets %>% select(contains("estate")))
+cash <- data.frame(assets %>% select(contains("short")))
+infrastructure <- data.frame(assets %>% select(contains("infrastructure")))
+hedge <- data.frame(assets %>% select(contains("hedge"),
+                                      -contains("equity")))
+other <- data.frame(assets %>% select(-contains("equity"),
+                                      -contains("fixed"),
+                                      -contains("private"),
+                                      -contains("estate"),
+                                      -contains("short"),
+                                      -contains("infrastructure"),
+                                      -contains("year"),
+                                      -contains("plan_id"),
+                                      -contains("display_name"),
+                                      -contains("state"),
+                                      -contains("hedge")))
+#View(other)
+#View(colnames(assets))
+#View(equity)
+
+assets$private.equity <- 0
+assets$real.estate <- 0
+assets$hedge <- 0
+assets$infrastructure <- 0
+assets$other.alternatives <- 0
+assets$equity <- 0
+assets$fixed <- 0
+assets$cash <- 0
+
+
+for(i in (1:length(assets$equity))){
+
+  assets$private.equity[i] <- sum(private.equity[i,])
+  assets$real.estate[i] <- sum(real.estate[i,])
+  assets$hedge[i] <- sum(hedge[i,])
+  assets$infrastructure[i] <- sum(infrastructure[i,])
+  assets$other.alternatives[i] <- sum(other[i,])
+  assets$equity[i] <- sum(equity[i,])
+  assets$fixed[i] <- sum(fixed[i,])
+  assets$cash[i] <- sum(cash[i,])
+  
+}
+
+assets2 <- assets %>% select(year, display_name, state, colnames(assets[,75:82]))
+#assets2$total <- 0
+#View(assets2) 
+#y <- as.numeric(length(assets2$total))
+
+assets[,4:11]  <- assets[,4:11] %>% mutate_all(as.numeric)
+
+#for (i in (1: y)){
+#  assets2$total[i] <- sum(assets2[i,4:10])  
+#}
+
+#View(assets2)
+#View(assets2)
+## Calcualte Means for eacha sset class
+average.allocation <- assets2 %>%
   group_by(year) %>%
   summarise(
     across(
-      c(colnames(assets[5:74])),  
+      c(colnames(assets2[4:11])),  
       .fns = list(
         "mean" = ~ mean(.x)
       )),
     .groups = "drop")
 
-alloc <- data.table(melt(average.allocation, id.vars = "year"))
+alloc <- as.data.table(average.allocation)
+colnames(alloc) <- c("year",
+                     "Private Equity",
+                     "Real Estate",
+                     "Hedge Funds",
+                     "Infrastructure",
+                     "Other Alternatives",
+                     "Total Equity",
+                     "Fixed Income",
+                     "Cash Equivalents")
+
+alloc <- data.table(melt(alloc, id.vars = "year"))
+alloc$value <- round(alloc$value*100,1)
 #View(alloc)
 
+############
+############
 
-graph <- ggplot(alloc, aes(x = year, y = value, fill = variable)) +
-  geom_bar(cposition="stack", stat="identity")+
-  scale_y_continuous(labels = function(x) paste0(x*100,"%"), name = "% of Total Portfolio")+
-  theme_bw()+ theme(legend.position = "none")
+ui <- fluidPage(
+  br(),
+  img(src = base64enc::dataURI(file = "https://raw.githubusercontent.com/ANiraula/PublicPlansData/master/reason_logo.png"), width = 200, height = 55),
+  titlePanel("Average Asset Allocation by State-Managed Plans (2001-2020)"),
+  # CODE BELOW: Add select inputs on state and plan_names to choose between different pension plans in Reason database
+  theme = shinythemes::shinytheme("spacelab"),
+  
+  mainPanel(
+    ###Remove error messages
+    tags$style(type="text/css",
+               ".shiny-output-error { visibility: hidden; }",
+               ".shiny-output-error:before { visibility: hidden; }"
+    ),    
+    tabsetPanel(
+      #https://community.rstudio.com/t/color-cells-in-dt-datatable-in-shiny/2288),
+      tabPanel("Year-By-Year Asset Alocation", 
+               
+               plotly::plotlyOutput("plot_Allocation"))
+  )
+)
+)
+
+
+##########################
+######Shiny app[server] -------------------------------------------------
+
+server <- function(input, output, session){
+  
+ 
+  output$plot_Allocation <- plotly::renderPlotly({
+colors <- c(palette_reason$Red,
+            palette_reason$LightRed,
+            palette_reason$Orange,
+            palette_reason$LightOrange,
+            palette_reason$Yellow,
+            palette_reason$DarkGrey,
+            palette_reason$SatBlue,
+            palette_reason$LightBlue)
+
+graph <- ggplot(alloc,aes(x = year, y = value, fill = variable)) +
+  geom_bar(
+                      #text = paste0("Fiscal Year: ", year, "<br>",
+                                    #"Class: ",variable, "<br>",
+                                   # "Allocation: ",round(value *100,2), "%")), 
+                      cposition="stack", stat="identity")+
+  scale_y_continuous(labels = function(x) paste0(x,"%"), name = "% of Total Portfolio")+
+  scale_fill_manual(values=colors)+
+  theme_bw()+
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.title.x=element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank(),
+    plot.title = element_text(family = "Arial", size = 14, margin=margin(0,0,0,0)),
+    axis.title.y = element_text(family = "Arial", size = 12, margin=margin(0,0,0,0))
+  )#+ theme(legend.position = "none")
 
 graph <- ggplotly(graph)
+graph <- graph  %>% layout(height = 550)
+
 graph
 ###########
-
-
-#If allocations = 100%
-#Difference in # columns/categories per plan
-#Manually collect allocation to database
-#Combine categories if needed
-
-######################
-######################
-
-##Load PPD investment data
-urlfile= "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/PensionInvestmentPerformanceDetailed_V1.csv"
-data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types =       NULL)
-data <- as.data.table(data)# convert to data.table
-View(data)
-View(colnames(data))
-
-
-## Filter for columns ending w/ "_Actl"
-data <- data %>%
-  select("ppd_id",
-         "PlanName",
-         "fy",
-         #"EEGroupID",
-         #"TierID", 
-         contains("_Actl"))
-
-x <- as.numeric(length(colnames(data)))
-x
-View(data)
-
-#View(data$total)
-## Convert all numbers to numeric format
-data[,4:13] <- data[,4:13] %>% mutate_all(as.numeric)
-data$total <- 0
-
-## Use loop to sum up all allocations (should be 1)
-
-data1 <- data %>%
-  select("ppd_id",
-         "PlanName",
-         "fy",
-         contains("_Actl"))
-
-length(data$total)
-y <- as.numeric(length(colnames(data1)))
-
-for (i in (2: length(data$total))){
-  
-  data$total[i] <- sum(data[i,4:13])  
-  
+})
 }
-
-View(data)
-######################
-######################
-
-## Example filtering for 1 Plan + Remove All Zero Columns
-data <- data %>%
-       filter(PlanName == "New Mexico PERA")
-
-data <- data %>%
-  replace(is.na(.), 0) %>%
-  mutate(sum = rowSums(across(where(is.numeric))))
-
-data <- data.table(data)
-## Custom function to filter for value More than 0
-all_zero <- function(x) any(x>0)
-assets <- assets %>% select_if(all_zero)
-
-View(data)
-############
-############
+#rsconnect::appDependencies()
+shinyApp(ui = ui, server = server)
