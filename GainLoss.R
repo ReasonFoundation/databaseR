@@ -61,30 +61,14 @@ data <- pullStateData(2001)
 #Pull plan-specific data from the database
 pl <- planList() 
 
-reason.data <- pullData(pl, "Louisiana State Employees Retirement System") %>% filter(year > 2000)# (2002-2020)
+reason.data <- pullData(pl, "Louisiana State Employees Retirement System") %>% filter(year >= 2001 & !duplicated(year))
+
 #reason.data <- pullData(pl, "Dallas Police and Fire Pension System") %>% filter(year > 2000)# (2002-2020)
 #reason.data <- pullData(pl, "Idaho Public Employee Retirement System") %>% filter(year > 2000)# (2002-2019)
 #reason.data <- pullData(pl, "New Mexico Public Employees Retirement Association")# (2002-2019)
 #reason.data <- pullData(pl, "Teachers’ Retirement System of Louisiana")# (2002-2019)
 #reason.data <- pullData(pl, "Arizona Public Safety Personnel Retirement System") (2002-2019)
 #reason.data <- pullData(pl, "Georgia Teachers Retirement System")# (2002-2018)
-
-data <- reason.data %>%
-  select(year, plan_name, state,
-         contains("actual"), contains("return"), contains("target"))
-
-data[,4:37] <- data[,4:3] %>% mutate_all(as.numeric)
-data$total <- 0
-
-## Use loop to sum up all allocations (should be 1)
-for (i in (2: length(data$total))){
-  data$total[i] <- sum(data[i,4:37])  
-}
-
-all_zero <- function(x) any(x>0)
-data <- data %>% select_if(all_zero)
-
-View(data)
 
 #### Create a list of all Gain/Loss columns we have ####
 
@@ -174,7 +158,6 @@ reason.data <- reason.data %>%
 #10798-10829
 #View(x$master_attribute_name[19:63])
 
-
 ## Fill all NAs w/ 0
 reason.data <- data.table(reason.data)
 reason.data <- reason.data[,lapply(.SD,function(x){ifelse(is.na(x),0,x)})]
@@ -182,6 +165,7 @@ reason.data <- reason.data[,lapply(.SD,function(x){ifelse(is.na(x),0,x)})]
 ## Make sure all column numbers are numeric
 reason.data[,4:(length(reason.data)-1)] <- data.table(reason.data[,4:(length(reason.data)-1)]) %>% dplyr::mutate_all(as.numeric)
 reason.data$year <- as.numeric(reason.data$year)
+#View(reason.data)
 
 #### Add Net Amortization ####
 #(Interest on Debt + Amortization Payments)

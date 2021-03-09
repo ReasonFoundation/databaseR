@@ -137,10 +137,15 @@ pullAssetData <- function (FY)
                                                     year) %>% janitor::clean_names()
 }
 ##################
-
+View(pl)
 assets <- pullAssetData(2001)
 assets[,5:74]  <- assets[,5:74] %>% mutate_all(as.numeric)
 #View(assets[,75])## TOTAL
+reason.data <- pullStateData(2001)
+reason.data <- filterData(reason.data,2001)
+reason.data <- reason.data %>%
+  filter(plan_name == "California State Teachers Retirement System")
+View(reason.data$unfunded_actuarially_accrued_liabilities_dollar)
 
 ## Convert NA's to 0
 assets <- assets %>%
