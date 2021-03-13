@@ -61,9 +61,9 @@ data <- pullStateData(2001)
 #Pull plan-specific data from the database
 pl <- planList() 
 
-reason.data <- pullData(pl, "Louisiana State Employees Retirement System") %>% filter(year >= 2001 & !duplicated(year))
+#reason.data <- pullData(pl, "Louisiana State Employees Retirement System") %>% filter(year >= 2001 & !duplicated(year))
 
-#reason.data <- pullData(pl, "Dallas Police and Fire Pension System") %>% filter(year > 2000)# (2002-2020)
+reason.data <- pullData(pl, "Dallas Police and Fire Pension System") %>% filter(year > 2000 & !duplicated(year))# (2002-2020)
 #reason.data <- pullData(pl, "Idaho Public Employee Retirement System") %>% filter(year > 2000)# (2002-2019)
 #reason.data <- pullData(pl, "New Mexico Public Employees Retirement Association")# (2002-2019)
 #reason.data <- pullData(pl, "Teachers’ Retirement System of Louisiana")# (2002-2019)
@@ -175,6 +175,8 @@ future.payroll <- reason.data[year >= fiscal_year_of_contribution[1]]$covered_pa
 future.payroll <- t(cbind(t(future.payroll),reason.data[year == 2020]$covered_payroll_dollar*(1+0.03)))#Use assumed payroll growth rate
 reason.data$payroll2 <- future.payroll
 
+View(reason.data)
+View(reason.data %>% select(year, gain_or_loss_due_to_changes_in_pbi_provisions))
 ## Calculate net amortization
 reason.data <- reason.data[,net_amo := (interest_on_debt_dollar + 
                                       if(sum(reason.data$amortization_payment_total_amount)!=0){
@@ -194,7 +196,7 @@ reason.data <- reason.data %>% select(!interest_on_debt_dollar &
                                         !fiscal_year_of_contribution &
                                         !payroll2)
 
-View(reason.data)
+
 #View(reason.data %>%
 #       summarise(
 #         across(c(colnames(reason.data[,4:13])),  .fns = list(sum)))
