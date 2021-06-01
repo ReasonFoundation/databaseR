@@ -3,7 +3,7 @@ Alabama Employees' Retirement System (ERS),Alabama,0.0583,0.077,13.150538,12.568
 Alabama Teachers' Retirement System (TRS),Alabama,0.0562,0.077,25.946389,25.619448,https://www.rsa-al.gov/uploads/files/2020_RSA_CAFR.pdf
 Alaska Public Employees Retirement System (PERS),Alaska,0.0383,0.0738,9.3445,9.4894,https://treasury.dor.alaska.gov/Portals/3/docs/Investment%20Results/Investment%20Performance%2006.30.20.pdf
 Alaska Teachers Retirement System (TRS),Alaska,0.0382,0.0738,5.3757,5.5119,https://treasury.dor.alaska.gov/Portals/3/docs/Investment%20Results/Investment%20Performance%2006.30.20.pdf
-Arizona Corrections Officers Retirement Plan (CORP),Arizona,,,,,
+Arizona Corrections Officers Retirement Plan (CORP),Arizona,0.026,0.073,2.070559462,1.996273344,https://www.psprs.com/uploads/sites/1/2020_Valuation_Report_CORP_consolidated_FINAL.PDF
 Arizona Public Safety Personnel Retirement System (PSPRS)**,Arizona,0.005,0.073,10.7,7.83,https://www.pionline.com/pension-funds/arizona-public-safety-personnel-returns-05-fiscal-year-below-benchmark
 Arizona State Retirement System (ASRS),Arizona,0.008,0.075,42.1917,41.5568,https://www.azasrs.gov/sites/default/files/2020_ASRS_CAFR_Web.pdf
 Arkansas Public Employees System (APERS),Arkansas,0.024,0.072,9,8.833,https://www.pionline.com/pension-funds/arkansas-public-employees-returns-24-fiscal-year
@@ -13,9 +13,9 @@ CalPERS - California Public Employees Retirement Fund (CalPERS),California,0.047
 "Colorado PERA, Local Division Fund",Colorado,,,,,
 "Colorado PERA, School Division Fund (PERA)",Colorado,,,,,
 "Colorado PERA, State Division Fund (PERA)",Colorado,,,,,
-Connecticut Municipal Employees Retirement Plan,Connecticut,,,,,
-Connecticut State Employees Retirement System (SERS),Connecticut,,,,,
-Connecticut Teachers Retirement System (TRS),Connecticut,,,,,
+Connecticut Municipal Employees Retirement Plan,Connecticut,0.0234,0.07,2.734354911,2.731182007,https://www.osc.ct.gov/rbsd/reports/pdfs/FINAL%2001-18-21%20CMERS%202020%20Valuation%20Report%20-%20with%20Schedule%20H.pdf
+Connecticut State Employees Retirement System (SERS),Connecticut,0.0226,0.069,13.31110993,13.2756926,https://www.osc.ct.gov/rbsd/reports/pdfs/CT%20SERS%206-30-2020%20Valuation%20Report%20REVISED%20Final.pdf
+Connecticut Teachers Retirement System (TRS),Connecticut,0.023,0.069,17.946839,18.286419,http://ctstatefinance.org/resources/uploads/files/2020-TRS-Actuarial-Valuation.pdf
 Delaware State Employees' Pension Plan (PERS),Delaware,0.1,0.07,9.6388,9.1165,https://open.omb.delaware.gov/FinancialReports/financials/fy-20-CAFR-FINAL.pdf
 Employee Retirement System of Hawaii (ERS),Hawaii,0.013,0.07,17.2,17.227,https://www.pionline.com/pension-funds/hawaii-system-returns-13-fiscal-year-topping-benchmark
 Employees Retirement System of Texas - Law Enforcement and Custodial Officer Supplemental Retirement Fund,Texas,,,,,
