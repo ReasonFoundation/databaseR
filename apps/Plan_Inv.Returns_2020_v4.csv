@@ -9,7 +9,7 @@ Arizona State Retirement System (ASRS),Arizona,0.008,0.075,42.192,41.557,https:/
 Arkansas Public Employees System (APERS),Arkansas,0.024,0.075,9,8.833,https://www.pionline.com/pension-funds/arkansas-public-employees-returns-24-fiscal-year
 Arkansas Teachers Retirement Plan (ATRS),Arkansas,-0.014,0.075,16.665,17.742,https://www.artrs.gov/BoardMinutes/Minutes2020/09_28_2020_BOT_Packet.pdf
 California State Teachers Retirement System (CalSTRS),California,0.039,0.07,246,238.86,https://www.calstrs.com/news-release/calstrs-returns-39-2019-20-amid-volatile-markets
-CalPERS - California Public Employees Retirement Fund (CalPERS)**,California,0.047,0.07,396.9,372.61,https://www.calpers.ca.gov/page/newsroom/calpers-news/2020/calpers-preliminary-investment-return-2019-20
+CalPERS - California Public Employees Retirement Fund (CalPERS),California,0.047,0.07,392.452541,372.61,https://www.calpers.ca.gov/docs/forms-publications/cafr-2020.pdf
 "Colorado PERA, Local Division Fund",Colorado,,,,,
 "Colorado PERA, School Division Fund (PERA)",Colorado,,,,,
 "Colorado PERA, State Division Fund (PERA)",Colorado,,,,,
@@ -70,8 +70,8 @@ New York State & Local Police & Fire Retirement System*,New York,-0.027,0.068,29
 New York State Teachers' Retirement System (TRS),New York,0.035,0.0725,120.5,122.5,https://www.nystrs.org/NYSTRS/media/PDF/NYSTRS_Numbers.pdf
 North Carolina Local Government Retirement System*,North Carolina,0.044,0.07,103.9,101.374,https://www.pionline.com/pension-funds/north-carolina-posts-44-fiscal-year-above-benchmark
 North Carolina Teachers' and State Employees' Retirement System (TSERS)*,North Carolina,0.044,0.07,103.9,101.374,https://www.pionline.com/pension-funds/north-carolina-posts-44-fiscal-year-above-benchmark
-North Dakota Public Employees Retirement System (PERS)**,North Dakota,0.034,0.075,3.2,3.097,https://www.rio.nd.gov/sites/www/files/documents/PDFs/SIB/Reports/investmentperformancesummary.pdf
-North Dakota Teachers' Fund for Retirement (TRS)**,North Dakota,0.035,0.075,2.6,2.616,https://www.rio.nd.gov/sites/www/files/documents/PDFs/SIB/Reports/investmentperformancesummary.pdf
+North Dakota Public Employees Retirement System (PERS),North Dakota,0.0341,0.0725,3.166994349,3.108743053,https://ndpers.nd.gov/image/cache/2019-cafr.pdf
+North Dakota Teachers' Fund for Retirement (TRS),North Dakota,0.0333,0.0775,2.616171056,2.530657411,https://www.rio.nd.gov/sites/www/files/documents/PDFs/TFFR/Reports/valuationreportsegal2020.pdf
 Ohio Police and Fire Pension Fund,Ohio,,0.08,14.98,16.515,http://www.orsc.org/Assets/Reports/1413.pdf
 Ohio Public Employees Retirement System (OPERS) Traditional Defined Benefit Pension Plan,Ohio,0.02,0.072,86.2,91.122,http://www.orsc.org/Assets/Reports/1413.pdf
 Ohio School Employees Retirement System (SERS),Ohio,0.03,0.075,14.518,15.437,http://www.orsc.org/Assets/Reports/1413.pdf
@@ -109,6 +109,6 @@ Washington Public Employees' Retirement System (PERS)*,Washington,0.037,0.074,11
 Washington School Employees' Retirement System (SERS)*,Washington,0.037,0.075,114.5,110,https://www.drs.wa.gov/wp-content/uploads/2020/10/2020-CAFR.pdf
 Washington Teachers Retirement System (TRS)*,Washington,0.037,0.075,114.5,110,https://www.drs.wa.gov/wp-content/uploads/2020/10/2020-CAFR.pdf
 West Virginia Public Employees Retirement System (PERS),West Virginia,0.032,0.075,6.899129,6.895386,https://www.wvretirement.com/Forms/2020-CompAnFinR.pdf
-West Virginia Teachers' Retirement System (TRS),West Virginia,0.032,0.075,7.820,7.837,https://www.wvretirement.com/Forms/2020-CompAnFinR.pdf
+West Virginia Teachers' Retirement System (TRS),West Virginia,0.032,0.075,7.82,7.837,https://www.wvretirement.com/Forms/2020-CompAnFinR.pdf
 Wisconsin Retirement System (RS),Wisconsin,,,,,
 "Wyoming Retirement System, Public Employees' Pension Plan (WRS)",Wyoming,0.1103,0.07,8.294241897,7.790558842,https://retirement.wyo.gov/-/media/Documents/Actuarial-Valuations/2021PublicEmployeeActuarialReport.ashx
