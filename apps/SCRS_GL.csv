@@ -1,4 +1,4 @@
-﻿year,Inv,Assumptions + Legislative,Net Amo,Demographic,COLA,Salary,Net Change
+﻿year,Inv,Assumptions,ney_amo,demograhic,cola,payroll,net_amo
 2001,25,0,-26,16,353,179,547
 2002,215,0,-6,-51,149,166,473
 2003,120,399,-17,460,278,-188,1052
