@@ -1,51 +1,51 @@
-﻿state,avg.f,avg.c,rank
-Alabama,62.80,17.10,7.00
-Alaska,26.60,-3.00,50.00
-Arizona,60.30,15.70,10.00
-Arkansas,60.40,15.80,9.00
-California,59.40,15.20,12.00
-Colorado,45.10,7.30,39.00
-Connecticut,49.00,9.40,29.00
-Delaware,55.30,12.90,16.00
-Florida,70.70,21.50,1.00
-Georgia,63.50,17.50,5.00
-Hawaii,70.00,21.10,2.00
-Idaho,44.40,6.90,40.00
-Illinois,51.80,11.00,23.00
-Indiana,51.70,10.90,25.00
-Iowa,47.80,8.80,36.00
-Kansas,54.30,12.40,19.00
-Kentucky,55.60,13.10,15.00
-Louisiana,66.40,19.10,3.00
-Maine,41.00,5.00,48.00
-Maryland,54.20,12.30,20.00
-Massachusetts,47.90,8.80,35.00
-Michigan,44.40,6.90,40.00
-Minnesota,41.20,5.10,47.00
-Mississippi,63.40,17.40,6.00
-Missouri,54.50,12.50,18.00
-Montana,42.70,5.90,45.00
-Nebraska,48.80,9.30,30.00
-Nevada,49.90,9.90,28.00
-New Hampshire,43.80,6.60,42.00
-New Jersey,52.70,11.50,22.00
-New Mexico,53.40,11.90,21.00
-New York,45.40,7.40,37.00
-North Carolina,59.00,15.00,13.00
-North Dakota,40.40,4.70,49.00
-Ohio,50.70,10.40,26.00
-Oklahoma,59.60,15.30,11.00
-Oregon,48.40,9.10,33.00
-Pennsylvania,48.80,9.30,30.00
-Rhode Island,50.10,10.10,27.00
-South Carolina,62.40,16.90,8.00
-South Dakota,45.20,7.30,38.00
-Tennessee,57.60,14.20,14.00
-Texas,64.80,18.20,4.00
-Utah,48.60,9.20,32.00
-Vermont,42.90,6.10,44.00
-Virginia,55.10,12.80,17.00
-Washington,48.30,9.10,34.00
-West Virginia,51.80,11.00,23.00
-Wisconsin,43.10,6.20,43.00
-Wyoming,42.00,5.60,46.00
+﻿State,AverageTemperature
+Florida,70.7
+Hawaii,70
+Louisiana,66.4
+Texas,64.8
+Georgia,63.5
+Mississippi,63.4
+Alabama,62.8
+South Carolina,62.4
+Arkansas,60.4
+Arizona,60.3
+Oklahoma,59.6
+California,59.4
+North Carolina,59
+Tennessee,57.6
+Kentucky,55.6
+Delaware,55.3
+Virginia,55.1
+Missouri,54.6
+Kansas,54.3
+Maryland,54.2
+New Mexico,53.4
+New Jersey,52.7
+West Virginia,51.8
+Illinois,51.8
+Indiana,51.7
+Ohio,50.7
+Rhode Island,50.1
+Nevada,49.9
+Connecticut,49
+Pennsylvania,48.8
+Nebraska,48.8
+Utah,48.6
+Oregon,48.4
+Washington,48.3
+Massachusetts,47.9
+Iowa,47.8
+New York,45.4
+South Dakota,45.2
+Colorado,45.1
+Michigan,44.4
+Idaho,44.4
+New Hampshire,43.8
+Wisconsin,43.1
+Vermont,42.9
+Montana,42.7
+Wyoming,42
+Minnesota,41.2
+Maine,41
+North Dakota,40.4
+Alaska,26.6
