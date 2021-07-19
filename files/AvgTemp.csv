@@ -1,51 +1,51 @@
-﻿State,AverageTemperature
-Florida,70.7
-Hawaii,70
-Louisiana,66.4
-Texas,64.8
-Georgia,63.5
-Mississippi,63.4
-Alabama,62.8
-South Carolina,62.4
-Arkansas,60.4
-Arizona,60.3
-Oklahoma,59.6
-California,59.4
-North Carolina,59
-Tennessee,57.6
-Kentucky,55.6
-Delaware,55.3
-Virginia,55.1
-Missouri,54.6
-Kansas,54.3
-Maryland,54.2
-New Mexico,53.4
-New Jersey,52.7
-West Virginia,51.8
-Illinois,51.8
-Indiana,51.7
-Ohio,50.7
-Rhode Island,50.1
-Nevada,49.9
-Connecticut,49
-Pennsylvania,48.8
-Nebraska,48.8
-Utah,48.6
-Oregon,48.4
-Washington,48.3
-Massachusetts,47.9
-Iowa,47.8
-New York,45.4
-South Dakota,45.2
-Colorado,45.1
-Michigan,44.4
-Idaho,44.4
-New Hampshire,43.8
-Wisconsin,43.1
-Vermont,42.9
-Montana,42.7
-Wyoming,42
-Minnesota,41.2
-Maine,41
-North Dakota,40.4
-Alaska,26.6
+﻿state,avg.temp,rain.inch
+Alabama,62.8,58.3
+Alaska,26.6,22.5
+Arizona,60.3,13.6
+Arkansas,60.4,50.6
+California,59.4,22.2
+Colorado,45.1,15.9
+Connecticut,49,50.3
+Delaware,55.3,45.7
+Florida,70.7,54.5
+Georgia,63.5,50.7
+Hawaii,70,63.7
+Idaho,44.4,18.9
+Illinois,51.8,39.2
+Indiana,51.7,41.7
+Iowa,47.8,34
+Kansas,54.3,28.9
+Kentucky,55.6,48.9
+Louisiana,66.4,60.1
+Maine,41,42.2
+Maryland,54.2,44.5
+Massachusetts,47.9,47.7
+Michigan,44.4,32.8
+Minnesota,41.2,27.3
+Mississippi,63.4,59
+Missouri,54.6,42.2
+Montana,42.7,15.3
+Nebraska,48.8,23.6
+Nevada,49.9,9.5
+New Hampshire,43.8,43.4
+New Jersey,52.7,47.1
+New Mexico,53.4,14.6
+New York,45.4,41.8
+North Carolina,59,50.3
+North Dakota,40.4,17.8
+Ohio,50.7,39.1
+Oklahoma,59.6,36.5
+Oregon,48.4,27.4
+Pennsylvania,48.8,42.9
+Rhode Island,50.1,47.9
+South Carolina,62.4,49.8
+South Dakota,45.2,20.1
+Tennessee,57.6,54.2
+Texas,64.8,28.9
+Utah,48.6,12.2
+Vermont,42.9,42.7
+Virginia,55.1,44.3
+Washington,48.3,38.4
+West Virginia,51.8,45.2
+Wisconsin,43.1,32.6
+Wyoming,42,12.9
