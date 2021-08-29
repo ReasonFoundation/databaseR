@@ -6,7 +6,7 @@ Alaska Teachers Retirement System (TRS),Alaska Teachers Retirement System,Alaska
 Arizona Corrections Officers Retirement Plan (CORP),Arizona Corrections Officers Retirement Plan,Arizona,30-Jun-20,,0.073,,2.070559462,
 Arizona Public Safety Personnel Retirement System (PSPRS)*,Arizona Public Safety Personnel Retirement System,Arizona,30-Jun-20,,0.073,,10.7,
 Arizona State Retirement System (ASRS),Arizona State Retirement System,Arizona,30-Jun-20,,0.075,,42.192,
-Arkansas Public Employees System (APERS),Arkansas Public Employees Retirement System,Arkansas,30-Jun-20,,0.075,,9,
+Arkansas Public Employees System (APERS)***,Arkansas Public Employees Retirement System,Arkansas,30-Jun-20,0.315,0.075,11.6,9,https://www.pionline.com/pension-funds/arkansas-public-employees-returns-315-fiscal-year
 Arkansas Teachers Retirement Plan (ATRS),Arkansas Teachers Retirement Plan,Arkansas,30-Jun-20,,0.075,,16.665,
 California State Teachers Retirement System (CalSTRS),California State Teachers Retirement System,California,30-Jun-20,,0.07,,246,
 CalPERS - California Public Employees Retirement Fund (CalPERS),CalPERS - California Public Employees Retirement Fund,California,30-Jun-20,,0.07,,392.452541,
@@ -95,7 +95,7 @@ Teachers' Retirement System of Louisiana (TRSL)**,Teachers’ Retirement System of
 "Tennessee Consolidated Retirement System, Public Employee Retirement System (LECOS)*","Tennessee Consolidated Retirement System, Public Employee Retirement System",Tennessee,30-Jun-20,,0.0725,,52.1,
 "Tennessee Consolidated Retirement System, Teachers Pension Plan (TCRS)*","Tennessee Consolidated Retirement System, Teachers Pension Plan",Tennessee,30-Jun-20,,0.0725,,52.1,
 Texas County and District Retirement System,Texas County and District Retirement System,Texas,31-Dec-20,,0.08,,30.5538,
-Texas Employees Retirement System (ERS),Texas Employees Retirement System,Texas,31-Aug-20,,0.075,,27.351,
+Texas Employees Retirement System (ERS),Texas Employees Retirement System,Texas,31-Aug-20,0.2912,0.075,33.9,27.351,https://ers.texas.gov/about-ers/ers-investments-overview/performance
 Texas Municipal Retirement System (TMRS)**,Texas Municipal Retirement System,Texas,31-Dec-20,,0.0675,,31.814,
 Texas Teacher Retirement System (TRS),Texas Teacher Retirement System,Texas,31-Aug-20,,0.0725,,157.978,
 University of California Retirement System (UCRP),University of California Retirement System,California,1-Jul-20,,0.0675,,70.278963,
