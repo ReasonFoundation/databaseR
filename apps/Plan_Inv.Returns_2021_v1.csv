@@ -6,7 +6,7 @@ Alaska Teachers Retirement System (TRS),Alaska Teachers Retirement System,Alaska
 Arizona Corrections Officers Retirement Plan (CORP),Arizona Corrections Officers Retirement Plan,Arizona,30-Jun-20,,0.073,,2.070559462,
 Arizona Public Safety Personnel Retirement System (PSPRS)*,Arizona Public Safety Personnel Retirement System,Arizona,30-Jun-20,,0.073,,10.7,
 Arizona State Retirement System (ASRS),Arizona State Retirement System,Arizona,30-Jun-20,,0.075,,42.192,
-Arkansas Public Employees Retirement System (APERS)***,Arkansas Public Employees Retirement System,Arkansas,30-Jun-20,0.315,0.075,11.6,9,https://www.pionline.com/pension-funds/arkansas-public-employees-returns-315-fiscal-year
+Arkansas Public Employees System (APERS),Arkansas Public Employees Retirement System,Arkansas,30-Jun-20,,0.075,,9,
 Arkansas Teachers Retirement Plan (ATRS),Arkansas Teachers Retirement Plan,Arkansas,30-Jun-20,,0.075,,16.665,
 California State Teachers Retirement System (CalSTRS),California State Teachers Retirement System,California,30-Jun-20,,0.07,,246,
 CalPERS - California Public Employees Retirement Fund (CalPERS),CalPERS - California Public Employees Retirement Fund,California,30-Jun-20,,0.07,,392.452541,
@@ -22,7 +22,7 @@ Employees Retirement System of Texas - Law Enforcement and Custodial Officer Sup
 Florida Retirement System (FRS),Florida Retirement System,Florida,1-Jul-20,,0.072,,161.6,
 Georgia Employees' Retirement System (GAERS),Georgia Employees’ Retirement System,Georgia,30-Jun-20,,0.0725,,13.502286,
 Georgia Teachers Retirement System (GATRS),Georgia Teachers Retirement System,Georgia,30-Jun-20,,0.0725,,81.162,
-Idaho Public Employee Retirement System (PERS),Idaho Public Employee Retirement System,Idaho,1-Jul-20,,0.07,,17.39206058,
+Idaho Public Employee Retirement System (PERS),Idaho Public Employee Retirement System,Idaho,1-Jul-20,0.276,0.07,23.5,17.39206058,https://www.pionline.com/pension-funds/idaho-public-employees-reports-276-return-fiscal-year
 Illinois Municipal Employees Retirement System,Illinois Municipal Employees Retirement System,Illinois,31-Dec-20,,0.075,,51.12729804,
 Illinois State Employees Retirement System (SERS),Illinois State Employees Retirement System,Illinois,30-Jun-20,,0.068,,19.19143289,
 Illinois Teachers Retirement System (TRS),Illinois State University Retirement System,Illinois,30-Jun-20,,0.07,,52.31647777,
@@ -41,7 +41,7 @@ Louisiana School Employees' Retirement System (LSERS),Louisiana School Employees
 Louisiana State Employees Retirement System (LASERS)***,Louisiana State Employees Retirement System,Louisiana,30-Jun-20,0.356,0.0755,13.915,12.283,https://lasersonline.org/wp-content/uploads/2021/08/12-June-2021.pdf
 Maine Public Employees Retirement System - Consolidated Plan for Participating Local Districts*,Maine Public Employees Retirement System - Consolidated Plan for Participating Local Districts,Maine,30-Jun-20,0.265,0.068,18.1,14.989,https://www.mainepers.org/investments/performance/
 Maine Public Employees Retirement System (PERS) Defined Benefit Plan*,Maine Public Employees Retirement System (PERS) Defined Benefit Plan,Maine,30-Jun-20,0.265,0.068,18.1,14.989,https://www.mainepers.org/investments/performance/
-Maryland State Retirement and Pension System (ERS & TRS)*,Maryland State Employees’ Retirement System,Maryland,30-Jun-20,0.267,0.074,67.9,54.24,https://sra.maryland.gov/post/maryland-state-retirement-and-pension-system-earns-historic-267-during-fy-2021
+Maryland State Retirement and Pension System (ERS & TRS),Maryland State Employees’ Retirement System,Maryland,30-Jun-20,0.267,0.074,67.9,54.24,https://sra.maryland.gov/post/maryland-state-retirement-and-pension-system-earns-historic-267-during-fy-2021
 Massachusetts State Employees' Retirement System (MSERS),Massachusetts State Employees’ Retirement System,Massachusetts,30-Jun-20,,,,,
 Massachusetts Teachers' Retirement System (MTRS),Massachusetts Teachers’ Retirement System,Massachusetts,30-Jun-20,,,,,
 Michigan Municipal Retirement System,Michigan Municipal Retirement System,Michigan,30-Jun-20,,,,,
@@ -63,7 +63,7 @@ Nevada Public Employees Retirement System (NVPERS),Nevada Public Employees Retir
 New Hampshire Retirement System (NHRS),New Hampshire Retirement System,New Hampshire,30-Jun-20,,0.073,,9.171,
 New Jersey Public Employees Retirement System (PERS)*,New Jersey Public Employees Retirement System,New Jersey,1-Jul-20,,0.075,,29.848,
 New Jersey Teachers' Pension & Annuity Fund (TRS)*,New Jersey Teachers’ Pension & Annuity Fund,New Jersey,30-Jun-20,,0.075,,26.967,
-New Mexico Educational Retirement Board (NMERB),New Mexico Educational Retirement Board,New Mexico,30-Jun-20,0.2876,0.07,15.8,13.5,https://www.nmerb.org/2021/08/18/3-6-billion-return-for-the-fiscal-year/
+New Mexico Educational Retirement Board (ERB),New Mexico Educational Retirement Board,New Mexico,30-Jun-20,0.2876,0.07,15.8,13.5,https://www.nmerb.org/2021/08/18/3-6-billion-return-for-the-fiscal-year/
 New Mexico Public Employees Retirement Association (PERA),New Mexico Public Employees Retirement Association,New Mexico,30-Jun-20,,0.0725,,15.508,
 New York State & Local Employees Retirement System*,New York State & Local Employees Retirement System,New York,1-Apr-20,,0.068,,182.718,
 New York State & Local Police & Fire Retirement System*,New York State & Local Police & Fire Retirement System,New York,1-Apr-20,,0.068,,32.386,
@@ -75,7 +75,7 @@ North Dakota Teachers' Fund for Retirement (TRS),North Dakota Teachers' Fund for
 Ohio Police and Fire Pension Fund,Ohio Police and Fire Pension Fund,Ohio,1-Jan-21,,0.08,,16.515,
 Ohio Public Employees Retirement System (OPERS) Traditional Defined Benefit Pension Plan,Ohio Public Employees Retirement System (OPERS) Traditional Defined Benefit Pension Plan,Ohio,31-Dec-20,,0.072,,91.122,
 Ohio School Employees Retirement System (SERS),Ohio School Employees Retirement System,Ohio,30-Jun-20,,0.075,,15.437,
-Ohio State Teachers Retirement System (TRS),Ohio State Teachers Retirement System,Ohio,1-Jul-20,,0.075,,74.096,
+Ohio State Teachers Retirement System (TRS),Ohio State Teachers Retirement System,Ohio,1-Jul-20,0.2916,0.075,94.8,74.096,https://www.strsoh.org/news/board-news/2021/august-board-news.html
 Oklahoma Public Employees Retirement System (PERS),Oklahoma Public Employees Retirement System,Oklahoma,1-Jul-20,,0.075,,9.958,
 Oklahoma Police Pension and Retirement System,Oklahoma Police Pension and Retirement System,Oklahoma,1-Jul-20,,0.07,,2.619,
 Oklahoma Teachers Retirement System (TRS),Oklahoma Teachers Retirement System,Oklahoma,30-Jun-20,,0.075,,17.28,
@@ -95,7 +95,7 @@ Teachers' Retirement System of Louisiana (TRSL)**,Teachers’ Retirement System of
 "Tennessee Consolidated Retirement System, Public Employee Retirement System (LECOS)*","Tennessee Consolidated Retirement System, Public Employee Retirement System",Tennessee,30-Jun-20,,0.0725,,52.1,
 "Tennessee Consolidated Retirement System, Teachers Pension Plan (TCRS)*","Tennessee Consolidated Retirement System, Teachers Pension Plan",Tennessee,30-Jun-20,,0.0725,,52.1,
 Texas County and District Retirement System,Texas County and District Retirement System,Texas,31-Dec-20,,0.08,,30.5538,
-Texas Employees Retirement System (ERS),Texas Employees Retirement System,Texas,31-Aug-20,0.2912,0.075,33.9,27.351,https://ers.texas.gov/about-ers/ers-investments-overview/performance
+Texas Employees Retirement System (ERS),Texas Employees Retirement System,Texas,31-Aug-20,,0.075,,27.351,
 Texas Municipal Retirement System (TMRS)**,Texas Municipal Retirement System,Texas,31-Dec-20,,0.0675,,31.814,
 Texas Teacher Retirement System (TRS),Texas Teacher Retirement System,Texas,31-Aug-20,,0.0725,,157.978,
 University of California Retirement System (UCRP),University of California Retirement System,California,1-Jul-20,,0.0675,,70.278963,
