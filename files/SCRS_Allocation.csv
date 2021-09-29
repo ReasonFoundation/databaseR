@@ -1,21 +1,21 @@
-﻿Cash. Equivalents,Fixed.Income,Total.Public.Equity,Other.Alternatives,Infrastructure,Hedge.Funds,Real.Estate,Private.Equity
-0.0000,0.2760,0.6740,0.0000,0.0000,0.0000,0.0500,0.0000
-0.0000,0.3000,0.6390,0.0000,0.0000,0.0000,0.0610,0.0000
-0.0000,0.3130,0.6230,0.0000,0.0000,0.0000,0.0640,0.0000
-0.0000,0.2890,0.6400,0.0000,0.0000,0.0000,0.0680,0.0030
-0.1212,0.4441,0.4347,0.0000,0.0000,0.0000,0.0000,0.0000
-0.0620,0.4101,0.5279,0.0000,0.0000,0.0000,0.0000,0.0000
-0.0610,0.4420,0.4960,0.0000,0.0000,0.0000,0.0000,0.0010
-0.0080,0.4160,0.4790,0.0870,0.0000,0.0000,0.0000,0.0100
-0.1310,0.3120,0.3290,0.1960,0.0000,0.0000,0.0060,0.0260
-0.1420,0.1820,0.2730,0.2800,0.0000,0.0740,0.0060,0.0430
-0.0730,0.1570,0.3240,0.2880,0.0000,0.0790,0.0080,0.0710
-0.1550,0.1140,0.2430,0.2820,0.0000,0.0900,0.0250,0.0910
-0.1060,0.1290,0.2830,0.2990,0.0000,0.0500,0.0370,0.0960
-0.0670,0.1240,0.3080,0.2920,0.0000,0.0830,0.0360,0.0900
-0.0357,0.1092,0.3230,0.3143,0.0000,0.0900,0.0396,0.0884
-0.0210,0.0827,0.3172,0.3118,0.0100,0.0930,0.0706,0.0940
-0.0195,0.0999,0.3508,0.3518,0.0139,0.0160,0.0717,0.0762
-0.0089,0.1012,0.3634,0.3394,0.0196,0.0080,0.0856,0.0744
-0.0628,0.0721,0.3726,0.3030,0.0296,0.0000,0.0889,0.0710
-0.0023,0.1626,0.4355,0.2046,0.0272,0.0000,0.0975,0.0703
+﻿year,plan_name,state,Cash.Equivalents,Fixed.Income,Total.Public.Equity,Private.Equity,Real.Estate,Hedge.Funds,Infrastructure,Other.Alternatives
+2001,Maryland State Employeesâ€™ Retirement System,Maryland,0.0000,0.2760,0.6740,0.0000,0.0500,0.0000,0.0000,0.0000
+2002,Maryland State Employeesâ€™ Retirement System,Maryland,0.0000,0.3000,0.6390,0.0000,0.0610,0.0000,0.0000,0.0000
+2003,Maryland State Employeesâ€™ Retirement System,Maryland,0.0000,0.3130,0.6230,0.0000,0.0640,0.0000,0.0000,0.0000
+2004,Maryland State Employeesâ€™ Retirement System,Maryland,0.0000,0.2890,0.6400,0.0000,0.0680,0.0000,0.0000,0.0030
+2005,Maryland State Employeesâ€™ Retirement System,Maryland,0.1212,0.4441,0.4347,0.0000,0.0000,0.0000,0.0000,0.0000
+2006,Maryland State Employeesâ€™ Retirement System,Maryland,0.0620,0.4101,0.5279,0.0000,0.0000,0.0000,0.0000,0.0000
+2007,Maryland State Employeesâ€™ Retirement System,Maryland,0.0610,0.4420,0.4960,0.0010,0.0000,0.0000,0.0000,0.0000
+2008,Maryland State Employeesâ€™ Retirement System,Maryland,0.0080,0.4160,0.4790,0.0100,0.0000,0.0000,0.0000,0.0870
+2009,Maryland State Employeesâ€™ Retirement System,Maryland,0.1310,0.3120,0.3290,0.0260,0.0060,0.0000,0.0000,0.1960
+2010,Maryland State Employeesâ€™ Retirement System,Maryland,0.1420,0.1820,0.2730,0.0430,0.0060,0.0740,0.0000,0.2800
+2011,Maryland State Employeesâ€™ Retirement System,Maryland,0.0730,0.1570,0.3240,0.0710,0.0080,0.0790,0.0000,0.2880
+2012,Maryland State Employeesâ€™ Retirement System,Maryland,0.1550,0.1140,0.2430,0.0910,0.0250,0.0900,0.0000,0.2820
+2013,Maryland State Employeesâ€™ Retirement System,Maryland,0.1060,0.1290,0.2830,0.0960,0.0370,0.0500,0.0000,0.2990
+2014,Maryland State Employeesâ€™ Retirement System,Maryland,0.0670,0.1240,0.3080,0.0900,0.0360,0.0830,0.0000,0.2920
+2015,Maryland State Employeesâ€™ Retirement System,Maryland,0.0357,0.1092,0.3230,0.0884,0.0396,0.0898,0.0000,0.3143
+2016,Maryland State Employeesâ€™ Retirement System,Maryland,0.0210,0.0827,0.3172,0.0940,0.0706,0.0927,0.0100,0.3118
+2017,Maryland State Employeesâ€™ Retirement System,Maryland,0.0195,0.0999,0.3508,0.0762,0.0717,0.0162,0.0139,0.3518
+2018,Maryland State Employeesâ€™ Retirement System,Maryland,0.0089,0.1012,0.3634,0.0744,0.0856,0.0075,0.0196,0.3394
+2019,Maryland State Employeesâ€™ Retirement System,Maryland,0.0628,0.0721,0.3726,0.0710,0.0889,0.0000,0.0296,0.3030
+2020,Maryland State Employeesâ€™ Retirement System,Maryland,0.0023,0.1626,0.4355,0.0703,0.0975,0.0000,0.0272,0.2046
