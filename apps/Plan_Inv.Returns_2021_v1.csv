@@ -1,4 +1,4 @@
-plan,plan2,state,fye,2021_return,arr,mva_billions,mva_billions_20,source
+LOUISIA,plan2,state,fye,2021_return,arr,mva_billions,mva_billions_20,source
 Alabama Employees' Retirement System (ERS),Alabama Employees' Retirement System (ERS),Alabama,30-Sep-20,,0.077,,13.150538,
 Alabama Teachers' Retirement System (TRS),Alabama Teachers' Retirement System (TRS),Alabama,30-Sep-20,,0.077,,25.946389,
 Alaska Public Employees Retirement System (PERS)*,Alaska Public Employees Retirement System,Alaska,30-Jun-20,0.2762,0.074,24.24678909,19.15255154,https://treasury.dor.alaska.gov/Portals/3/docs/Investment%20Results/Investment%20Performance%2006.30.21.pdf
@@ -38,7 +38,7 @@ Kentucky Teachers' Retirement System (TRS)***,Kentucky Teachers' Retirement Syst
 Louisiana Municipal Police Retirement System,Louisiana Municipal Police Retirement System,Louisiana,30-Jun-20,0.261,0.071,2.7,2.189,https://www.pionline.com/pension-funds/louisiana-municipal-police-captures-261-fiscal-year-return
 Louisiana Parochial Employee Retirement System,Louisiana Parochial Employee Retirement System,Louisiana,31-Dec-20,,,,,
 Louisiana School Employees' Retirement System (LSERS),Louisiana School Employees’ Retirement System,Louisiana,30-Jun-20,,0.07,,1.94,
-Louisiana State Employees Retirement System (LASERS)***,Louisiana State Employees Retirement System,Louisiana,30-Jun-20,0.356,0.0755,13.915,12.283,https://lasersonline.org/wp-content/uploads/2021/08/12-June-2021.pdf
+Louisiana State Employees Retirement System (LASERS),Louisiana State Employees Retirement System,Louisiana,30-Jun-20,0.3458,0.074,14.716,11.421,https://lasersonline.org/wp-content/uploads/2021/09/LASERS-Valuation-2021.pdf
 Maine Public Employees Retirement System - Consolidated Plan for Participating Local Districts*,Maine Public Employees Retirement System - Consolidated Plan for Participating Local Districts,Maine,30-Jun-20,0.265,0.068,18.1,14.989,https://www.mainepers.org/investments/performance/
 Maine Public Employees Retirement System (PERS) Defined Benefit Plan*,Maine Public Employees Retirement System (PERS) Defined Benefit Plan,Maine,30-Jun-20,0.265,0.068,18.1,14.989,https://www.mainepers.org/investments/performance/
 Maryland State Retirement and Pension System (ERS & TRS),Maryland State Employees’ Retirement System,Maryland,30-Jun-20,0.267,0.074,67.9,54.24,https://sra.maryland.gov/post/maryland-state-retirement-and-pension-system-earns-historic-267-during-fy-2021
@@ -91,7 +91,7 @@ Rhode Island Municipal Employees Retirement System,Rhode Island Municipal Employ
 South Carolina Police Officers Retirement System (PORS)*,South Carolina Police Officers Retirement System,South Carolina,1-Jul-20,,0.0725,,4.73,
 South Carolina Retirement Systems (SCRS)*,South Carolina Retirement Systems,South Carolina,1-Jul-20,0.286,0.0725,39.2,27.239,https://www.pionline.com/pension-funds/south-carolina-surpasses-benchmark-286-return-fiscal-year
 South Dakota Retirement System (RS),South Dakota Retirement System,South Dakota,30-Jun-20,0.2203,0.065,14.619,12.473,https://sdic.sd.gov/assets/performance-update.aspx
-Teachers' Retirement System of Louisiana (TRSL)**,Teachers’ Retirement System of Louisiana,Louisiana,30-Jun-20,0.3148,0.0745,26,21.652,https://fluxconsole.com/files/item/202/117964/TRSL%20Act%201004%2006.30.2021.pdf
+Teachers' Retirement System of Louisiana (TRSL)**,Teachers’ Retirement System of Louisiana,Louisiana,30-Jun-20,0.3492,0.074,27.724,21.221,https://fluxconsole.com/files/item/202/123321/TRSL_2021%20Actuarial%20Valuation%20Report.pdf
 "Tennessee Consolidated Retirement System, Public Employee Retirement System (LECOS)*","Tennessee Consolidated Retirement System, Public Employee Retirement System",Tennessee,30-Jun-20,,0.0725,,52.1,
 "Tennessee Consolidated Retirement System, Teachers Pension Plan (TCRS)*","Tennessee Consolidated Retirement System, Teachers Pension Plan",Tennessee,30-Jun-20,,0.0725,,52.1,
 Texas County and District Retirement System,Texas County and District Retirement System,Texas,31-Dec-20,,0.08,,30.5538,
