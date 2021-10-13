@@ -13,7 +13,6 @@ large_cap_equity_actual_allocation
 equity_securities_lending_actual_allocation
 passive_international_equity_actual_allocation
 active_international_equity_actual_allocation
-equity_hedge_actual_allocation
 micro_cap_equity_actual_allocation
 core_equity_actual_allocation
 small_cap_equity_actual_allocation
@@ -62,6 +61,7 @@ hedge_funds_actual_allocation
 - - - - - Other Alternatives - - - - -
 absolute_return_value_fund_actual_allocation
 real_assets_real_return_actual_allocation
+equity_hedge_actual_allocation
 timberland_actual_allocation
 multi_asset_class_diversified_actual_allocation
 opportunity_opportunistic_actual_allocation
