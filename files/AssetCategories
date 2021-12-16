@@ -41,6 +41,9 @@ corporate_bonds_actual_allocation
 
 - - - - - Private Equity - - - - -
 private_equity_actual_allocation
+private_debt_actual_allocation
+distressed_debt_actual_allocation
+loans_actual_allocation
 
 - - - - - Real Estate - - - - -
 real_estate_actual_allocation
@@ -48,8 +51,12 @@ core_real_estate_actual_allocation
 non_core_real_estate_actual_allocation
 private_real_estate_actual_allocation
 
-- - - - - Infrastructure - - - - -
+- - - - - Commodities - - - - -
 infrastructure_actual_allocation
+timberland_actual_allocation
+farmland_agriculture_actual_allocation
+natural_resources_actual_allocation
+commodities_actual_allocation
 
 - - - - - Cash Equivalents - - - - -
 cash_short_term_actual_allocation
@@ -62,24 +69,17 @@ hedge_funds_actual_allocation
 absolute_return_value_fund_actual_allocation
 real_assets_real_return_actual_allocation
 equity_hedge_actual_allocation
-timberland_actual_allocation
 multi_asset_class_diversified_actual_allocation
 opportunity_opportunistic_actual_allocation
 inflation_sensititive_actual_allocation
-private_debt_actual_allocation
-commodities_actual_allocation
 credit_opportunities_private_credit_actual_allocation
 opportunistic_equity_alternative_actual_allocation
 private_placement_actual_allocation
 misc_alternatives_actual_allocation
 reit_actual_allocation
-farmland_agriculture_actual_allocation
 risk_parity_actual_allocation
 other_actual_allocation
-natural_resources_actual_allocation
 mlp_limited_partnership_actual_allocation
-distressed_debt_actual_allocation
-loans_actual_allocation
 covered_call_actual_allocation
 opportunistic_debt_alernatives_actual_allocation
 triple_net_lease_actual_allocation
