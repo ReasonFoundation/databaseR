@@ -1,5 +1,5 @@
 ---
-title: "South Carolina Retirement System Solvency Analysis"
+title: "Teacher Retirement System of Texas Solvency Analysis"
 author: "Prepared by: Pension Integrity Project at Reason Foundation. 2022—Preliminary Draft"
 date: "07/14/2021"
 output:
@@ -67,9 +67,9 @@ We offer pro-bono technical assistance to public officials to help them design a
 
     </p>
 
-### SCRS Unfunded Liabilities (2001-`r year`) w/ R (areaPlot())
+### TxTRS Unfunded Liabilities (2001-`r year`) w/ R (areaPlot())
 
-```{r debt, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r debtTRS, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
 rm(list = ls())
 
@@ -101,14 +101,437 @@ library(dplyr)
 ##Load list of plans
 pl <- planList()
 
+#############
+
+pl <- planList()
+
+#############
+pullStateData <- function (FY)
+{
+  con <- RPostgres::dbConnect(
+    RPostgres::Postgres(),
+    dbname = "d629vjn37pbl3l",
+    host = "ec2-3-209-200-73.compute-1.amazonaws.com",
+    port = 5432,
+    user = "reason_readonly",
+    password = "p88088bd28ea68027ee96c65996f7ea3b56db0e27d7c9928c05edc6c23ef2bc27",
+    sslmode = "require")
+  
+  query <- paste("select * from pull_data_state_only()\nwhere year > '",
+                 paste(FY - 1), "'\nand attribute_name in ('1 Year Investment Return Percentage',
+                 \n'PPD ID',
+                 \n'Number of Employers',
+                 \n'Number of Plans',\n'Actuarial Cost Method in GASB Reporting',
+                 \n'Employer Normal Cost Percentage',
+                 \n'Total Normal Cost Dollar',\n'Actuarial Funded Ratio Percentage',
+                 \n'Market Investment Return (MVA Basis)',
+                 \n'Actuarial Value of Assets GASB Dollar',
+                 \n'Market Value of Assets Dollar',
+                 \n'Market Assets Reported for Asset Smoothing',
+                 \n'Actuarially Accrued Liabilities Dollar',
+                 \n'Total Pension Liability Dollar',
+                 \n'Actuarially Determined Contribution Percentage of Payroll',
+                 \n'Actuarially Required Contribution Dollar',
+                 \n'Actuarially Required Contribution Paid Percentage',
+                 \n'Total Employer Contributions',
+                 \n'Statutory Payment Dollar',
+                 \n'Statutory Payment Percentage',
+                 \n'Amortizaton Method',
+                 \n'Total Benefits Paid Dollar',
+                 \n'Benefit Payments Dollar',
+                 \n'Refunds Dollar',
+                 \n'Administrative Expense Dollar',
+                 \n'Cost Structure',
+                 \n'Asset Valuation Method for GASB Reporting',
+                 \n'Covered Payroll Dollar',
+                 \n'Employee Contribution Dollar',
+                 \n'Employee Normal Cost Percentage',
+                 \n'Employer Contribution Regular Dollar',
+                 \n'Employer Normal Cost Dollar',
+                 \n'Employer State Contribution Dollar',
+                 \n'ADEC as a Percent of Payroll',
+                 \n'Other Contribution Dollar',
+                 \n'Other Additions',
+                 \n'Fiscal Year of Contribution',
+                 \n'Inflation Rate Assumption For GASB Reporting',
+                 \n'Investment Return Assumption for GASB Reporting',
+                 \n'Discount Rate Assumption',
+                 \n'Number of Years Remaining on Amortization Schedule',
+                 \n'Payroll Growth Assumption',
+                 \n'Unfunded Actuarially Accrued Liabilities Dollar',
+                 \n'Total Contribution Dollar',
+                 \n'Total Normal Cost Percentage',
+                 \n'Net Pension Liability Dollar',
+                 \n'Net Pension Liability Assuming 1% Decrease in Discount Rate',
+                 \n'Net Pension Liability Assuming 1% Increase in Discount Rate',
+                 \n'Total Number Of Members',
+                 \n'Total Projected Actuarial Required Contribution Percentage Of Payroll',
+                 \n'Actuarially Required Contribution Paid Dollar',
+                 \n'Actuarially Determined Contribution Paid Dollar',
+                 \n'Type of Employees Covered',
+                 \n'Total Amortization Payment Percentage',
+                 \n'Wage Inflation')")
+  result <- RPostgres::dbSendQuery(con, query)
+  all_data <- RPostgres::dbFetch(result) %>% janitor::clean_names()
+  RPostgres::dbClearResult(result)
+  RPostgres::dbDisconnect(con)
+  all_data %>% dplyr::group_by_at(dplyr::vars(-.data$attribute_value)) %>%
+    dplyr::mutate(row_id = 1:dplyr::n()) %>% dplyr::ungroup() %>%
+    tidyr::pivot_wider(names_from = attribute_name, values_from = attribute_value) %>%
+    dplyr::select(-.data$row_id) %>% 
+    dplyr::arrange(display_name, year) %>%
+    janitor::clean_names()
+}
+
+###########
+
+filterAssets2 <- function (data, fy = 2001, plan = NULL) {
+  data <- data.frame(data)
+  
+  data[, 5:83] <- data[, 5:83] %>% mutate_all(as.numeric)
+  data <- data %>% replace(is.na(.), 0)
+  data$year <- as.numeric(data$year)
+  
+  assets <- data %>% select(year, display_name, state, contains("percent")) %>%
+    
+    mutate(private.equity = percent_of_assets_invested_in_private_equity, 
+           real.estate =  percent_of_assets_invested_in_real_estate, 
+           hedge = percent_of_assets_invested_in_hedge_funds,
+           commodities = percent_of_assets_invested_in_commodities,
+           other.alternatives = percent_of_assets_invested_in_misc_alternatives + percent_of_assets_invested_in_other_investments,
+           equity = percent_of_assets_invested_in_equity_investments_total,
+           fixed = percent_of_assets_invested_in_fixed_income, 
+           cash = percent_of_assets_invested_in_cash) %>% 
+    select( -contains("percent")
+    )
+  
+  
+  if (!is.null(plan)) {
+    assets <- assets %>% filter(display_name == plan)
+  }
+  assets$total <- 0
+  y <- as.numeric(length(assets$total))
+  assets[, 4:11] <- assets[, 4:11] %>% mutate_all(as.numeric)
+  for (i in (1:y)) {
+    assets$total[i] <- sum(assets[i, 4:11])
+  }
+  
+  assets$total <- as.numeric(assets$total)
+  
+  
+  colnames(assets) <- c("year", "Plan", "State", "Private Equity", 
+                        "Real Estate", "Hedge Funds", "Commodities", "Other Alternatives", 
+                        "Total Equity", "Fixed Income", "Cash Equivalents", 
+                        "Total")
+  
+  assets <- assets %>% 
+    filter(year >= fy) %>% 
+    select(-Total)
+  
+  assets
+}
+
+#########
+# Filter Downloaded Data -------------------------------------------------------------
+
+filterData2 <- function(Data, fy = 2001,
+                        inflation = TRUE,
+                        expenditure = TRUE,
+                        employee = NULL,
+                        sp500 = TRUE,
+                        dcData = TRUE,
+                        treasury = TRUE,
+                        blend.teacher = FALSE,
+                        source = FALSE) {
+  if (isTRUE(blend.teacher)) {
+    blended.teach <- c("Arizona State Retirement System",
+                       "Delaware State Employees’ Pension Plan", "District of Columbia Teachers Retirement Fund",
+                       "Florida Retirement System", "Employee Retirement System of Hawaii",
+                       "Idaho Public Employee Retirement System", "Iowa Public Employees' Retirement System",
+                       "Kansas Public Employees' Retirement System", "Public Employees' Retirement System of Mississippi",
+                       "Nevada Public Employees Retirement System", "New Hampshire Retirement System",
+                       "North Carolina Teachers' and State Employees' Retirement System",
+                       "Oregon Public Employees Retirement System", "Rhode Island Employees Retirement System",
+                       "South Carolina Retirement Systems", "South Dakota Retirement System",
+                       "Tennessee Consolidated Retirement System, Teachers Pension Plan",
+                       "Utah Retirement Systems, Noncontributory Retirement System",
+                       "Virginia Retirement System", "Wisconsin Retirement System",
+                       "Wyoming Retirement System, Public Employees’ Pension Plan",
+                       "Maine Public Employees Retirement System (PERS) Defined Benefit Plan",
+                       "Maryland State Employees’ Retirement System")
+    Data <- data.frame(Data)
+    Data <- Data %>% mutate(type_of_employees_covered = case_when(display_name %in%
+                                                                    blended.teach ~ "Plan covers state, local and teachers",
+                                                                  TRUE ~ type_of_employees_covered))
+  }
+  Data <- data.frame(Data)
+  columns <- c("total_pension_liability_dollar", "wage_inflation",
+               "payroll_growth_assumption", "other_contribution_dollar",
+               "other_additions_dollar", "x1_year_investment_return_percentage",
+               "amortizaton_method", "number_of_years_remaining_on_amortization_schedule",
+               "amortization_payment_total_amount",
+               "x1_year_investment_return_percentage",
+               "total_normal_cost_dollar", "fiscal_year_of_contribution",
+               "statutory_payment_dollar", "statutory_payment_percentage",
+               "ppd_fund_id", "number_of_employers", "number_of_plans", "ppd_id",
+               "discount_rate_assumption", "market_investment_return_mva_basis", 
+               "actuarially_determined_contribution_dollar",
+               "net_pension_liability_dollar",
+               "administrative_expense_dollar",
+               "employer_state_contribution_dollar",
+               "total_amortization_payment_percentage",
+               "type_of_employees_covered",
+               "total_contribution_dollar",
+               "employer_contribution_regular_dollar",
+               "actuarial_cost_method_in_gasb_reporting",
+               "net_pension_liability_assuming_1_percent_decrease_in_discount_rate",
+               "net_pension_liability_assuming_1_percent_increase_in_discount_rate",
+               "actuarially_required_contribution_paid_dollar",
+               "actuarially_required_contribution_paid_percentage",
+               "total_benefits_paid_dollar",
+               "benefit_payments_dollar",
+               "refunds_dollar",
+               "actuarially_determined_contribution_paid_dollar",
+               "cost_structure", "employer_normal_cost_percentage", "actuarial_value_of_assets_dollar",
+               "asset_valuation_method_for_gasb_reporting", "inflation_rate_assumption",
+               "total_number_of_members", "total_projected_actuarial_required_contribution_percentage_of_payroll",
+               "market_assets_reported_for_asset_smoothing")
+  columns2 <- c("test")
+  for (i in (1:length(columns))) {
+    if (sum(colnames(Data) %in% columns[i]) == 0) {
+      columns2 <- rbind(columns2, columns[i])
+    }
+  }
+  columns2 <- as.character(columns2 <- columns2[2:length(columns2)])
+  cols <- matrix(NA, length(Data[, 1]), length(columns2))
+  colnames(cols) <- columns2
+  Data <- cbind(Data, cols)
+  Data <- data.frame(Data)
+  Data <- Data %>% arrange(state, display_name, year)
+  Data$year <- as.numeric(Data$year)
+  if (isTRUE(inflation)) {
+    library(readxl)
+    library(httr)
+    url1 <- "https://github.com/ReasonFoundation/databaseR/raw/master/files/CPI_by_Region_DOL.xlsx"
+    GET(url1, write_disk(tf <- tempfile(fileext = ".xlsx")))
+    cpi <- read_excel(tf, sheet = 1)
+    regions <- read_excel(tf, sheet = 2)
+    cpi <- data.table(cpi)
+    regions <- data.table(regions)
+    cpi$cpi_change <- NA
+    for (i in (2:length(cpi$region))) {
+      cpi$cpi_change[i] <- (cpi$cpi[i]/cpi$cpi[i - 1]) -
+        1
+    }
+    Data <- Data %>% left_join(regions, by = "state")
+    Data <- Data %>% left_join(cpi, by = c("year", "region"))
+    Data <- Data %>% select(-cpi)
+  }
+  
+  if (isTRUE(sp500)) {
+  urlfile2 = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/S%26P500.csv"
+  
+
+  SP500 <- data.table(
+    read_csv(url(urlfile2), col_names = TRUE, na = c(""), 
+                    skip_empty_rows = TRUE, col_types = NULL))
+
+    Data <- Data %>% left_join(SP500, by = c("year"))
+  
+  }
+  
+  if (isTRUE(dcData)) {
+    
+  #Data <- data.table(pullStateData(2001))
+   
+  urlfile3 = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/DCPlanData.csv"
+  
+  DCPlanData <- data.table(
+    read_csv(url(urlfile3), col_names = TRUE, na = c(""), 
+             skip_empty_rows = TRUE, col_types = NULL))
+  
+  DCPlanData <- DCPlanData %>% 
+    select(year = fy, ppd_id, plantype,
+           ee_contrate_mandatory, er_contrate_fixedrate, 
+           planname, primary,
+           eligible_eegroups, assets, members_total, actives, inactives, coveredpayroll) %>% 
+    replace(is.na(.), 0)
+  
+  DCPlanData$ppd_id <- as.numeric(DCPlanData$ppd_id)
+  DCPlanData$fy <- as.numeric(DCPlanData$fy)
+  DCPlanData$er_contrate_fixedrate <- as.numeric(DCPlanData$er_contrate_fixedrate)
+  DCPlanData$ee_contrate_mandatory <- as.numeric(DCPlanData$ee_contrate_mandatory)
+  DCPlanData$assets <- as.numeric(DCPlanData$assets)
+  DCPlanData$members_total <- as.numeric(DCPlanData$members_total)
+  DCPlanData$actives <- as.numeric(DCPlanData$actives)
+  DCPlanData$inactives <- as.numeric(DCPlanData$inactives)
+  
+  for(i in (1:length(DCPlanData$members_total))){
+  
+  DCPlanData$members_total[i] <- max(DCPlanData$members_total[i], (DCPlanData$actives[i]+DCPlanData$inactives[i]))
+  
+  }
+  
+  Data$ppd_id <- as.numeric(Data$ppd_id)
+  Data$year<- as.numeric(Data$year)
+  
+  Data <- Data %>% left_join(DCPlanData, by = c("ppd_id", "year"))
+
+  }
+  if (isTRUE(treasury)) {
+  urlfile <- "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/treasury.csv"
+  treasury <- data.table(
+    read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
+  
+  colnames(treasury)[2] <- "treasury_30"
+  Data <- Data %>% left_join(treasury, by = c("year"))
+
+  }
+  
+  if (isTRUE(expenditure)) {
+
+    #1. General Fund Exp./Rev. NASBO (State)
+    #2. Total Exp./Rev. NASBO (State) --> general funds, other state funds, bonds, and federal funds.
+    #3. Total Exp./Rev. Urban (State & Local) --> state and local direct general expenditures (exclude “business-like” activities such as utilities and transfers between state and local governments.)
+
+    library(readxl)
+    library(httr)
+    urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/NASBO_Exp_Report_Data_v1.csv"
+    NASBO<-read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+    NASBO <- setDT(NASBO)
+    NASBO <- NASBO %>% select(YEAR, STATE,"TOTAL_CAPI") %>% filter(YEAR>2000)
+    #View(NASBO)
+    colnames(NASBO)[1] <- "year"
+    colnames(NASBO)[2] <- "state"
+    Data <- Data %>% left_join(NASBO, by = c("year","state"))
+    ####
+    urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/UrbanCensus_ExpRev_2000-2018.csv"
+    Urban<-read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+    Urban <- setDT(Urban)
+
+    Urban <- Urban %>% select(Year, State,"(R01) Total Revenue", "(E001) Total Expenditure")
+
+    colnames(Urban)[1] <- "year"
+    colnames(Urban)[2] <- "state"
+     
+    Data <- Data %>% left_join(Urban, by = c("year","state"))
+
+  }
+
+  Data <- Data %>% select(year, plan_name = display_name,
+                          state, if (isTRUE(source)) {
+                            "data_source_name"
+                          }, return_1yr = x1_year_investment_return_percentage,
+                          ava_return = market_investment_return_mva_basis, actuarial_cost_method_in_gasb_reporting,
+                          funded_ratio = actuarial_funded_ratio_percentage, ava = actuarial_value_of_assets_gasb_dollar, #actuarial_value_of_assets_gasb_dollar (PPD)
+                          mva = market_value_of_assets_dollar, #mva_smooth = market_assets_reported_for_asset_smoothing,
+                          aal = actuarially_accrued_liabilities_dollar,
+                          adec1 = actuarially_determined_contribution_dollar,
+                          adec2 =   actuarially_required_contribution_paid_dollar,  #actuarially_required_contribution_dollar (PPD)
+                          adec_paid_pct = actuarially_required_contribution_paid_percentage,
+                          adec_pct = adec_as_a_percent_of_payroll, #instead of employers_projected_actuarial_required_contribution
+                          arc_paid_dollar = actuarially_required_contribution_paid_dollar, #NEW
+                          adec_paid_dollar = actuarially_determined_contribution_paid_dollar,#NEW
+                          statutory = statutory_payment_dollar, statutory_pct = statutory_payment_percentage,
+                          amortizaton_method, total_benefit_payments = total_benefits_paid_dollar,
+                          benefit_payments = benefit_payments_dollar, refunds = refunds_dollar,
+                          admin_exp = administrative_expense_dollar, cost_structure,
+                          state_exp_NASBO = TOTAL_CAPI, #gf_rev_NASBO = "TOTAL REV",
+                          state.local_exp_Census = "(R01) Total Revenue", state.local_rev_Census = "(E001) Total Expenditure",
+                          fund_id = ppd_fund_id, ppd_id = ppd_id, employers = number_of_employers,
+                          plans = number_of_plans, asset_valuation_method_for_gasb_reporting,
+                          dc_plantype = plantype,  dc_er_pct = er_contrate_fixedrate, #dc_eligble = eligible_eegroups,
+                          dc_ee_pct = ee_contrate_mandatory, dc_plan = planname, dc_primary = primary,
+                          dc_assets = assets, dc_members = members_total, dc_payroll = coveredpayroll,
+                          payroll = covered_payroll_dollar, ee_contribution = employee_contribution_dollar,
+                          ee_nc_pct = employee_normal_cost_percentage,
+                          er_nc_pct = employer_normal_cost_percentage,total_nc_pct = total_normal_cost_percentage, 
+                          er_contribution = employer_contribution_regular_dollar, er_state_contribution = employer_state_contribution_dollar,
+                          other_contribution = other_contribution_dollar, other_additions = other_additions_dollar,
+                          fy_contribution = fiscal_year_of_contribution, inflation_assum = inflation_rate_assumption,
+                          arr = investment_return_assumption_for_gasb_reporting,
+                          dr = discount_rate_assumption, number_of_years_remaining_on_amortization_schedule,
+                          payroll_growth_assumption, total_amortization_payment_pct = total_amortization_payment_percentage,
+                          total_amo_payment = amortization_payment_total_amount, #Added
+                          total_contribution = total_contribution_dollar,
+                          total_nc_dollar = total_normal_cost_dollar, total_number_of_members,
+                          total_proj_adec_pct = total_projected_actuarial_required_contribution_percentage_of_payroll,
+                          tpl = total_pension_liability_dollar,
+                          npl_pct_down = net_pension_liability_assuming_1_percent_decrease_in_discount_rate, #Added
+                          npl = net_pension_liability_dollar, #Added
+                          npl_pct_up = net_pension_liability_assuming_1_percent_increase_in_discount_rate, #Added
+                          type_of_employees_covered, unfunded_actuarially_accrued_liabilities_dollar,
+                          wage_inflation, region, cpi_change, sp_500, treasury_30)
+
+  
+  ## Combining ARC & ADEC
+  Data$state.local_exp_Census <- as.numeric(Data$state.local_exp_Census)
+  Data$state.local_rev_Census <- as.numeric(Data$state.local_exp_Census)
+  Data$state_exp_NASBO <- as.numeric(Data$state_exp_NASBO)
+  Data$dc_primary <- ifelse(Data$dc_primary == 1, "Yes", "No")
+  
+  Data$adec1 <- as.numeric(Data$adec1)
+  Data$adec2 <- as.numeric(Data$adec2)
+  Data$adec_paid_dollar <- as.numeric(Data$adec_paid_dollar)
+  Data$arc_paid_dollar <- as.numeric(Data$arc_paid_dollar)
+  Data$arc_adec_dollar <- ifelse(is.na(Data$adec1) == TRUE,Data$adec2, Data$adec1)
+  Data$arc_adec_paid_dollar <- ifelse(is.na(Data$arc_paid_dollar) == TRUE,
+                               ifelse(is.na(Data$statutory_payment_dollar) == TRUE,statutory_payment_dollar, 
+                                      Data$adec_paid_dollar), 
+                                      Data$arc_paid_dollar)
+  
+  Data$fy_contribution <- as.numeric(Data$fy_contribution)
+  Data$year <- as.numeric(Data$year)
+  Data$fy_contribution <- round(Data$fy_contribution, 0)
+  Data <- Data %>% filter(year >= fy) #%>% select(-adec1, -adec2)
+
+  #https://www.urban.org/policy-centers/cross-center-initiatives/state-and-local-finance-initiative/projects/state-fiscal-briefs/florida
+
+  if (isTRUE(expenditure)) {
+   Data$ava <- as.numeric(Data$ava)
+   Data$aal <- as.numeric(Data$aal)
+   Data$state_exp_NASBO <- as.numeric(Data$state_exp_NASBO)
+   Data$state.local_exp_Census <- as.numeric(Data$state.local_exp_Census)
+   Data <- Data %>% group_by(state, year) %>% mutate(ual_exp_NASBO = round((sum(aal)-sum(ava))/(state_exp_NASBO*1000000),2),
+                                                     ual_exp_Census = round((sum(aal)-sum(ava))/(state.local_exp_Census*1000),2))
+  }
+
+  if (is_null(employee)) {
+    employee <- employee
+  }
+  else if (employee == "teacher") {
+    employee <- c("Plan covers teachers")
+  }
+  else if (employee == "state and local") {
+    employee <- c("Plan covers state and local employees")
+  }
+  else if (employee == "police and fire") {
+    employee <- c("Plan covers police and/or fire")
+  }
+  else if (employee == "state") {
+    employee <- c("Plan covers state employees")
+  }
+  else if (employee == "local") {
+    employee <- c("Plan covers local employees")
+  }
+  else if (employee == "state, local, and teachers") {
+    employee <- c("Plan covers state, local and teachers")
+  }
+  if (is_null(employee)) {
+    Data <- data.frame(Data) %>% replace(is.na(.), 0)
+  }
+  else {
+    Data %>% filter(type_of_employees_covered == paste(employee)) %>% replace(is.na(.), 0)
+  }
+}
+
 #PULL DATA
 Data <- pullStateData(2001)
-Data <- filterData(Data, 2001)
-Data <- Data %>% filter(year < 2022)
+Data <- data.table(filterData2(Data, 2001))
 
-#View(Data)
 Data <-
-  data.table(Data) %>% filter(plan_name == "Texas Emloyees Retirement System")
+  data.table(Data %>% filter(plan_name == "Texas Teacher Retirement System"))
+
 
 Data$year <- as.numeric(Data$year)
 Data$ava <- as.numeric(Data$ava)
@@ -116,7 +539,6 @@ Data$aal <- as.numeric(Data$aal)
 Data$unfunded_actuarially_accrued_liabilities_dollar <- as.numeric(Data$unfunded_actuarially_accrued_liabilities_dollar)
 #Manually calculating 2021 AVA (AAL - UAL)
 #Data$ava[21] <- Data$aal[21] - Data$unfunded_actuarially_accrued_liabilities_dollar[21]
-
 ########areaPlot
 
 areaPlot <- function(data, title = NULL, caption = FALSE, grid = FALSE, 
@@ -149,7 +571,7 @@ areaPlot <- function(data, title = NULL, caption = FALSE, grid = FALSE,
   else {
     data <- as.data.table(data)
     data <- data %>% filter(year < (maxYear+1))
-    data$uaal <- (data$aal - data$ava)
+    data$uaal <- (data$unfunded_actuarially_accrued_liabilities_dollar)
     data <- data %>% dplyr::filter(data$uaal != 0)
     extrapo <- stats::approx(data$year, data$uaal, n = 10000)
     extrapo2 <- stats::approx(data$year, data$funded_ratio, 
@@ -250,7 +672,7 @@ areaPlot <- function(data, title = NULL, caption = FALSE, grid = FALSE,
 }
 ####
 
-debt <-
+debtTRS <-
   areaPlot(
     Data,
     title = "",
@@ -264,15 +686,15 @@ debt <-
     sp500 = F
   )
 
-debt
+debtTRS
 
 #debt <- areaPlot(Data, title = "", caption = FALSE, grid = F, ticks = F, sp500 = TRUE)
 #debt
 ```
 
-### SCRS UAL #2 (2001-2021) w/ R (areaPlot())
+### TxTRS UAL #2 (2001-2021) w/ R (areaPlot())
 
-```{r debt2, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r debt2, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
 rm(list = ls())
 
@@ -303,22 +725,439 @@ library(dplyr)
 ##Load list of plans
 pl <- planList()
 
+#############
+pullStateData <- function (FY)
+{
+  con <- RPostgres::dbConnect(
+    RPostgres::Postgres(),
+    dbname = "d629vjn37pbl3l",
+    host = "ec2-3-209-200-73.compute-1.amazonaws.com",
+    port = 5432,
+    user = "reason_readonly",
+    password = "p88088bd28ea68027ee96c65996f7ea3b56db0e27d7c9928c05edc6c23ef2bc27",
+    sslmode = "require")
+  
+  query <- paste("select * from pull_data_state_only()\nwhere year > '",
+                 paste(FY - 1), "'\nand attribute_name in ('1 Year Investment Return Percentage',
+                 \n'PPD ID',
+                 \n'Number of Employers',
+                 \n'Number of Plans',\n'Actuarial Cost Method in GASB Reporting',
+                 \n'Employer Normal Cost Percentage',
+                 \n'Total Normal Cost Dollar',\n'Actuarial Funded Ratio Percentage',
+                 \n'Market Investment Return (MVA Basis)',
+                 \n'Actuarial Value of Assets GASB Dollar',
+                 \n'Market Value of Assets Dollar',
+                 \n'Market Assets Reported for Asset Smoothing',
+                 \n'Actuarially Accrued Liabilities Dollar',
+                 \n'Total Pension Liability Dollar',
+                 \n'Actuarially Determined Contribution Percentage of Payroll',
+                 \n'Actuarially Required Contribution Dollar',
+                 \n'Actuarially Required Contribution Paid Percentage',
+                 \n'Total Employer Contributions',
+                 \n'Statutory Payment Dollar',
+                 \n'Statutory Payment Percentage',
+                 \n'Amortizaton Method',
+                 \n'Total Benefits Paid Dollar',
+                 \n'Benefit Payments Dollar',
+                 \n'Refunds Dollar',
+                 \n'Administrative Expense Dollar',
+                 \n'Cost Structure',
+                 \n'Asset Valuation Method for GASB Reporting',
+                 \n'Covered Payroll Dollar',
+                 \n'Employee Contribution Dollar',
+                 \n'Employee Normal Cost Percentage',
+                 \n'Employer Contribution Regular Dollar',
+                 \n'Employer Normal Cost Dollar',
+                 \n'Employer State Contribution Dollar',
+                 \n'ADEC as a Percent of Payroll',
+                 \n'Other Contribution Dollar',
+                 \n'Other Additions',
+                 \n'Fiscal Year of Contribution',
+                 \n'Inflation Rate Assumption For GASB Reporting',
+                 \n'Investment Return Assumption for GASB Reporting',
+                 \n'Discount Rate Assumption',
+                 \n'Number of Years Remaining on Amortization Schedule',
+                 \n'Payroll Growth Assumption',
+                 \n'Unfunded Actuarially Accrued Liabilities Dollar',
+                 \n'Total Contribution Dollar',
+                 \n'Total Normal Cost Percentage',
+                 \n'Net Pension Liability Dollar',
+                 \n'Net Pension Liability Assuming 1% Decrease in Discount Rate',
+                 \n'Net Pension Liability Assuming 1% Increase in Discount Rate',
+                 \n'Total Number Of Members',
+                 \n'Total Projected Actuarial Required Contribution Percentage Of Payroll',
+                 \n'Actuarially Required Contribution Paid Dollar',
+                 \n'Actuarially Determined Contribution Paid Dollar',
+                 \n'Type of Employees Covered',
+                 \n'Total Amortization Payment Percentage',
+                 \n'Wage Inflation')")
+  result <- RPostgres::dbSendQuery(con, query)
+  all_data <- RPostgres::dbFetch(result) %>% janitor::clean_names()
+  RPostgres::dbClearResult(result)
+  RPostgres::dbDisconnect(con)
+  all_data %>% dplyr::group_by_at(dplyr::vars(-.data$attribute_value)) %>%
+    dplyr::mutate(row_id = 1:dplyr::n()) %>% dplyr::ungroup() %>%
+    tidyr::pivot_wider(names_from = attribute_name, values_from = attribute_value) %>%
+    dplyr::select(-.data$row_id) %>% 
+    dplyr::arrange(display_name, year) %>%
+    janitor::clean_names()
+}
+
+###########
+
+filterAssets2 <- function (data, fy = 2001, plan = NULL) {
+  data <- data.frame(data)
+  
+  data[, 5:83] <- data[, 5:83] %>% mutate_all(as.numeric)
+  data <- data %>% replace(is.na(.), 0)
+  data$year <- as.numeric(data$year)
+  
+  assets <- data %>% select(year, display_name, state, contains("percent")) %>%
+    
+    mutate(private.equity = percent_of_assets_invested_in_private_equity, 
+           real.estate =  percent_of_assets_invested_in_real_estate, 
+           hedge = percent_of_assets_invested_in_hedge_funds,
+           commodities = percent_of_assets_invested_in_commodities,
+           other.alternatives = percent_of_assets_invested_in_misc_alternatives + percent_of_assets_invested_in_other_investments,
+           equity = percent_of_assets_invested_in_equity_investments_total,
+           fixed = percent_of_assets_invested_in_fixed_income, 
+           cash = percent_of_assets_invested_in_cash) %>% 
+    select( -contains("percent")
+    )
+  
+  
+  if (!is.null(plan)) {
+    assets <- assets %>% filter(display_name == plan)
+  }
+  assets$total <- 0
+  y <- as.numeric(length(assets$total))
+  assets[, 4:11] <- assets[, 4:11] %>% mutate_all(as.numeric)
+  for (i in (1:y)) {
+    assets$total[i] <- sum(assets[i, 4:11])
+  }
+  
+  assets$total <- as.numeric(assets$total)
+  
+  
+  colnames(assets) <- c("year", "Plan", "State", "Private Equity", 
+                        "Real Estate", "Hedge Funds", "Commodities", "Other Alternatives", 
+                        "Total Equity", "Fixed Income", "Cash Equivalents", 
+                        "Total")
+  
+  assets <- assets %>% 
+    filter(year >= fy) %>% 
+    select(-Total)
+  
+  assets
+}
+
+#########
+# Filter Downloaded Data -------------------------------------------------------------
+
+filterData2 <- function(Data, fy = 2001,
+                        inflation = TRUE,
+                        expenditure = TRUE,
+                        employee = NULL,
+                        sp500 = TRUE,
+                        dcData = TRUE,
+                        treasury = TRUE,
+                        blend.teacher = FALSE,
+                        source = FALSE) {
+  if (isTRUE(blend.teacher)) {
+    blended.teach <- c("Arizona State Retirement System",
+                       "Delaware State Employees’ Pension Plan", "District of Columbia Teachers Retirement Fund",
+                       "Florida Retirement System", "Employee Retirement System of Hawaii",
+                       "Idaho Public Employee Retirement System", "Iowa Public Employees' Retirement System",
+                       "Kansas Public Employees' Retirement System", "Public Employees' Retirement System of Mississippi",
+                       "Nevada Public Employees Retirement System", "New Hampshire Retirement System",
+                       "North Carolina Teachers' and State Employees' Retirement System",
+                       "Oregon Public Employees Retirement System", "Rhode Island Employees Retirement System",
+                       "South Carolina Retirement Systems", "South Dakota Retirement System",
+                       "Tennessee Consolidated Retirement System, Teachers Pension Plan",
+                       "Utah Retirement Systems, Noncontributory Retirement System",
+                       "Virginia Retirement System", "Wisconsin Retirement System",
+                       "Wyoming Retirement System, Public Employees’ Pension Plan",
+                       "Maine Public Employees Retirement System (PERS) Defined Benefit Plan",
+                       "Maryland State Employees’ Retirement System")
+    Data <- data.frame(Data)
+    Data <- Data %>% mutate(type_of_employees_covered = case_when(display_name %in%
+                                                                    blended.teach ~ "Plan covers state, local and teachers",
+                                                                  TRUE ~ type_of_employees_covered))
+  }
+  Data <- data.frame(Data)
+  columns <- c("total_pension_liability_dollar", "wage_inflation",
+               "payroll_growth_assumption", "other_contribution_dollar",
+               "other_additions_dollar", "x1_year_investment_return_percentage",
+               "amortizaton_method", "number_of_years_remaining_on_amortization_schedule",
+               "amortization_payment_total_amount",
+               "x1_year_investment_return_percentage",
+               "total_normal_cost_dollar", "fiscal_year_of_contribution",
+               "statutory_payment_dollar", "statutory_payment_percentage",
+               "ppd_fund_id", "number_of_employers", "number_of_plans", "ppd_id",
+               "discount_rate_assumption", "market_investment_return_mva_basis", 
+               "actuarially_determined_contribution_dollar",
+               "net_pension_liability_dollar",
+               "administrative_expense_dollar",
+               "employer_state_contribution_dollar",
+               "total_amortization_payment_percentage",
+               "type_of_employees_covered",
+               "total_contribution_dollar",
+               "employer_contribution_regular_dollar",
+               "actuarial_cost_method_in_gasb_reporting",
+               "net_pension_liability_assuming_1_percent_decrease_in_discount_rate",
+               "net_pension_liability_assuming_1_percent_increase_in_discount_rate",
+               "actuarially_required_contribution_paid_dollar",
+               "actuarially_required_contribution_paid_percentage",
+               "total_benefits_paid_dollar",
+               "benefit_payments_dollar",
+               "refunds_dollar",
+               "actuarially_determined_contribution_paid_dollar",
+               "cost_structure", "employer_normal_cost_percentage", "actuarial_value_of_assets_dollar",
+               "asset_valuation_method_for_gasb_reporting", "inflation_rate_assumption",
+               "total_number_of_members", "total_projected_actuarial_required_contribution_percentage_of_payroll",
+               "market_assets_reported_for_asset_smoothing")
+  columns2 <- c("test")
+  for (i in (1:length(columns))) {
+    if (sum(colnames(Data) %in% columns[i]) == 0) {
+      columns2 <- rbind(columns2, columns[i])
+    }
+  }
+  columns2 <- as.character(columns2 <- columns2[2:length(columns2)])
+  cols <- matrix(NA, length(Data[, 1]), length(columns2))
+  colnames(cols) <- columns2
+  Data <- cbind(Data, cols)
+  Data <- data.frame(Data)
+  Data <- Data %>% arrange(state, display_name, year)
+  Data$year <- as.numeric(Data$year)
+  if (isTRUE(inflation)) {
+    library(readxl)
+    library(httr)
+    url1 <- "https://github.com/ReasonFoundation/databaseR/raw/master/files/CPI_by_Region_DOL.xlsx"
+    GET(url1, write_disk(tf <- tempfile(fileext = ".xlsx")))
+    cpi <- read_excel(tf, sheet = 1)
+    regions <- read_excel(tf, sheet = 2)
+    cpi <- data.table(cpi)
+    regions <- data.table(regions)
+    cpi$cpi_change <- NA
+    for (i in (2:length(cpi$region))) {
+      cpi$cpi_change[i] <- (cpi$cpi[i]/cpi$cpi[i - 1]) -
+        1
+    }
+    Data <- Data %>% left_join(regions, by = "state")
+    Data <- Data %>% left_join(cpi, by = c("year", "region"))
+    Data <- Data %>% select(-cpi)
+  }
+  
+  if (isTRUE(sp500)) {
+  urlfile2 = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/S%26P500.csv"
+  
+
+  SP500 <- data.table(
+    read_csv(url(urlfile2), col_names = TRUE, na = c(""), 
+                    skip_empty_rows = TRUE, col_types = NULL))
+
+    Data <- Data %>% left_join(SP500, by = c("year"))
+  
+  }
+  
+  if (isTRUE(dcData)) {
+    
+  #Data <- data.table(pullStateData(2001))
+   
+  urlfile3 = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/DCPlanData.csv"
+  
+  DCPlanData <- data.table(
+    read_csv(url(urlfile3), col_names = TRUE, na = c(""), 
+             skip_empty_rows = TRUE, col_types = NULL))
+  
+  DCPlanData <- DCPlanData %>% 
+    select(year = fy, ppd_id, plantype,
+           ee_contrate_mandatory, er_contrate_fixedrate, 
+           planname, primary,
+           eligible_eegroups, assets, members_total, actives, inactives, coveredpayroll) %>% 
+    replace(is.na(.), 0)
+  
+  DCPlanData$ppd_id <- as.numeric(DCPlanData$ppd_id)
+  DCPlanData$fy <- as.numeric(DCPlanData$fy)
+  DCPlanData$er_contrate_fixedrate <- as.numeric(DCPlanData$er_contrate_fixedrate)
+  DCPlanData$ee_contrate_mandatory <- as.numeric(DCPlanData$ee_contrate_mandatory)
+  DCPlanData$assets <- as.numeric(DCPlanData$assets)
+  DCPlanData$members_total <- as.numeric(DCPlanData$members_total)
+  DCPlanData$actives <- as.numeric(DCPlanData$actives)
+  DCPlanData$inactives <- as.numeric(DCPlanData$inactives)
+  
+  for(i in (1:length(DCPlanData$members_total))){
+  
+  DCPlanData$members_total[i] <- max(DCPlanData$members_total[i], (DCPlanData$actives[i]+DCPlanData$inactives[i]))
+  
+  }
+  
+  Data$ppd_id <- as.numeric(Data$ppd_id)
+  Data$year<- as.numeric(Data$year)
+  
+  Data <- Data %>% left_join(DCPlanData, by = c("ppd_id", "year"))
+
+  }
+  if (isTRUE(treasury)) {
+  urlfile <- "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/treasury.csv"
+  treasury <- data.table(
+    read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
+  
+  colnames(treasury)[2] <- "treasury_30"
+  Data <- Data %>% left_join(treasury, by = c("year"))
+
+  }
+  
+  if (isTRUE(expenditure)) {
+
+    #1. General Fund Exp./Rev. NASBO (State)
+    #2. Total Exp./Rev. NASBO (State) --> general funds, other state funds, bonds, and federal funds.
+    #3. Total Exp./Rev. Urban (State & Local) --> state and local direct general expenditures (exclude “business-like” activities such as utilities and transfers between state and local governments.)
+
+    library(readxl)
+    library(httr)
+    urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/NASBO_Exp_Report_Data_v1.csv"
+    NASBO<-read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+    NASBO <- setDT(NASBO)
+    NASBO <- NASBO %>% select(YEAR, STATE,"TOTAL_CAPI") %>% filter(YEAR>2000)
+    #View(NASBO)
+    colnames(NASBO)[1] <- "year"
+    colnames(NASBO)[2] <- "state"
+    Data <- Data %>% left_join(NASBO, by = c("year","state"))
+    ####
+    urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/UrbanCensus_ExpRev_2000-2018.csv"
+    Urban<-read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+    Urban <- setDT(Urban)
+
+    Urban <- Urban %>% select(Year, State,"(R01) Total Revenue", "(E001) Total Expenditure")
+
+    colnames(Urban)[1] <- "year"
+    colnames(Urban)[2] <- "state"
+     
+    Data <- Data %>% left_join(Urban, by = c("year","state"))
+
+  }
+
+  Data <- Data %>% select(year, plan_name = display_name,
+                          state, if (isTRUE(source)) {
+                            "data_source_name"
+                          }, return_1yr = x1_year_investment_return_percentage,
+                          ava_return = market_investment_return_mva_basis, actuarial_cost_method_in_gasb_reporting,
+                          funded_ratio = actuarial_funded_ratio_percentage, ava = actuarial_value_of_assets_gasb_dollar, #actuarial_value_of_assets_gasb_dollar (PPD)
+                          mva = market_value_of_assets_dollar, #mva_smooth = market_assets_reported_for_asset_smoothing,
+                          aal = actuarially_accrued_liabilities_dollar,
+                          adec1 = actuarially_determined_contribution_dollar,
+                          adec2 =   actuarially_required_contribution_paid_dollar,  #actuarially_required_contribution_dollar (PPD)
+                          adec_paid_pct = actuarially_required_contribution_paid_percentage,
+                          adec_pct = adec_as_a_percent_of_payroll, #instead of employers_projected_actuarial_required_contribution
+                          arc_paid_dollar = actuarially_required_contribution_paid_dollar, #NEW
+                          adec_paid_dollar = actuarially_determined_contribution_paid_dollar,#NEW
+                          statutory = statutory_payment_dollar, statutory_pct = statutory_payment_percentage,
+                          amortizaton_method, total_benefit_payments = total_benefits_paid_dollar,
+                          benefit_payments = benefit_payments_dollar, refunds = refunds_dollar,
+                          admin_exp = administrative_expense_dollar, cost_structure,
+                          state_exp_NASBO = TOTAL_CAPI, #gf_rev_NASBO = "TOTAL REV",
+                          state.local_exp_Census = "(R01) Total Revenue", state.local_rev_Census = "(E001) Total Expenditure",
+                          fund_id = ppd_fund_id, ppd_id = ppd_id, employers = number_of_employers,
+                          plans = number_of_plans, asset_valuation_method_for_gasb_reporting,
+                          dc_plantype = plantype,  dc_er_pct = er_contrate_fixedrate, #dc_eligble = eligible_eegroups,
+                          dc_ee_pct = ee_contrate_mandatory, dc_plan = planname, dc_primary = primary,
+                          dc_assets = assets, dc_members = members_total, dc_payroll = coveredpayroll,
+                          payroll = covered_payroll_dollar, ee_contribution = employee_contribution_dollar,
+                          ee_nc_pct = employee_normal_cost_percentage,
+                          er_nc_pct = employer_normal_cost_percentage,total_nc_pct = total_normal_cost_percentage, 
+                          er_contribution = employer_contribution_regular_dollar, er_state_contribution = employer_state_contribution_dollar,
+                          other_contribution = other_contribution_dollar, other_additions = other_additions_dollar,
+                          fy_contribution = fiscal_year_of_contribution, inflation_assum = inflation_rate_assumption,
+                          arr = investment_return_assumption_for_gasb_reporting,
+                          dr = discount_rate_assumption, number_of_years_remaining_on_amortization_schedule,
+                          payroll_growth_assumption, total_amortization_payment_pct = total_amortization_payment_percentage,
+                          total_amo_payment = amortization_payment_total_amount, #Added
+                          total_contribution = total_contribution_dollar,
+                          total_nc_dollar = total_normal_cost_dollar, total_number_of_members,
+                          total_proj_adec_pct = total_projected_actuarial_required_contribution_percentage_of_payroll,
+                          tpl = total_pension_liability_dollar,
+                          npl_pct_down = net_pension_liability_assuming_1_percent_decrease_in_discount_rate, #Added
+                          npl = net_pension_liability_dollar, #Added
+                          npl_pct_up = net_pension_liability_assuming_1_percent_increase_in_discount_rate, #Added
+                          type_of_employees_covered, unfunded_actuarially_accrued_liabilities_dollar,
+                          wage_inflation, region, cpi_change, sp_500, treasury_30)
+
+  
+  ## Combining ARC & ADEC
+  Data$state.local_exp_Census <- as.numeric(Data$state.local_exp_Census)
+  Data$state.local_rev_Census <- as.numeric(Data$state.local_exp_Census)
+  Data$state_exp_NASBO <- as.numeric(Data$state_exp_NASBO)
+  Data$dc_primary <- ifelse(Data$dc_primary == 1, "Yes", "No")
+  
+  Data$adec1 <- as.numeric(Data$adec1)
+  Data$adec2 <- as.numeric(Data$adec2)
+  Data$adec_paid_dollar <- as.numeric(Data$adec_paid_dollar)
+  Data$arc_paid_dollar <- as.numeric(Data$arc_paid_dollar)
+  Data$arc_adec_dollar <- ifelse(is.na(Data$adec1) == TRUE,Data$adec2, Data$adec1)
+  Data$arc_adec_paid_dollar <- ifelse(is.na(Data$arc_paid_dollar) == TRUE,
+                               ifelse(is.na(Data$statutory_payment_dollar) == TRUE,statutory_payment_dollar, 
+                                      Data$adec_paid_dollar), 
+                                      Data$arc_paid_dollar)
+  
+  Data$fy_contribution <- as.numeric(Data$fy_contribution)
+  Data$year <- as.numeric(Data$year)
+  Data$fy_contribution <- round(Data$fy_contribution, 0)
+  Data <- Data %>% filter(year >= fy) #%>% select(-adec1, -adec2)
+
+  #https://www.urban.org/policy-centers/cross-center-initiatives/state-and-local-finance-initiative/projects/state-fiscal-briefs/florida
+
+  if (isTRUE(expenditure)) {
+   Data$ava <- as.numeric(Data$ava)
+   Data$aal <- as.numeric(Data$aal)
+   Data$state_exp_NASBO <- as.numeric(Data$state_exp_NASBO)
+   Data$state.local_exp_Census <- as.numeric(Data$state.local_exp_Census)
+   Data <- Data %>% group_by(state, year) %>% mutate(ual_exp_NASBO = round((sum(aal)-sum(ava))/(state_exp_NASBO*1000000),2),
+                                                     ual_exp_Census = round((sum(aal)-sum(ava))/(state.local_exp_Census*1000),2))
+  }
+
+  if (is_null(employee)) {
+    employee <- employee
+  }
+  else if (employee == "teacher") {
+    employee <- c("Plan covers teachers")
+  }
+  else if (employee == "state and local") {
+    employee <- c("Plan covers state and local employees")
+  }
+  else if (employee == "police and fire") {
+    employee <- c("Plan covers police and/or fire")
+  }
+  else if (employee == "state") {
+    employee <- c("Plan covers state employees")
+  }
+  else if (employee == "local") {
+    employee <- c("Plan covers local employees")
+  }
+  else if (employee == "state, local, and teachers") {
+    employee <- c("Plan covers state, local and teachers")
+  }
+  if (is_null(employee)) {
+    Data <- data.frame(Data) %>% replace(is.na(.), 0)
+  }
+  else {
+    Data %>% filter(type_of_employees_covered == paste(employee)) %>% replace(is.na(.), 0)
+  }
+}
+
 #PULL DATA
 Data <- pullStateData(2001)
-Data <- filterData(Data, 2001)
-Data <- Data %>% filter(year < 2022)
-
+Data <- filterData2(Data, 2001)
 #View(Data)
 Data <-
-  data.table(Data) %>% filter(plan_name == "South Carolina Retirement Systems")
+  data.table(Data) %>% filter(plan_name == "Texas Teacher Retirement System")
 
 Data$year <- as.numeric(Data$year)
 Data$ava <- as.numeric(Data$ava)
 Data$aal <- as.numeric(Data$aal)
 Data$unfunded_actuarially_accrued_liabilities_dollar <- as.numeric(Data$unfunded_actuarially_accrued_liabilities_dollar)
-
 #Manually calculating 2021 AVA (AAL - UAL)
-Data$ava[21] <- Data$aal[21] - Data$unfunded_actuarially_accrued_liabilities_dollar[21]
+#Data$ava[21] <- Data$aal[21] - Data$unfunded_actuarially_accrued_liabilities_dollar[21]
 
 ########areaPlot
 
@@ -352,7 +1191,7 @@ areaPlot2 <- function(data, title = NULL, caption = FALSE, grid = FALSE,
   else {
     data <- as.data.table(data)
     data <- data %>% filter(year < (maxYear+1))
-    data$uaal <- (data$aal - data$ava)
+    data$uaal <- (data$unfunded_actuarially_accrued_liabilities_dollar)
     data <- data %>% dplyr::filter(data$uaal != 0)
     extrapo <- stats::approx(data$year, data$uaal, n = 10000)
     extrapo2 <- stats::approx(data$year, data$funded_ratio, 
@@ -469,7 +1308,7 @@ debt2
 #debt
 ```
 
-### A History of Weakening Solvency \#2 (2001/2021) w/ R (table)
+### A History of TxTRS Weakening Solvency \#2 (2001/2021) w/ R (table)
 
 ```{r}
 
@@ -483,9 +1322,10 @@ rm(list = ls())
 #library(devtools)
 #devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
 #devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
-#devtools::install_github(
-#  "ANiraula/pensionviewr_private",
-#   ref = "master", auth_token = "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")
+# devtools::install_github(
+#   "ANiraula/pensionviewr_private",
+#    ref = "master", auth_token = "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")
+
 library(reasontheme)
 library(pensionviewr)
 library(ggplot2)
@@ -494,33 +1334,453 @@ library(tseries)
 library(data.table)
 library(readr)
 library(rsconnect)
-library(dplyr)
 library(plyr)
+library(dplyr)
 
 ###
 ##Pull PERSI data
 ##Load list of plans
 pl <- planList()
 
+#############
+
+pl <- planList()
+
+#############
+pullStateData <- function (FY)
+{
+  con <- RPostgres::dbConnect(
+    RPostgres::Postgres(),
+    dbname = "d629vjn37pbl3l",
+    host = "ec2-3-209-200-73.compute-1.amazonaws.com",
+    port = 5432,
+    user = "reason_readonly",
+    password = "p88088bd28ea68027ee96c65996f7ea3b56db0e27d7c9928c05edc6c23ef2bc27",
+    sslmode = "require")
+  
+  query <- paste("select * from pull_data_state_only()\nwhere year > '",
+                 paste(FY - 1), "'\nand attribute_name in ('1 Year Investment Return Percentage',
+                 \n'PPD ID',
+                 \n'Number of Employers',
+                 \n'Number of Plans',\n'Actuarial Cost Method in GASB Reporting',
+                 \n'Employer Normal Cost Percentage',
+                 \n'Total Normal Cost Dollar',\n'Actuarial Funded Ratio Percentage',
+                 \n'Market Investment Return (MVA Basis)',
+                 \n'Actuarial Value of Assets GASB Dollar',
+                 \n'Market Value of Assets Dollar',
+                 \n'Market Assets Reported for Asset Smoothing',
+                 \n'Actuarially Accrued Liabilities Dollar',
+                 \n'Total Pension Liability Dollar',
+                 \n'Actuarially Determined Contribution Percentage of Payroll',
+                 \n'Actuarially Required Contribution Dollar',
+                 \n'Actuarially Required Contribution Paid Percentage',
+                 \n'Total Employer Contributions',
+                 \n'Statutory Payment Dollar',
+                 \n'Statutory Payment Percentage',
+                 \n'Amortizaton Method',
+                 \n'Total Benefits Paid Dollar',
+                 \n'Benefit Payments Dollar',
+                 \n'Refunds Dollar',
+                 \n'Administrative Expense Dollar',
+                 \n'Cost Structure',
+                 \n'Asset Valuation Method for GASB Reporting',
+                 \n'Covered Payroll Dollar',
+                 \n'Employee Contribution Dollar',
+                 \n'Employee Normal Cost Percentage',
+                 \n'Employer Contribution Regular Dollar',
+                 \n'Employer Normal Cost Dollar',
+                 \n'Employer State Contribution Dollar',
+                 \n'ADEC as a Percent of Payroll',
+                 \n'Other Contribution Dollar',
+                 \n'Other Additions',
+                 \n'Fiscal Year of Contribution',
+                 \n'Inflation Rate Assumption For GASB Reporting',
+                 \n'Investment Return Assumption for GASB Reporting',
+                 \n'Discount Rate Assumption',
+                 \n'Number of Years Remaining on Amortization Schedule',
+                 \n'Payroll Growth Assumption',
+                 \n'Unfunded Actuarially Accrued Liabilities Dollar',
+                 \n'Total Contribution Dollar',
+                 \n'Total Normal Cost Percentage',
+                 \n'Net Pension Liability Dollar',
+                 \n'Net Pension Liability Assuming 1% Decrease in Discount Rate',
+                 \n'Net Pension Liability Assuming 1% Increase in Discount Rate',
+                 \n'Total Number Of Members',
+                 \n'Total Projected Actuarial Required Contribution Percentage Of Payroll',
+                 \n'Actuarially Required Contribution Paid Dollar',
+                 \n'Actuarially Determined Contribution Paid Dollar',
+                 \n'Type of Employees Covered',
+                 \n'Total Amortization Payment Percentage',
+                 \n'Wage Inflation')")
+  result <- RPostgres::dbSendQuery(con, query)
+  all_data <- RPostgres::dbFetch(result) %>% janitor::clean_names()
+  RPostgres::dbClearResult(result)
+  RPostgres::dbDisconnect(con)
+  all_data %>% dplyr::group_by_at(dplyr::vars(-.data$attribute_value)) %>%
+    dplyr::mutate(row_id = 1:dplyr::n()) %>% dplyr::ungroup() %>%
+    tidyr::pivot_wider(names_from = attribute_name, values_from = attribute_value) %>%
+    dplyr::select(-.data$row_id) %>% 
+    dplyr::arrange(display_name, year) %>%
+    janitor::clean_names()
+}
+
+###########
+
+filterAssets2 <- function (data, fy = 2001, plan = NULL) {
+  data <- data.frame(data)
+  
+  data[, 5:83] <- data[, 5:83] %>% mutate_all(as.numeric)
+  data <- data %>% replace(is.na(.), 0)
+  data$year <- as.numeric(data$year)
+  
+  assets <- data %>% select(year, display_name, state, contains("percent")) %>%
+    
+    mutate(private.equity = percent_of_assets_invested_in_private_equity, 
+           real.estate =  percent_of_assets_invested_in_real_estate, 
+           hedge = percent_of_assets_invested_in_hedge_funds,
+           commodities = percent_of_assets_invested_in_commodities,
+           other.alternatives = percent_of_assets_invested_in_misc_alternatives + percent_of_assets_invested_in_other_investments,
+           equity = percent_of_assets_invested_in_equity_investments_total,
+           fixed = percent_of_assets_invested_in_fixed_income, 
+           cash = percent_of_assets_invested_in_cash) %>% 
+    select( -contains("percent")
+    )
+  
+  
+  if (!is.null(plan)) {
+    assets <- assets %>% filter(display_name == plan)
+  }
+  assets$total <- 0
+  y <- as.numeric(length(assets$total))
+  assets[, 4:11] <- assets[, 4:11] %>% mutate_all(as.numeric)
+  for (i in (1:y)) {
+    assets$total[i] <- sum(assets[i, 4:11])
+  }
+  
+  assets$total <- as.numeric(assets$total)
+  
+  
+  colnames(assets) <- c("year", "Plan", "State", "Private Equity", 
+                        "Real Estate", "Hedge Funds", "Commodities", "Other Alternatives", 
+                        "Total Equity", "Fixed Income", "Cash Equivalents", 
+                        "Total")
+  
+  assets <- assets %>% 
+    filter(year >= fy) %>% 
+    select(-Total)
+  
+  assets
+}
+
+#########
+# Filter Downloaded Data -------------------------------------------------------------
+
+filterData2 <- function(Data, fy = 2001,
+                        inflation = TRUE,
+                        expenditure = TRUE,
+                        employee = NULL,
+                        sp500 = TRUE,
+                        dcData = TRUE,
+                        treasury = TRUE,
+                        blend.teacher = FALSE,
+                        source = FALSE) {
+  if (isTRUE(blend.teacher)) {
+    blended.teach <- c("Arizona State Retirement System",
+                       "Delaware State Employees’ Pension Plan", "District of Columbia Teachers Retirement Fund",
+                       "Florida Retirement System", "Employee Retirement System of Hawaii",
+                       "Idaho Public Employee Retirement System", "Iowa Public Employees' Retirement System",
+                       "Kansas Public Employees' Retirement System", "Public Employees' Retirement System of Mississippi",
+                       "Nevada Public Employees Retirement System", "New Hampshire Retirement System",
+                       "North Carolina Teachers' and State Employees' Retirement System",
+                       "Oregon Public Employees Retirement System", "Rhode Island Employees Retirement System",
+                       "South Carolina Retirement Systems", "South Dakota Retirement System",
+                       "Tennessee Consolidated Retirement System, Teachers Pension Plan",
+                       "Utah Retirement Systems, Noncontributory Retirement System",
+                       "Virginia Retirement System", "Wisconsin Retirement System",
+                       "Wyoming Retirement System, Public Employees’ Pension Plan",
+                       "Maine Public Employees Retirement System (PERS) Defined Benefit Plan",
+                       "Maryland State Employees’ Retirement System")
+    Data <- data.frame(Data)
+    Data <- Data %>% mutate(type_of_employees_covered = case_when(display_name %in%
+                                                                    blended.teach ~ "Plan covers state, local and teachers",
+                                                                  TRUE ~ type_of_employees_covered))
+  }
+  Data <- data.frame(Data)
+  columns <- c("total_pension_liability_dollar", "wage_inflation",
+               "payroll_growth_assumption", "other_contribution_dollar",
+               "other_additions_dollar", "x1_year_investment_return_percentage",
+               "amortizaton_method", "number_of_years_remaining_on_amortization_schedule",
+               "amortization_payment_total_amount",
+               "x1_year_investment_return_percentage",
+               "total_normal_cost_dollar", "fiscal_year_of_contribution",
+               "statutory_payment_dollar", "statutory_payment_percentage",
+               "ppd_fund_id", "number_of_employers", "number_of_plans", "ppd_id",
+               "discount_rate_assumption", "market_investment_return_mva_basis", 
+               "actuarially_determined_contribution_dollar",
+               "net_pension_liability_dollar",
+               "administrative_expense_dollar",
+               "employer_state_contribution_dollar",
+               "total_amortization_payment_percentage",
+               "type_of_employees_covered",
+               "total_contribution_dollar",
+               "employer_contribution_regular_dollar",
+               "actuarial_cost_method_in_gasb_reporting",
+               "net_pension_liability_assuming_1_percent_decrease_in_discount_rate",
+               "net_pension_liability_assuming_1_percent_increase_in_discount_rate",
+               "actuarially_required_contribution_paid_dollar",
+               "actuarially_required_contribution_paid_percentage",
+               "total_benefits_paid_dollar",
+               "benefit_payments_dollar",
+               "refunds_dollar",
+               "actuarially_determined_contribution_paid_dollar",
+               "cost_structure", "employer_normal_cost_percentage", "actuarial_value_of_assets_dollar",
+               "asset_valuation_method_for_gasb_reporting", "inflation_rate_assumption",
+               "total_number_of_members", "total_projected_actuarial_required_contribution_percentage_of_payroll",
+               "market_assets_reported_for_asset_smoothing")
+  columns2 <- c("test")
+  for (i in (1:length(columns))) {
+    if (sum(colnames(Data) %in% columns[i]) == 0) {
+      columns2 <- rbind(columns2, columns[i])
+    }
+  }
+  columns2 <- as.character(columns2 <- columns2[2:length(columns2)])
+  cols <- matrix(NA, length(Data[, 1]), length(columns2))
+  colnames(cols) <- columns2
+  Data <- cbind(Data, cols)
+  Data <- data.frame(Data)
+  Data <- Data %>% arrange(state, display_name, year)
+  Data$year <- as.numeric(Data$year)
+  if (isTRUE(inflation)) {
+    library(readxl)
+    library(httr)
+    url1 <- "https://github.com/ReasonFoundation/databaseR/raw/master/files/CPI_by_Region_DOL.xlsx"
+    GET(url1, write_disk(tf <- tempfile(fileext = ".xlsx")))
+    cpi <- read_excel(tf, sheet = 1)
+    regions <- read_excel(tf, sheet = 2)
+    cpi <- data.table(cpi)
+    regions <- data.table(regions)
+    cpi$cpi_change <- NA
+    for (i in (2:length(cpi$region))) {
+      cpi$cpi_change[i] <- (cpi$cpi[i]/cpi$cpi[i - 1]) -
+        1
+    }
+    Data <- Data %>% left_join(regions, by = "state")
+    Data <- Data %>% left_join(cpi, by = c("year", "region"))
+    Data <- Data %>% select(-cpi)
+  }
+  
+  if (isTRUE(sp500)) {
+  urlfile2 = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/S%26P500.csv"
+  
+
+  SP500 <- data.table(
+    read_csv(url(urlfile2), col_names = TRUE, na = c(""), 
+                    skip_empty_rows = TRUE, col_types = NULL))
+
+    Data <- Data %>% left_join(SP500, by = c("year"))
+  
+  }
+  
+  if (isTRUE(dcData)) {
+    
+  #Data <- data.table(pullStateData(2001))
+   
+  urlfile3 = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/DCPlanData.csv"
+  
+  DCPlanData <- data.table(
+    read_csv(url(urlfile3), col_names = TRUE, na = c(""), 
+             skip_empty_rows = TRUE, col_types = NULL))
+  
+  DCPlanData <- DCPlanData %>% 
+    select(year = fy, ppd_id, plantype,
+           ee_contrate_mandatory, er_contrate_fixedrate, 
+           planname, primary,
+           eligible_eegroups, assets, members_total, actives, inactives, coveredpayroll) %>% 
+    replace(is.na(.), 0)
+  
+  DCPlanData$ppd_id <- as.numeric(DCPlanData$ppd_id)
+  DCPlanData$fy <- as.numeric(DCPlanData$fy)
+  DCPlanData$er_contrate_fixedrate <- as.numeric(DCPlanData$er_contrate_fixedrate)
+  DCPlanData$ee_contrate_mandatory <- as.numeric(DCPlanData$ee_contrate_mandatory)
+  DCPlanData$assets <- as.numeric(DCPlanData$assets)
+  DCPlanData$members_total <- as.numeric(DCPlanData$members_total)
+  DCPlanData$actives <- as.numeric(DCPlanData$actives)
+  DCPlanData$inactives <- as.numeric(DCPlanData$inactives)
+  
+  for(i in (1:length(DCPlanData$members_total))){
+  
+  DCPlanData$members_total[i] <- max(DCPlanData$members_total[i], (DCPlanData$actives[i]+DCPlanData$inactives[i]))
+  
+  }
+  
+  Data$ppd_id <- as.numeric(Data$ppd_id)
+  Data$year<- as.numeric(Data$year)
+  
+  Data <- Data %>% left_join(DCPlanData, by = c("ppd_id", "year"))
+
+  }
+  if (isTRUE(treasury)) {
+  urlfile <- "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/treasury.csv"
+  treasury <- data.table(
+    read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
+  
+  colnames(treasury)[2] <- "treasury_30"
+  Data <- Data %>% left_join(treasury, by = c("year"))
+
+  }
+  
+  if (isTRUE(expenditure)) {
+
+    #1. General Fund Exp./Rev. NASBO (State)
+    #2. Total Exp./Rev. NASBO (State) --> general funds, other state funds, bonds, and federal funds.
+    #3. Total Exp./Rev. Urban (State & Local) --> state and local direct general expenditures (exclude “business-like” activities such as utilities and transfers between state and local governments.)
+
+    library(readxl)
+    library(httr)
+    urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/NASBO_Exp_Report_Data_v1.csv"
+    NASBO<-read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+    NASBO <- setDT(NASBO)
+    NASBO <- NASBO %>% select(YEAR, STATE,"TOTAL_CAPI") %>% filter(YEAR>2000)
+    #View(NASBO)
+    colnames(NASBO)[1] <- "year"
+    colnames(NASBO)[2] <- "state"
+    Data <- Data %>% left_join(NASBO, by = c("year","state"))
+    ####
+    urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/UrbanCensus_ExpRev_2000-2018.csv"
+    Urban<-read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+    Urban <- setDT(Urban)
+
+    Urban <- Urban %>% select(Year, State,"(R01) Total Revenue", "(E001) Total Expenditure")
+
+    colnames(Urban)[1] <- "year"
+    colnames(Urban)[2] <- "state"
+     
+    Data <- Data %>% left_join(Urban, by = c("year","state"))
+
+  }
+
+  Data <- Data %>% select(year, plan_name = display_name,
+                          state, if (isTRUE(source)) {
+                            "data_source_name"
+                          }, return_1yr = x1_year_investment_return_percentage,
+                          ava_return = market_investment_return_mva_basis, actuarial_cost_method_in_gasb_reporting,
+                          funded_ratio = actuarial_funded_ratio_percentage, ava = actuarial_value_of_assets_gasb_dollar, #actuarial_value_of_assets_gasb_dollar (PPD)
+                          mva = market_value_of_assets_dollar, #mva_smooth = market_assets_reported_for_asset_smoothing,
+                          aal = actuarially_accrued_liabilities_dollar,
+                          adec1 = actuarially_determined_contribution_dollar,
+                          adec2 =   actuarially_required_contribution_paid_dollar,  #actuarially_required_contribution_dollar (PPD)
+                          adec_paid_pct = actuarially_required_contribution_paid_percentage,
+                          adec_pct = adec_as_a_percent_of_payroll, #instead of employers_projected_actuarial_required_contribution
+                          arc_paid_dollar = actuarially_required_contribution_paid_dollar, #NEW
+                          adec_paid_dollar = actuarially_determined_contribution_paid_dollar,#NEW
+                          statutory = statutory_payment_dollar, statutory_pct = statutory_payment_percentage,
+                          amortizaton_method, total_benefit_payments = total_benefits_paid_dollar,
+                          benefit_payments = benefit_payments_dollar, refunds = refunds_dollar,
+                          admin_exp = administrative_expense_dollar, cost_structure,
+                          state_exp_NASBO = TOTAL_CAPI, #gf_rev_NASBO = "TOTAL REV",
+                          state.local_exp_Census = "(R01) Total Revenue", state.local_rev_Census = "(E001) Total Expenditure",
+                          fund_id = ppd_fund_id, ppd_id = ppd_id, employers = number_of_employers,
+                          plans = number_of_plans, asset_valuation_method_for_gasb_reporting,
+                          dc_plantype = plantype,  dc_er_pct = er_contrate_fixedrate, #dc_eligble = eligible_eegroups,
+                          dc_ee_pct = ee_contrate_mandatory, dc_plan = planname, dc_primary = primary,
+                          dc_assets = assets, dc_members = members_total, dc_payroll = coveredpayroll,
+                          payroll = covered_payroll_dollar, ee_contribution = employee_contribution_dollar,
+                          ee_nc_pct = employee_normal_cost_percentage,
+                          er_nc_pct = employer_normal_cost_percentage,total_nc_pct = total_normal_cost_percentage, 
+                          er_contribution = employer_contribution_regular_dollar, er_state_contribution = employer_state_contribution_dollar,
+                          other_contribution = other_contribution_dollar, other_additions = other_additions_dollar,
+                          fy_contribution = fiscal_year_of_contribution, inflation_assum = inflation_rate_assumption,
+                          arr = investment_return_assumption_for_gasb_reporting,
+                          dr = discount_rate_assumption, number_of_years_remaining_on_amortization_schedule,
+                          payroll_growth_assumption, total_amortization_payment_pct = total_amortization_payment_percentage,
+                          total_amo_payment = amortization_payment_total_amount, #Added
+                          total_contribution = total_contribution_dollar,
+                          total_nc_dollar = total_normal_cost_dollar, total_number_of_members,
+                          total_proj_adec_pct = total_projected_actuarial_required_contribution_percentage_of_payroll,
+                          tpl = total_pension_liability_dollar,
+                          npl_pct_down = net_pension_liability_assuming_1_percent_decrease_in_discount_rate, #Added
+                          npl = net_pension_liability_dollar, #Added
+                          npl_pct_up = net_pension_liability_assuming_1_percent_increase_in_discount_rate, #Added
+                          type_of_employees_covered, unfunded_actuarially_accrued_liabilities_dollar,
+                          wage_inflation, region, cpi_change, sp_500, treasury_30)
+
+  
+  ## Combining ARC & ADEC
+  Data$state.local_exp_Census <- as.numeric(Data$state.local_exp_Census)
+  Data$state.local_rev_Census <- as.numeric(Data$state.local_exp_Census)
+  Data$state_exp_NASBO <- as.numeric(Data$state_exp_NASBO)
+  Data$dc_primary <- ifelse(Data$dc_primary == 1, "Yes", "No")
+  
+  Data$adec1 <- as.numeric(Data$adec1)
+  Data$adec2 <- as.numeric(Data$adec2)
+  Data$adec_paid_dollar <- as.numeric(Data$adec_paid_dollar)
+  Data$arc_paid_dollar <- as.numeric(Data$arc_paid_dollar)
+  Data$arc_adec_dollar <- ifelse(is.na(Data$adec1) == TRUE,Data$adec2, Data$adec1)
+  Data$arc_adec_paid_dollar <- ifelse(is.na(Data$arc_paid_dollar) == TRUE,
+                               ifelse(is.na(Data$statutory_payment_dollar) == TRUE,statutory_payment_dollar, 
+                                      Data$adec_paid_dollar), 
+                                      Data$arc_paid_dollar)
+  
+  Data$fy_contribution <- as.numeric(Data$fy_contribution)
+  Data$year <- as.numeric(Data$year)
+  Data$fy_contribution <- round(Data$fy_contribution, 0)
+  Data <- Data %>% filter(year >= fy) #%>% select(-adec1, -adec2)
+
+  #https://www.urban.org/policy-centers/cross-center-initiatives/state-and-local-finance-initiative/projects/state-fiscal-briefs/florida
+
+  if (isTRUE(expenditure)) {
+   Data$ava <- as.numeric(Data$ava)
+   Data$aal <- as.numeric(Data$aal)
+   Data$state_exp_NASBO <- as.numeric(Data$state_exp_NASBO)
+   Data$state.local_exp_Census <- as.numeric(Data$state.local_exp_Census)
+   Data <- Data %>% group_by(state, year) %>% mutate(ual_exp_NASBO = round((sum(aal)-sum(ava))/(state_exp_NASBO*1000000),2),
+                                                     ual_exp_Census = round((sum(aal)-sum(ava))/(state.local_exp_Census*1000),2))
+  }
+
+  if (is_null(employee)) {
+    employee <- employee
+  }
+  else if (employee == "teacher") {
+    employee <- c("Plan covers teachers")
+  }
+  else if (employee == "state and local") {
+    employee <- c("Plan covers state and local employees")
+  }
+  else if (employee == "police and fire") {
+    employee <- c("Plan covers police and/or fire")
+  }
+  else if (employee == "state") {
+    employee <- c("Plan covers state employees")
+  }
+  else if (employee == "local") {
+    employee <- c("Plan covers local employees")
+  }
+  else if (employee == "state, local, and teachers") {
+    employee <- c("Plan covers state, local and teachers")
+  }
+  if (is_null(employee)) {
+    Data <- data.frame(Data) %>% replace(is.na(.), 0)
+  }
+  else {
+    Data %>% filter(type_of_employees_covered == paste(employee)) %>% replace(is.na(.), 0)
+  }
+}
+
 #PULL DATA
 Data <- pullStateData(2001)
-Data <- filterData(Data, 2001)
-Data <- Data
+Data <- data.table(filterData2(Data, 2001))
 
-#View(Data)
 Data <-
-  data.table(Data) %>% filter(plan_name == "South Carolina Retirement Systems")
+  data.table(Data %>% filter(plan_name == "Texas Teacher Retirement System"))
+
 
 Data$year <- as.numeric(Data$year)
 Data$ava <- as.numeric(Data$ava)
 Data$aal <- as.numeric(Data$aal)
 Data$unfunded_actuarially_accrued_liabilities_dollar <- as.numeric(Data$unfunded_actuarially_accrued_liabilities_dollar)
 
-#Manually calculating 2021 AVA (AAL - UAL)
-Data$ava[21] <- Data$aal[21] - Data$unfunded_actuarially_accrued_liabilities_dollar[21]
-
-ual <- data.table(Data$aal-Data$ava)
-funded <-data.table(Data$ava/Data$aal)
+ual <- data.table(Data$unfunded_actuarially_accrued_liabilities_dollar)
+funded <-data.table(Data$funded_ratio)
 
 #Create table skeleton
 table <- matrix(NA,2,3)
@@ -558,9 +1818,10 @@ knitr::kable(
 
 ### Liabilities Growing Faster than Assets (2001-2021) w/ R (linePlot())
 
-```{r area.ual, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.",fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r area.ual, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial valuation reports.",fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
-rm(list=ls())
+rm(list = ls())
+
 ###Load/install packages
 #R.Version()
 #https://github.com/ReasonFoundation/pensionviewr
@@ -569,6 +1830,9 @@ rm(list=ls())
 #library(devtools)
 #devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
 #devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
+#devtools::install_github(
+#  "ANiraula/pensionviewr_private",
+#   ref = "master", auth_token = "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")
 library(reasontheme)
 library(pensionviewr)
 library(ggplot2)
@@ -577,27 +1841,443 @@ library(tseries)
 library(data.table)
 library(readr)
 library(rsconnect)
-library(dplyr)
 library(plyr)
+library(dplyr)
 
-###################
-#Using 2 New Functions to download and filter datat from datatabase
+###
+##Pull PERSI data
+##Load list of plans
+pl <- planList()
+
+
+pl <- planList()
+
+#############
+pullStateData <- function (FY)
+{
+  con <- RPostgres::dbConnect(
+    RPostgres::Postgres(),
+    dbname = "d629vjn37pbl3l",
+    host = "ec2-3-209-200-73.compute-1.amazonaws.com",
+    port = 5432,
+    user = "reason_readonly",
+    password = "p88088bd28ea68027ee96c65996f7ea3b56db0e27d7c9928c05edc6c23ef2bc27",
+    sslmode = "require")
+  
+  query <- paste("select * from pull_data_state_only()\nwhere year > '",
+                 paste(FY - 1), "'\nand attribute_name in ('1 Year Investment Return Percentage',
+                 \n'PPD ID',
+                 \n'Number of Employers',
+                 \n'Number of Plans',\n'Actuarial Cost Method in GASB Reporting',
+                 \n'Employer Normal Cost Percentage',
+                 \n'Total Normal Cost Dollar',\n'Actuarial Funded Ratio Percentage',
+                 \n'Market Investment Return (MVA Basis)',
+                 \n'Actuarial Value of Assets GASB Dollar',
+                 \n'Market Value of Assets Dollar',
+                 \n'Market Assets Reported for Asset Smoothing',
+                 \n'Actuarially Accrued Liabilities Dollar',
+                 \n'Total Pension Liability Dollar',
+                 \n'Actuarially Determined Contribution Percentage of Payroll',
+                 \n'Actuarially Required Contribution Dollar',
+                 \n'Actuarially Required Contribution Paid Percentage',
+                 \n'Total Employer Contributions',
+                 \n'Statutory Payment Dollar',
+                 \n'Statutory Payment Percentage',
+                 \n'Amortizaton Method',
+                 \n'Total Benefits Paid Dollar',
+                 \n'Benefit Payments Dollar',
+                 \n'Refunds Dollar',
+                 \n'Administrative Expense Dollar',
+                 \n'Cost Structure',
+                 \n'Asset Valuation Method for GASB Reporting',
+                 \n'Covered Payroll Dollar',
+                 \n'Employee Contribution Dollar',
+                 \n'Employee Normal Cost Percentage',
+                 \n'Employer Contribution Regular Dollar',
+                 \n'Employer Normal Cost Dollar',
+                 \n'Employer State Contribution Dollar',
+                 \n'ADEC as a Percent of Payroll',
+                 \n'Other Contribution Dollar',
+                 \n'Other Additions',
+                 \n'Fiscal Year of Contribution',
+                 \n'Inflation Rate Assumption For GASB Reporting',
+                 \n'Investment Return Assumption for GASB Reporting',
+                 \n'Discount Rate Assumption',
+                 \n'Number of Years Remaining on Amortization Schedule',
+                 \n'Payroll Growth Assumption',
+                 \n'Unfunded Actuarially Accrued Liabilities Dollar',
+                 \n'Total Contribution Dollar',
+                 \n'Total Normal Cost Percentage',
+                 \n'Net Pension Liability Dollar',
+                 \n'Net Pension Liability Assuming 1% Decrease in Discount Rate',
+                 \n'Net Pension Liability Assuming 1% Increase in Discount Rate',
+                 \n'Total Number Of Members',
+                 \n'Total Projected Actuarial Required Contribution Percentage Of Payroll',
+                 \n'Actuarially Required Contribution Paid Dollar',
+                 \n'Actuarially Determined Contribution Paid Dollar',
+                 \n'Type of Employees Covered',
+                 \n'Total Amortization Payment Percentage',
+                 \n'Wage Inflation')")
+  result <- RPostgres::dbSendQuery(con, query)
+  all_data <- RPostgres::dbFetch(result) %>% janitor::clean_names()
+  RPostgres::dbClearResult(result)
+  RPostgres::dbDisconnect(con)
+  all_data %>% dplyr::group_by_at(dplyr::vars(-.data$attribute_value)) %>%
+    dplyr::mutate(row_id = 1:dplyr::n()) %>% dplyr::ungroup() %>%
+    tidyr::pivot_wider(names_from = attribute_name, values_from = attribute_value) %>%
+    dplyr::select(-.data$row_id) %>% 
+    dplyr::arrange(display_name, year) %>%
+    janitor::clean_names()
+}
+
+###########
+
+filterAssets2 <- function (data, fy = 2001, plan = NULL) {
+  data <- data.frame(data)
+  
+  data[, 5:83] <- data[, 5:83] %>% mutate_all(as.numeric)
+  data <- data %>% replace(is.na(.), 0)
+  data$year <- as.numeric(data$year)
+  
+  assets <- data %>% select(year, display_name, state, contains("percent")) %>%
+    
+    mutate(private.equity = percent_of_assets_invested_in_private_equity, 
+           real.estate =  percent_of_assets_invested_in_real_estate, 
+           hedge = percent_of_assets_invested_in_hedge_funds,
+           commodities = percent_of_assets_invested_in_commodities,
+           other.alternatives = percent_of_assets_invested_in_misc_alternatives + percent_of_assets_invested_in_other_investments,
+           equity = percent_of_assets_invested_in_equity_investments_total,
+           fixed = percent_of_assets_invested_in_fixed_income, 
+           cash = percent_of_assets_invested_in_cash) %>% 
+    select( -contains("percent")
+    )
+  
+  
+  if (!is.null(plan)) {
+    assets <- assets %>% filter(display_name == plan)
+  }
+  assets$total <- 0
+  y <- as.numeric(length(assets$total))
+  assets[, 4:11] <- assets[, 4:11] %>% mutate_all(as.numeric)
+  for (i in (1:y)) {
+    assets$total[i] <- sum(assets[i, 4:11])
+  }
+  
+  assets$total <- as.numeric(assets$total)
+  
+  
+  colnames(assets) <- c("year", "Plan", "State", "Private Equity", 
+                        "Real Estate", "Hedge Funds", "Commodities", "Other Alternatives", 
+                        "Total Equity", "Fixed Income", "Cash Equivalents", 
+                        "Total")
+  
+  assets <- assets %>% 
+    filter(year >= fy) %>% 
+    select(-Total)
+  
+  assets
+}
+
+#########
+# Filter Downloaded Data -------------------------------------------------------------
+
+filterData2 <- function(Data, fy = 2001,
+                        inflation = TRUE,
+                        expenditure = TRUE,
+                        employee = NULL,
+                        sp500 = TRUE,
+                        dcData = TRUE,
+                        treasury = TRUE,
+                        blend.teacher = FALSE,
+                        source = FALSE) {
+  if (isTRUE(blend.teacher)) {
+    blended.teach <- c("Arizona State Retirement System",
+                       "Delaware State Employees’ Pension Plan", "District of Columbia Teachers Retirement Fund",
+                       "Florida Retirement System", "Employee Retirement System of Hawaii",
+                       "Idaho Public Employee Retirement System", "Iowa Public Employees' Retirement System",
+                       "Kansas Public Employees' Retirement System", "Public Employees' Retirement System of Mississippi",
+                       "Nevada Public Employees Retirement System", "New Hampshire Retirement System",
+                       "North Carolina Teachers' and State Employees' Retirement System",
+                       "Oregon Public Employees Retirement System", "Rhode Island Employees Retirement System",
+                       "South Carolina Retirement Systems", "South Dakota Retirement System",
+                       "Tennessee Consolidated Retirement System, Teachers Pension Plan",
+                       "Utah Retirement Systems, Noncontributory Retirement System",
+                       "Virginia Retirement System", "Wisconsin Retirement System",
+                       "Wyoming Retirement System, Public Employees’ Pension Plan",
+                       "Maine Public Employees Retirement System (PERS) Defined Benefit Plan",
+                       "Maryland State Employees’ Retirement System")
+    Data <- data.frame(Data)
+    Data <- Data %>% mutate(type_of_employees_covered = case_when(display_name %in%
+                                                                  blended.teach ~ "Plan covers state, local and teachers",
+                                                                  TRUE ~ type_of_employees_covered))
+  }
+  Data <- data.frame(Data)
+  columns <- c("total_pension_liability_dollar", "wage_inflation",
+               "payroll_growth_assumption", "other_contribution_dollar",
+               "other_additions_dollar", "x1_year_investment_return_percentage",
+               "amortizaton_method", "number_of_years_remaining_on_amortization_schedule",
+               "amortization_payment_total_amount",
+               "x1_year_investment_return_percentage",
+               "total_normal_cost_dollar", "fiscal_year_of_contribution",
+               "statutory_payment_dollar", "statutory_payment_percentage",
+               "ppd_fund_id", "number_of_employers", "number_of_plans", "ppd_id",
+               "discount_rate_assumption", "market_investment_return_mva_basis", 
+               "actuarially_determined_contribution_dollar",
+               "net_pension_liability_dollar",
+               "administrative_expense_dollar",
+               "employer_state_contribution_dollar",
+               "total_amortization_payment_percentage",
+               "type_of_employees_covered",
+               "total_contribution_dollar",
+               "employer_contribution_regular_dollar",
+               "actuarial_cost_method_in_gasb_reporting",
+               "net_pension_liability_assuming_1_percent_decrease_in_discount_rate",
+               "net_pension_liability_assuming_1_percent_increase_in_discount_rate",
+               "actuarially_required_contribution_paid_dollar",
+               "actuarially_required_contribution_paid_percentage",
+               "total_benefits_paid_dollar",
+               "benefit_payments_dollar",
+               "refunds_dollar",
+               "actuarially_determined_contribution_paid_dollar",
+               "cost_structure", "employer_normal_cost_percentage", "actuarial_value_of_assets_dollar",
+               "asset_valuation_method_for_gasb_reporting", "inflation_rate_assumption",
+               "total_number_of_members", "total_projected_actuarial_required_contribution_percentage_of_payroll",
+               "market_assets_reported_for_asset_smoothing")
+  columns2 <- c("test")
+  for (i in (1:length(columns))) {
+    if (sum(colnames(Data) %in% columns[i]) == 0) {
+      columns2 <- rbind(columns2, columns[i])
+    }
+  }
+  columns2 <- as.character(columns2 <- columns2[2:length(columns2)])
+  cols <- matrix(NA, length(Data[, 1]), length(columns2))
+  colnames(cols) <- columns2
+  Data <- cbind(Data, cols)
+  Data <- data.frame(Data)
+  Data <- Data %>% arrange(state, display_name, year)
+  Data$year <- as.numeric(Data$year)
+  if (isTRUE(inflation)) {
+    library(readxl)
+    library(httr)
+    url1 <- "https://github.com/ReasonFoundation/databaseR/raw/master/files/CPI_by_Region_DOL.xlsx"
+    GET(url1, write_disk(tf <- tempfile(fileext = ".xlsx")))
+    cpi <- read_excel(tf, sheet = 1)
+    regions <- read_excel(tf, sheet = 2)
+    cpi <- data.table(cpi)
+    regions <- data.table(regions)
+    cpi$cpi_change <- NA
+    for (i in (2:length(cpi$region))) {
+      cpi$cpi_change[i] <- (cpi$cpi[i]/cpi$cpi[i - 1]) -
+        1
+    }
+    Data <- Data %>% left_join(regions, by = "state")
+    Data <- Data %>% left_join(cpi, by = c("year", "region"))
+    Data <- Data %>% select(-cpi)
+  }
+  
+  if (isTRUE(sp500)) {
+  urlfile2 = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/S%26P500.csv"
+  
+
+  SP500 <- data.table(
+    read_csv(url(urlfile2), col_names = TRUE, na = c(""), 
+                    skip_empty_rows = TRUE, col_types = NULL))
+
+    Data <- Data %>% left_join(SP500, by = c("year"))
+  
+  }
+  
+  if (isTRUE(dcData)) {
+    
+  #Data <- data.table(pullStateData(2001))
+   
+  urlfile3 = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/DCPlanData.csv"
+  
+  DCPlanData <- data.table(
+    read_csv(url(urlfile3), col_names = TRUE, na = c(""), 
+             skip_empty_rows = TRUE, col_types = NULL))
+  
+  DCPlanData <- DCPlanData %>% 
+    select(year = fy, ppd_id, plantype,
+           ee_contrate_mandatory, er_contrate_fixedrate, 
+           planname, primary,
+           eligible_eegroups, assets, members_total, actives, inactives, coveredpayroll) %>% 
+    replace(is.na(.), 0)
+  
+  DCPlanData$ppd_id <- as.numeric(DCPlanData$ppd_id)
+  DCPlanData$fy <- as.numeric(DCPlanData$fy)
+  DCPlanData$er_contrate_fixedrate <- as.numeric(DCPlanData$er_contrate_fixedrate)
+  DCPlanData$ee_contrate_mandatory <- as.numeric(DCPlanData$ee_contrate_mandatory)
+  DCPlanData$assets <- as.numeric(DCPlanData$assets)
+  DCPlanData$members_total <- as.numeric(DCPlanData$members_total)
+  DCPlanData$actives <- as.numeric(DCPlanData$actives)
+  DCPlanData$inactives <- as.numeric(DCPlanData$inactives)
+  
+  for(i in (1:length(DCPlanData$members_total))){
+  
+  DCPlanData$members_total[i] <- max(DCPlanData$members_total[i], (DCPlanData$actives[i]+DCPlanData$inactives[i]))
+  
+  }
+  
+  Data$ppd_id <- as.numeric(Data$ppd_id)
+  Data$year<- as.numeric(Data$year)
+  
+  Data <- Data %>% left_join(DCPlanData, by = c("ppd_id", "year"))
+
+  }
+  if (isTRUE(treasury)) {
+  urlfile <- "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/treasury.csv"
+  treasury <- data.table(
+    read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL))
+  
+  colnames(treasury)[2] <- "treasury_30"
+  Data <- Data %>% left_join(treasury, by = c("year"))
+
+  }
+  
+  if (isTRUE(expenditure)) {
+
+    #1. General Fund Exp./Rev. NASBO (State)
+    #2. Total Exp./Rev. NASBO (State) --> general funds, other state funds, bonds, and federal funds.
+    #3. Total Exp./Rev. Urban (State & Local) --> state and local direct general expenditures (exclude “business-like” activities such as utilities and transfers between state and local governments.)
+
+    library(readxl)
+    library(httr)
+    urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/NASBO_Exp_Report_Data_v1.csv"
+    NASBO<-read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+    NASBO <- setDT(NASBO)
+    NASBO <- NASBO %>% select(YEAR, STATE,"TOTAL_CAPI") %>% filter(YEAR>2000)
+    #View(NASBO)
+    colnames(NASBO)[1] <- "year"
+    colnames(NASBO)[2] <- "state"
+    Data <- Data %>% left_join(NASBO, by = c("year","state"))
+    ####
+    urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/UrbanCensus_ExpRev_2000-2018.csv"
+    Urban<-read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+    Urban <- setDT(Urban)
+
+    Urban <- Urban %>% select(Year, State,"(R01) Total Revenue", "(E001) Total Expenditure")
+
+    colnames(Urban)[1] <- "year"
+    colnames(Urban)[2] <- "state"
+     
+    Data <- Data %>% left_join(Urban, by = c("year","state"))
+
+  }
+
+  Data <- Data %>% select(year, plan_name = display_name,
+                          state, if (isTRUE(source)) {
+                            "data_source_name"
+                          }, return_1yr = x1_year_investment_return_percentage,
+                          ava_return = market_investment_return_mva_basis, actuarial_cost_method_in_gasb_reporting,
+                          funded_ratio = actuarial_funded_ratio_percentage, ava = actuarial_value_of_assets_gasb_dollar, #actuarial_value_of_assets_gasb_dollar (PPD)
+                          mva = market_value_of_assets_dollar, #mva_smooth = market_assets_reported_for_asset_smoothing,
+                          aal = actuarially_accrued_liabilities_dollar,
+                          adec1 = actuarially_determined_contribution_dollar,
+                          adec2 =   actuarially_required_contribution_paid_dollar,  #actuarially_required_contribution_dollar (PPD)
+                          adec_paid_pct = actuarially_required_contribution_paid_percentage,
+                          adec_pct = adec_as_a_percent_of_payroll, #instead of employers_projected_actuarial_required_contribution
+                          arc_paid_dollar = actuarially_required_contribution_paid_dollar, #NEW
+                          adec_paid_dollar = actuarially_determined_contribution_paid_dollar,#NEW
+                          statutory = statutory_payment_dollar, statutory_pct = statutory_payment_percentage,
+                          amortizaton_method, total_benefit_payments = total_benefits_paid_dollar,
+                          benefit_payments = benefit_payments_dollar, refunds = refunds_dollar,
+                          admin_exp = administrative_expense_dollar, cost_structure,
+                          state_exp_NASBO = TOTAL_CAPI, #gf_rev_NASBO = "TOTAL REV",
+                          state.local_exp_Census = "(R01) Total Revenue", state.local_rev_Census = "(E001) Total Expenditure",
+                          fund_id = ppd_fund_id, ppd_id = ppd_id, employers = number_of_employers,
+                          plans = number_of_plans, asset_valuation_method_for_gasb_reporting,
+                          dc_plantype = plantype,  dc_er_pct = er_contrate_fixedrate, #dc_eligble = eligible_eegroups,
+                          dc_ee_pct = ee_contrate_mandatory, dc_plan = planname, dc_primary = primary,
+                          dc_assets = assets, dc_members = members_total, dc_payroll = coveredpayroll,
+                          payroll = covered_payroll_dollar, ee_contribution = employee_contribution_dollar,
+                          ee_nc_pct = employee_normal_cost_percentage,
+                          er_nc_pct = employer_normal_cost_percentage,total_nc_pct = total_normal_cost_percentage, 
+                          er_contribution = employer_contribution_regular_dollar, er_state_contribution = employer_state_contribution_dollar,
+                          other_contribution = other_contribution_dollar, other_additions = other_additions_dollar,
+                          fy_contribution = fiscal_year_of_contribution, inflation_assum = inflation_rate_assumption,
+                          arr = investment_return_assumption_for_gasb_reporting,
+                          dr = discount_rate_assumption, number_of_years_remaining_on_amortization_schedule,
+                          payroll_growth_assumption, total_amortization_payment_pct = total_amortization_payment_percentage,
+                          total_amo_payment = amortization_payment_total_amount, #Added
+                          total_contribution = total_contribution_dollar,
+                          total_nc_dollar = total_normal_cost_dollar, total_number_of_members,
+                          total_proj_adec_pct = total_projected_actuarial_required_contribution_percentage_of_payroll,
+                          tpl = total_pension_liability_dollar,
+                          npl_pct_down = net_pension_liability_assuming_1_percent_decrease_in_discount_rate, #Added
+                          npl = net_pension_liability_dollar, #Added
+                          npl_pct_up = net_pension_liability_assuming_1_percent_increase_in_discount_rate, #Added
+                          type_of_employees_covered, unfunded_actuarially_accrued_liabilities_dollar,
+                          wage_inflation, region, cpi_change, sp_500, treasury_30)
+
+  
+  ## Combining ARC & ADEC
+  Data$state.local_exp_Census <- as.numeric(Data$state.local_exp_Census)
+  Data$state.local_rev_Census <- as.numeric(Data$state.local_exp_Census)
+  Data$state_exp_NASBO <- as.numeric(Data$state_exp_NASBO)
+  Data$dc_primary <- ifelse(Data$dc_primary == 1, "Yes", "No")
+  
+  Data$adec1 <- as.numeric(Data$adec1)
+  Data$adec2 <- as.numeric(Data$adec2)
+  Data$adec_paid_dollar <- as.numeric(Data$adec_paid_dollar)
+  Data$arc_paid_dollar <- as.numeric(Data$arc_paid_dollar)
+  Data$arc_adec_dollar <- ifelse(is.na(Data$adec1) == TRUE,Data$adec2, Data$adec1)
+  Data$arc_adec_paid_dollar <- ifelse(is.na(Data$arc_paid_dollar) == TRUE,
+                               ifelse(is.na(Data$statutory_payment_dollar) == TRUE,statutory_payment_dollar, 
+                                      Data$adec_paid_dollar), 
+                                      Data$arc_paid_dollar)
+  
+  Data$fy_contribution <- as.numeric(Data$fy_contribution)
+  Data$year <- as.numeric(Data$year)
+  Data$fy_contribution <- round(Data$fy_contribution, 0)
+  Data <- Data %>% filter(year >= fy) #%>% select(-adec1, -adec2)
+
+  #https://www.urban.org/policy-centers/cross-center-initiatives/state-and-local-finance-initiative/projects/state-fiscal-briefs/florida
+
+  if (isTRUE(expenditure)) {
+   Data$ava <- as.numeric(Data$ava)
+   Data$aal <- as.numeric(Data$aal)
+   Data$state_exp_NASBO <- as.numeric(Data$state_exp_NASBO)
+   Data$state.local_exp_Census <- as.numeric(Data$state.local_exp_Census)
+   Data <- Data %>% group_by(state, year) %>% mutate(ual_exp_NASBO = round((sum(aal)-sum(ava))/(state_exp_NASBO*1000000),2),
+                                                     ual_exp_Census = round((sum(aal)-sum(ava))/(state.local_exp_Census*1000),2))
+  }
+
+  if (is_null(employee)) {
+    employee <- employee
+  }
+  else if (employee == "teacher") {
+    employee <- c("Plan covers teachers")
+  }
+  else if (employee == "state and local") {
+    employee <- c("Plan covers state and local employees")
+  }
+  else if (employee == "police and fire") {
+    employee <- c("Plan covers police and/or fire")
+  }
+  else if (employee == "state") {
+    employee <- c("Plan covers state employees")
+  }
+  else if (employee == "local") {
+    employee <- c("Plan covers local employees")
+  }
+  else if (employee == "state, local, and teachers") {
+    employee <- c("Plan covers state, local and teachers")
+  }
+  if (is_null(employee)) {
+    Data <- data.frame(Data) %>% replace(is.na(.), 0)
+  }
+  else {
+    Data %>% filter(type_of_employees_covered == paste(employee)) %>% replace(is.na(.), 0)
+  }
+}
+
+#PULL DATA
 Data <- pullStateData(2001)
-Data <- filterData(Data, 2001)
-
-Data <- Data %>% filter(year < 2022)
-
-#pl <- planList()
-#filter for PERSI
-
-#urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/StateLocal_UAL.csv"
-#Data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = #NULL)
-
-Data$ava <- as.numeric(Data$ava)
-Data$aal <- as.numeric(Data$aal)
-Data$year <- as.numeric(Data$year)
-
-Data <- Data %>% filter(plan_name == "South Carolina Retirement Systems")
+Data <- filterData2(Data, 2001)
+#View(Data)
+Data <-
+  data.table(Data %>% filter(plan_name == "Texas Teacher Retirement System"))
 
 Data$unfunded_actuarially_accrued_liabilities_dollar <- as.numeric(Data$unfunded_actuarially_accrued_liabilities_dollar)
 
@@ -614,6 +2294,7 @@ Data$unfunded_actuarially_accrued_liabilities_dollar <- as.numeric(Data$unfunded
 Data$year <- as.numeric(Data$year)
 Data <- Data %>% select(year, ava, aal)
 #Set to data.frame for visualization
+
 Data <- data.frame(Data)
 Data$year <- as.numeric(Data$year)
 
@@ -711,10 +2392,11 @@ ualPlot <- function (data, title = NULL, caption = FALSE, grid = FALSE, ticks = 
   }
 }
 
-area.ual <- ualPlot(Data, title = NULL, caption = FALSE, grid = FALSE, 
+#View(Data$actuarial_value_of_assets_gasb_dollar)
+area.ual <- ualPlot(Data, title = NULL, caption = FALSE, grid = FALSE,
                  ticks = TRUE, font = "Calibri",
-                  yaxisMin = 0, yaxisMax = 70, yaxisSeq = 5,
-                  yaxisScale = 1/1000000000, format = "$", str = 60,
+                  yaxisMin = 0, yaxisMax = 25, yaxisSeq = 2.5,
+                  yaxisScale = 1/10000000000, format = "$", str = 60,
                   labelY = "Actuarial Liability & Actuarial Assets (in $Billions)")
 
 area.ual
@@ -722,7 +2404,7 @@ area.ual
 
 ### Causes of Pension Debt (2001-2021) w/ R (custom Plotly-Image)
 
-```{r, dpi=400, echo = FALSE, caption = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.",fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r, dpi=400, echo = FALSE, caption = "Source: Pension Integrity Project analysis of Texas TRS actuarial valuation reports.",fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
      ########## Arkansas PERS Dashboard ##########
 ##Data: Manually Collected
 ##By: Anil, Jordan, Swaroop
@@ -770,7 +2452,7 @@ palette_reason <- list(Orange="#FF6633",
                        SatBlue = "#3366CC", 
                        Green = "#669900",LightGreen = "#00CC66", Red = "#CC0000",LightRed="#FF0000")
 
-url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/SCRS_GL.csv" 
+url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/Rdecks/Tx/TxTRS_GL.csv" 
 urlfile=url
 data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
 
@@ -787,203 +2469,182 @@ replace(is.na(.), 0)
   #[2] Calculate Total Gain/Loss for each column (i.e. Net Change to UAL over the years)
     y = data[,lapply(.SD,sum),.SDcols=colnames(data)]
     y = y[,!1]# sum values by each column
-    y = t(y)/1000#Saving needed columns and transposing table for graphics
-    
+    y = t(y)/1000000#Saving needed columns and transposing table for graphics
 ###### Saving 2001-21 G/L for automation later
     inv <- round(y[1],2)
     assum <- round(y[2],2)
     amo <- round(y[3],2)
     demo <- round(y[4],2)
-    cola <- round(y[5],2)
-    payroll <- round(y[6],2)
+ 
+#################
+glPlot <- function(database = FALSE, data = NULL,
+      url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/Texas TRS_GL.csv",
+      interactive = TRUE,
+      fileName = "GainLoss.png",
+      title = "<b>Causes of Arkansas ERS Pension Debt (2001-2019)<b>",
+      caption = FALSE,
+      yaxisScale = 1e-09,
+      yaxisMax = 4.5,
+      yaxisTick = 0.5,
+      lab1 = "Investment<br>Returns",
+      lab2 = "Changes to<br>Actuarial<br>Methods &<br>Assumptions",
+      lab3 = "Negative<br>Amortization",
+      lab4 = "Deviations from<br>Demographic<br>Assumptions",
+      lab5 = "COLA<br>Given",
+      lab6 = "Gains From<br>Pay<br>Increases<br>Not Given",
+      lab7 = NULL,
+      lab8 = NULL,
+      lab9 = NULL){
 
-# glPlot <- function(database = FALSE, data = NULL,
-#       url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/SCRS_GL.csv", 
-#       interactive = TRUE, 
-#       fileName = "GainLoss.png",
-#       title = "<b>Causes of Arkansas ERS Pension Debt (2001-2019)<b>",
-#       caption = FALSE,
-#       yaxisScale = 1e-06,
-#       yaxisMax = 4.5,
-#       yaxisTick = 0.5,
-#       lab1 = "Investment<br>Returns", 
-#       lab2 = "Changes to<br>Actuarial<br>Methods &<br>Assumptions", 
-#       lab3 = "Negative<br>Amortization",
-#       lab4 = "Deviations from<br>Demographic<br>Assumptions",
-#       lab5 = "COLA<br>Given",
-#       lab6 = "Gains From<br>Pay<br>Increases<br>Not Given",
-#       lab7 = NULL,
-#       lab8 = NULL,
-#       lab9 = NULL){
-#   
-#   #[1] Load Gain/Loss data from the provided url
-#   if(!isTRUE(database)){
-#   urlfile=url
-#   data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-# 
-#   data <- as.data.table(data)# convert to data.table
-#    data <-  data %>%
-#     replace(is.na(.), 0)
-#    
-#     ## Draft for New Gain/Loss bar chart
-#     #data2 <- data
-#     #for(i in (2:data[,.N])){
-#     #data2[i,2: length(data)] <- data2[i,2: length(data)]+data2[(i-1),2: length(data)]
-#     #}
-#     #
-# 
-# 
-#   #[2] Calculate Total Gain/Loss for each column (i.e. Net Change to UAL over the years)
-#     y = data[,lapply(.SD,sum),.SDcols=colnames(data)]*yaxisScale
-#     y = y[,!1]# sum values by each column
-#     y = t(y)#Saving needed columns and transposing table for graphics
-# }
-#   #[3] Combine gain/loss data & categories to create interactive Waterfall chart w/ plotly
-#   #  x = list(lab1, lab2, lab3, lab4, lab5, lab6, lab7,  lab8,  lab9)
-#     
-#      x = list(lab1, lab2, lab3, if (!is_null(lab4)) {
-#     paste(lab4)
-#   }, if (!is_null(lab5)) {
-#     paste(lab5)
-#   }, if (!is_null(lab6)) {
-#     paste(lab6)
-#   }, if (!is_null(lab7)) {
-#     paste(lab7)
-#   }, if (!is_null(lab8)) {
-#     paste(lab8)
-#   }, if (!is_null(lab9)) {
-#     paste(lab9)
-#   }else{NULL})
-#   
-#     num <- sum(
-#       sum(is.null(x[[6]]))+sum(is.null(x[[7]]))+sum(is.null(x[[8]]))+sum(is.null(x[[9]]))
-#       )
-#     
-#     if(num >0){ x <- x[1:(9-num)]}
-#   
-#  data <- data.frame(x = factor(x, levels = x), y)
-#  data <- data %>% dplyr::mutate(measure = dplyr::case_when(.data$y > 
-#     0 ~ "relative", .data$y < 0 ~ "negative"))
-#     
-#     data[length(data[,3]),]$measure <- "total"
-# 
-#     #  m <- list(
-#     #  l = 50,
-#     #  r = 0,
-#     #  b = 0,
-#     #  t = 50,
-#     #  pad = 4
-#     #  )
-# 
-#     #[4] Visualizing with Plotly
-#     
-#     fig <- plot_ly( data,
-#                     type = "waterfall",
-#                     measure = ~measure,
-#                     x = ~x,
-#                     textposition = "outside",
-#                     y= ~y,
-#                     decreasing = list(marker = list(color = palette_reason$Green)),
-#                     increasing = list(marker = list(color = palette_reason$Red)),
-#                     totals = list(marker = list(color = palette_reason$Orange)),
-#                     connector = list(line = list(color= palette_reason$SpaceGrey, width = 1))) 
-#     
-#     fig <- fig %>%
-#       layout(title = paste0(title),
-#              xaxis = list(title = "",tickfont = list(size = 11, face = "bold")),
-#              yaxis = list(title = "<b>Change in Unfunded Liability (in $Billions)<b>",
-#                           titlefont = list(size = 12), range = c(0,yaxisMax),
-#                           showgrid = FALSE,
-#                           tick0 = 0,
-#                           dtick = yaxisTick,
-#                           ticklen = 2,
-#                           linecolor = '#636363',
-#                           linewidth = 0.45),
-#              barmode = 'stack',
-#              autosize = F,
-#              showlegend = F)
-#       
-#       #ADD caption
-#       if(isTRUE(caption)){
-#       fig <- fig %>% 
-#                    layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
-#                     y = 0, x = 5, text = "reason.org/pensions",
-#                     xanchor='right', yanchor='auto', xshift=0, yshift=0,
-#                     font=list(size=10, color="black")))}
-#     
-#     #`Save` as a `static` png file 
-#     #OR `show` as a `interactive` Plotly chart
-#     #if(!isTRUE(interactive)){
-#     #Save Plotly as a Static PNG on a local computer (to reference in rmarkdown later)
-#     #https://github.com/plotly/orca
-#    # orca(fig, paste0(fileName), width =  7 * 300, height = 4 * 300)}else{fig}
-#      if(!isTRUE(interactive)){
-#     #Save Plotly as a Static PNG on a local computer (to reference in rmarkdown later)
-#     #https://github.com/plotly/orca
-#     orca(fig, paste0(fileName), width = 820, height = 530)}else{fig}
-# }
-# 
-# #Code to save Static/Interactive graph
-# ### South Carolina SCRS Data ###
-# glPlot(database = FALSE, data = NULL,
-#       url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/SCRS_GL.csv",
-#       interactive = FALSE,
-#       fileName = "SCRS_GainLoss.pdf",
-#       title = "",
-#       caption = FALSE,
-#       yaxisScale = 1e-03,
-#       yaxisMax = 30,
-#       yaxisTick = 3,
-#       lab1 = "<b>Investment<br>Returns<b>",
-#       lab2 = "<b>Changes to<br>Actuarial<br>Methods &<br>Assumptions<b>",
-#       lab3 = "<b>Negative<br>Amortization<b>",
-#       lab4 = "<b>Deviations from<br>Demographic<br>Assumptions<b>",
-#       lab5 = "<b>COLA<br>Given<b>",
-#       lab6 = "<b>Gains From<br>Pay<br>Increases<br>Not Given<b>",
-#       lab7 = "<b>Net Change to<br>Unfunded<br>Liabilit<b>y",
-#       lab8 = NULL,
-#       lab9 = NULL)
+  #[1] Load Gain/Loss data from the provided url
+  if(!isTRUE(database)){
+  urlfile=url
+  data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+
+  data <- as.data.table(data)# convert to data.table
+   data <-  data %>%
+    replace(is.na(.), 0)
+
+    ## Draft for New Gain/Loss bar chart
+    #data2 <- data
+    #for(i in (2:data[,.N])){
+    #data2[i,2: length(data)] <- data2[i,2: length(data)]+data2[(i-1),2: length(data)]
+    #}
+    #
+
+
+  #[2] Calculate Total Gain/Loss for each column (i.e. Net Change to UAL over the years)
+    y = data[,lapply(.SD,sum),.SDcols=colnames(data)]/yaxisScale
+    y = y[,!1]# sum values by each column
+    y = t(y)#Saving needed columns and transposing table for graphics
+}
+  #[3] Combine gain/loss data & categories to create interactive Waterfall chart w/ plotly
+  #  x = list(lab1, lab2, lab3, lab4, lab5, lab6, lab7,  lab8,  lab9)
+
+     x = list(lab1, lab2, lab3, if (!is_null(lab4)) {
+    paste(lab4)
+  }, if (!is_null(lab5)) {
+    paste(lab5)
+  }, if (!is_null(lab6)) {
+    paste(lab6)
+  }, if (!is_null(lab7)) {
+    paste(lab7)
+  }, if (!is_null(lab8)) {
+    paste(lab8)
+  }, if (!is_null(lab9)) {
+    paste(lab9)
+  }else{NULL})
+
+    num <- sum(
+      sum(is.null(x[[5]]))+sum(is.null(x[[6]]))+sum(is.null(x[[7]]))+sum(is.null(x[[8]]))+sum(is.null(x[[9]]))
+      )
+
+    x <- x[1:5]
+
+ data <- data.frame(x = factor(x, levels = x), y)
+ data <- data %>% dplyr::mutate(measure = dplyr::case_when(.data$y >
+    0 ~ "relative", .data$y < 0 ~ "negative"))
+
+    data[length(data[,3]),]$measure <- "total"
+
+
+    #  m <- list(
+    #  l = 50,
+    #  r = 0,
+    #  b = 0,
+    #  t = 50,
+    #  pad = 4
+    #  )
+
+    #[4] Visualizing with Plotly
+
+    fig <- plot_ly( data,
+                    type = "waterfall",
+                    measure = ~measure,
+                    x = ~x,
+                    textposition = "outside",
+                    y= ~y,
+                    decreasing = list(marker = list(color = palette_reason$Green)),
+                    increasing = list(marker = list(color = palette_reason$Red)),
+                    totals = list(marker = list(color = palette_reason$Orange)),
+                    connector = list(line = list(color= palette_reason$SpaceGrey, width = 1)))
+
+    fig <- fig %>%
+      layout(title = paste0(title),
+             xaxis = list(title = "",tickfont = list(size = 11, face = "bold")),
+             yaxis = list(title = "<b>Change in Unfunded Liability (in $Billions)<b>",
+                          titlefont = list(size = 12), range = c(0,yaxisMax),
+                          showgrid = FALSE,
+                          tick0 = 0,
+                          dtick = yaxisTick,
+                          ticklen = 2,
+                          linecolor = '#636363',
+                          linewidth = 0.45),
+             barmode = 'stack',
+             autosize = F,
+             showlegend = F)
+
+      #ADD caption
+      if(isTRUE(caption)){
+      fig <- fig %>%
+                   layout(annotations = list(yref = 'paper', xref = "x", showarrow = F,
+                    y = 0, x = 5, text = "reason.org/pensions",
+                    xanchor='right', yanchor='auto', xshift=0, yshift=0,
+                    font=list(size=10, color="black")))}
+
+    #`Save` as a `static` png file
+    #OR `show` as a `interactive` Plotly chart
+    #if(!isTRUE(interactive)){
+    #Save Plotly as a Static PNG on a local computer (to reference in rmarkdown later)
+    #https://github.com/plotly/orca
+   # orca(fig, paste0(fileName), width =  7 * 300, height = 4 * 300)}else{fig}
+     if(!isTRUE(interactive)){
+    #Save Plotly as a Static PNG on a local computer (to reference in rmarkdown later)
+    #https://github.com/plotly/orca
+    orca(fig, paste0(fileName), width = 860, height = 530)}else{fig}
+}
+
+#Code to save Static/Interactive graph
 
 #Code to show Interactive graph
-#fig <- glPlot(url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/APERS_GL.csv",       interactive = TRUE,
-#      fileName = "GainLoss.png",
-#      title = "<b>Causes of Arkansas ERS Pension Debt (2001-2019)<b>",
-#      caption = TRUE,
-#      lab1 = "Investment<br>Returns", 
-#      lab2 = "Benefit<br>Changes<br> & Other",
-#      lab3 = "Changes to<br>Actuarial<br>Methods &<br>Assumptions", 
-#      lab4 = "Negative<br>Amortization",
-#      lab5 = "Deviations from<br>Demographic<br>Assumptions",
-#      lab6 = "Gains From<br>Pay<br>Increases<br>Not Given",
-#      lab7 = "Net Change to<br>Unfunded<br>Liability")
+fig <- glPlot(url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/Rdecks/Tx/TxTRS_GL.csv",
+              interactive = T,
+     fileName = "TxTRS_GainLoss.png",
+     title = "",
+     caption = F,
+     yaxisScale = 1000000000,
+     yaxisMax = 60,
+     yaxisTick = 6,
+     lab1 = "Investment<br>Returns",
+     lab2 = "Changes to<br>Actuarial<br>Methods &<br>Assumptions",
+     lab3 = "Negative<br>Amortization",
+     lab4 = "Deviations from<br>Demographic and<br>Pay Increase<br>Assumptions and<br>Other",
+     lab5 = "Net Change to<br>Unfunded<br>Liability")
 
 #Uncomment "fig" below*
-#fig
+fig
 ```
 
-![](SCRS_GainLoss.pdf)
+![](TxTRS_GainLoss.png)
 
-### Driving Factors Jeopardizing SCRS Resiliency
+### Driving Factors Jeopardizing Texas TRS Resiliency
 
--   **Deviations from Investment Return Assumptions** have been the largest contributor to the unfunded liability growth, adding **$`r inv`** billion from 2001 to 2021.
-
-    </p>
-
--   **Changes to Actuarial Methods and Assumptions** – including assumed rate of return - have revealed roughly **$`r assum`** billion in additional unfunded liability since 2001.
+-   **Deviations from Investment Return Assumptions** have been the largest contributor to the unfunded liability growth, adding **$`r inv`** billion from 2002 to 2021.
 
     </p>
 
--   **Extended Amortization Timetables and low Statutory Contributions** in the past have resulted in interest on SCRS debt exceeding the actual debt payments (negative amortization) since 2001, adding a net **$`r amo`** billion to the unfunded liabilities. 
+-   **Changes to Actuarial Methods and Assumptions** – including assumed rate of return - have revealed roughly **$`r assum`** billion in additional unfunded liability since 2002.
 
     </p>
 
--  **Deviations from Demographic Assumptions** – including deviations from assumed rates of withdrawal, retirement, and mortality — added **$`r demo`** billion to the debt since 2001.
+-   **Extended Amortization Timetables and low Statutory Contributions** in the past have resulted in interest on Texas TRS debt exceeding the actual debt payments (negative amortization) since 2001, adding a net **$`r amo`** billion to the unfunded liabilities. 
 
     </p>
 
--   **Ad-Hoc Cost-of-Living-Adjustments** given before 2012 added **$`r cola*100`** million to unfunded liabilities since 2001.
+-  **Deviations from Demographic and Pay Increase Assumptions** – including deviations from assumed rates of withdrawal, retirement, mortality, payroll increase — added **$`r demo`** billion to the debt since 2002.
 
     </p>
+
 
 ### Make up of Pension Contributions w/ R (flextable())
 
@@ -1159,7 +2820,7 @@ filterData2 <- function(Data, fy = 2001,
                             "data_source_name"
                           }, return_1yr = x1_year_investment_return_percentage,
                           ava_return = market_investment_return_mva_basis, actuarial_cost_method_in_gasb_reporting,
-                          funded_ratio = actuarial_funded_ratio_percentage, ava = actuarial_value_of_assets_dollar, #actuarial_value_of_assets_gasb_dollar (PPD)
+                          funded_ratio = actuarial_funded_ratio_percentage, ava = actuarial_value_of_assets_gasb_dollar, #actuarial_value_of_assets_gasb_dollar (PPD)
                           mva = market_value_of_assets_dollar, mva_smooth = market_assets_reported_for_asset_smoothing,
                           aal = actuarially_accrued_liabilities_dollar,
                           adec1 = actuarially_determined_contribution_dollar,
@@ -1253,13 +2914,13 @@ pl <- planList()
 
 #PULL DATA
 Data <- pullStateData(2001)
-Data <- filterData2(Data,2001)
-Data <- Data %>% filter(year == 2021)
+Data <- data.table(filterData2(Data, 2001))
 
+Data <-
+  data.table(Data %>% filter(plan_name == "Texas Teacher Retirement System"))
+Data <- Data %>% filter(year == 2021)
+plan.name <- c("Texas TRS")
 #View(Data)
-Data <- Data %>% filter(plan_name == "South Carolina Retirement Systems")
-#View(Data)
-plan.name <- c("SCRS")
 
 #Create table skeleton
 table <- matrix(NA,7,3)
@@ -1275,7 +2936,7 @@ table[2,3] <- c("$ Value")
 table[3,2] <- as.numeric(Data$ee_nc_pct)
 table[3,3] <- as.numeric(Data$ee_contribution)
 table[6,2] <- as.numeric(Data$er_nc_pct)
-table[6,3] <- as.numeric(table[6,2]) * as.numeric(Data$payroll)
+table[6,3] <- 0.089
 table[5,2] <- as.numeric(Data$statutory_pct)-as.numeric(Data$er_nc_pct)
 table[5,3] <- as.numeric(table[5,2]) * as.numeric(Data$payroll)
 table[4,2] <- sum(as.numeric(table[5:6,2]))
@@ -1356,7 +3017,7 @@ table
 
 ### A History of Investment Returns (2001-2021) w/ R (linePlot())
 
-```{r graph, dpi = 400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r graph, dpi = 400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 ### linePlot ###
 ## Data: Database + Manual(AVA returns)
 ## Base: linePlot() function in `pensionviewr`
@@ -1392,7 +3053,7 @@ library(scales)
 #Using 2 New Functions to download and filter datat from datatabase
 Data <- pullStateData(2001)
 Data <- filterData(Data, 2001)
-Data<- Data %>% filter (plan_name == "South Carolina Retirement Systems")
+Data<- Data %>% filter (plan_name == "Texas Teacher Retirement System")
 #View(Data)
 Data$year <- as.numeric(Data$year)
 #Set to data.frame for visualization
@@ -1550,7 +3211,7 @@ graph <- linePlot(Data, title = "",
                   inv.returns = TRUE, 
                   treasury = FALSE,
                   font = "Calibri", 
-                  yaxisMin = -24, yaxisMax = 36, yaxisSeq = 4,
+                  yaxisMin = -24, yaxisMax = 28, yaxisSeq = 4,
                   yaxisScale = 100, format = "%", str = 60,
                   labelY = "", 
                   lab1 = "Market Valued Returns (Actual)", 
@@ -1605,7 +3266,7 @@ pl <- planList()
 
 Data <- pullStateData(2001)
 Data <- filterData(Data, 2001)
-Data<- Data %>% filter (plan_name == "South Carolina Retirement Systems")
+Data<- Data %>% filter (plan_name == "Texas Teacher Retirement System")
 #View(Data)
 Data$year <- as.numeric(Data$year)
 #Set to data.frame for visualization
@@ -1649,7 +3310,7 @@ ava.gmean.10 <- geomean(ava.returns[(last -9):last])
 ava.gmean.15 <- geomean(ava.returns[(last -14):last])
 ava.gmean.20 <- geomean(ava.returns[(last -19):last])
 
-plan.name <- c("SCRS")
+plan.name <- c("Texas TRS")
 
 #Create table skeleton
 table <- matrix(NA,4,3)
@@ -1721,7 +3382,7 @@ colnames(table)[1] <- "Year"
 
 ### S&P500 vs. Funded Ratio (2001-2020) w/ R (areaPlot())
 
-```{r sp500, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r sp500, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
 rm(list=ls())
 ###Load/install packages
@@ -1753,7 +3414,7 @@ Data <- pullStateData(2001)
 Data <- filterData(Data,2001)
 Data <- Data %>% filter(year < 2022)
 
-Data <- Data %>% filter(plan_name == "South Carolina Retirement Systems")
+Data <- Data %>% filter(plan_name == "Texas Teacher Retirement System")
 Data$year <- as.numeric(Data$year)
 Data$ava <- as.numeric(Data$ava)
 Data$aal <- as.numeric(Data$aal)
@@ -1920,261 +3581,12 @@ The "new normal" for the institutional investing, despite the post-COVID rebound
 
         </p>
 
-3.  As SCRS waits for the continual "rebound" its unfunded liabilities continue to grow.
+3.  As Texas TRS waits for the continual "rebound" its unfunded liabilities continue to grow.
 
-### Asset Allocation (2001-2021) w/ R (custom)
-
-```{r assets, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
-
-library(reasontheme)
-library(pensionviewr)
-library(ggplot2)
-library(tidyverse)
-library(tseries)
-library(data.table)
-library(readr)
-library(rsconnect)
-library(dplyr)
-library(plyr)
-
-###
-##Pull PERSI data
-##Load list of plans
-pl <- planList()
-
-filterAssets2 <- function (data, fy = 2001, plan = NULL) {
-  data <- data.frame(data)
-
-  data[, 5:75] <- data[, 5:75] %>% mutate_all(as.numeric)
-  data <- data %>% replace(is.na(.), 0)
-  data$year <- as.numeric(data$year)
-
-  assets <- data %>% select(year, display_name, state, contains("percent")) %>%
-
-    mutate(private.equity = percent_of_assets_invested_in_private_equity,
-           real.estate =  percent_of_assets_invested_in_real_estate,
-           hedge = percent_of_assets_invested_in_hedge_funds,
-           commodities = percent_of_assets_invested_in_commodities,
-           other.alternatives = percent_of_assets_invested_in_misc_alternatives + percent_of_assets_invested_in_other_investments,
-           equity = percent_of_assets_invested_in_equity_investments_total,
-           fixed = percent_of_assets_invested_in_fixed_income,
-           cash = percent_of_assets_invested_in_cash) %>%
-    select( -contains("percent")
-    )
-
-
-  if (!is.null(plan)) {
-    assets <- assets %>% filter(display_name == plan)
-  }
-  assets$total <- 0
-  y <- as.numeric(length(assets$total))
-  assets[, 4:11] <- assets[, 4:11] %>% mutate_all(as.numeric)
-  for (i in (1:y)) {
-    assets$total[i] <- sum(assets[i, 4:11])
-  }
-
-  assets$total <- as.numeric(assets$total)
-
-
-  colnames(assets) <- c("year", "Plan", "State", "Private Equity",
-                        "Real Estate", "Hedge Funds", "Commodities", "Other Alternatives",
-                        "Total Equity", "Fixed Income", "Cash Equivalents",
-                        "Total")
-
-  assets <- assets %>%
-    filter(year >= fy) %>%
-    select(-Total)
-
-  assets
-}
- # 
-# 
-plotTheme <- ggplot2::theme(    panel.grid.major = element_blank(),
-                                 panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),
-                                 plot.margin = margin(0.5,1,0,0, "cm"),
-                                 axis.text.y = element_text(size=12, color = "black"),
-                                 axis.text.x = element_text(size=12, color = "black", angle = 0, hjust = 0.5, vjust = -1),
-                                 axis.title = element_text(size = 12, face = "bold"),
-                                 legend.text = element_text(size = 12),
-                                 legend.title = element_blank(),
-                                 text = element_text(family = "Calibri"))
-# 
-#
-#
-#
-#
-pullAssetData <- function (fy, mva = FALSE)
-{
-
-  con <- RPostgres::dbConnect(
-    RPostgres::Postgres(),
-    dbname = "d629vjn37pbl3l",
-    host = "ec2-3-209-200-73.compute-1.amazonaws.com",
-    port = 5432,
-    user = "reason_readonly",
-    password = "p88088bd28ea68027ee96c65996f7ea3b56db0e27d7c9928c05edc6c23ef2bc27",
-    sslmode = "require")
-
-  query <- paste("select * from pull_data_state_allocations()\nwhere year > '",
-                 paste(fy - 1), "'", if(isTRUE(mva)){paste(",\n'Market Value of Assets Dollar'")})
-  result <- RPostgres::dbSendQuery(con, query)
-  all_data <- RPostgres::dbFetch(result) %>% janitor::clean_names()
-  RPostgres::dbClearResult(result)
-  RPostgres::dbDisconnect(con)
-
-  all_data %>% dplyr::group_by_at(dplyr::vars(-.data$attribute_value)) %>%
-    dplyr::mutate(row_id = 1:dplyr::n()) %>% dplyr::ungroup() %>%
-    tidyr::pivot_wider(names_from = attribute_name, values_from = attribute_value) %>%
-    dplyr::select(-.data$row_id) %>% dplyr::arrange(display_name,
-                                                    year) %>% janitor::clean_names()
-}
-# #Load Asset Allocation data for PERSI
-# #urlfile2="https://raw.githubusercontent.com/ReasonFoundation/GraphicsR/master/R/PERSI.Asset.Alloc.csv"
-# #PERSI.assets <- data.table(read_csv(url(urlfile2), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = cols(.default = "n")))
-# 
-# ###pullAssetData()
-#  
-# ################ Pulling all asset data
-assets <- data.table(
- pullAssetData(fy = 2001, mva = FALSE)
-)
-# 
-# ################# Renaming plans
-# #################
-assets <- data.frame(assets)
-#View(colnames(assets))
-# 
-# ##### filterAssets()
-# 
-# ####### filtering data & selecting only PERSI
-# 
-
-assets <- filterAssets2(data = assets, fy = 2001, plan = "South Carolina Retirement Systems")
-#View(assets)
-# #colnames(assets)[2] <- "plan_name"
-# #View(assets[,45:74])
-# #View(assets %>% filter(display_name == "Idaho Public Employee Retirement System (PERS)"))
-# 
-# #assets <-  assets %>% select(-Total)
-# 
-# # colnames(assets) <- c("year", 
-# #                       "plan_name", 
-# #                       "state",
-# #                       "Private.Equity",
-# #                       "Real.Estate",
-# #                       "Hedge.Funds",
-# #                       "Infrastructure",
-# #                       "Other.Alternatives",
-# #                       "Total.Public.Equity",
-# #                       "Fixed.Income",
-# #                       "Cash.Equivalents")
-# #View(assets)
-# #data <- read_csv(url(
-# #          "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/Maryland_Allocation.csv"), 
-# #          col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-# 
-# #assets$year <- as.numeric(assets$year)
-# #assets$plan_name <- as.character(assets$plan_name)
-# #View(assets)           
-# 
-# 
-# data <- 
-#   pullAssetData(fy = 2001, mva = FALSE)
-# 
-# data <- filterAssets2(data, plan = "South Carolina Retirement Systems")
-
-
-data <- read_csv("data.csv")
-#write_csv(data, "data.csv")
-
-#assets2 <- assets %>% filter(year == 2020) %>% 
-#                select(year, contains("fixed_income"), -contains("domestic")) %>%
-#                mutate_all(as.numeric) %>% replace(is.na(.), 0)
-#View(round(colMeans(assets2, na.rm = TRUE),3)*100)
-#View(assets2 %>% filter(emerging_fixed_income_actual_allocation > 0 ))
-
-#View(assets %>% filter(display_name == "New Jersey Public Employees Retirement System (PERS)"))
-#assets <- filterAssets2(data = assets, fy = 2001)
-
-# 
-# data <- read_csv(url(
-#           "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/SCRS_Allocation.csv"), 
-#           col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-
-data <- data.table(data)
-
-#### Assigning any gap w/ 100% to Equities
-
-#### Removing unnecessary columns
-
-
-#data <- data %>% select(year, plan_name, state, Private.Equity, Real.Estate, Hedge.Funds, Infrastructure, Other.Alternatives, Total.Public.Equity, Fixed.Income, Cash.Equivalents)
-
-############# assetPlot()
-#View(data)
- 
-assetPlot <- function (data, interactive = FALSE) 
-{
-  data <- data.table(data)
-  alloc <- data.table(melt(data, id.vars = "year"))
-  alloc$value <- as.numeric(alloc$value)
-  alloc$value <- round(alloc$value * 100, 1)
-
-  
-  
-  colors <- c(palette_reason$Red, palette_reason$LightRed, 
-    palette_reason$Orange, palette_reason$LightOrange, palette_reason$Yellow, 
-    palette_reason$DarkGrey, palette_reason$SatBlue, palette_reason$LightBlue)
-  graph <- ggplot(alloc, aes(x = year, y = value, fill = variable, 
-    group = variable, text = paste0("Fiscal Year: ", year, 
-      "<br>", "Class: ", variable, "<br>", "Allocation: ", 
-      value, "%"))) + geom_area(cposition = "stack", stat = "identity") + 
-    scale_y_continuous(breaks = seq(0, 100, by = 10),labels = function(x) paste0(x, "%"), 
-      name = "% of Total Portfolio", expand = c(0,0)) + scale_fill_manual(values = colors) + 
-     ggplot2::scale_x_continuous(breaks = seq(min(data$year), 
-    max(data$year), by = 2), expand = c(0, 0))+
-    theme_bw() + theme(panel.grid.major = element_blank(), 
-    panel.grid.minor = element_blank(), 
-    panel.border = element_blank(),
-    axis.title.x = element_blank(), 
-    axis.line = element_line(colour = "black"), legend.title = element_blank(),
-    legend.position="bottom")+
-    plotTheme + 
-  if (isTRUE(interactive)) {
-    graph <- ggplotly(graph, tooltip = "text")
-  }
-  graph
-}
-
-
-## Changing "Alternatives" to "Private Equity" and renaming "Other" to "Other Laternatives"
-#PERSI.assets <- PERSI.assets %>% select(year, real.estate, alternatives, other, equity, fixed.income, cash)
-#colnames(PERSI.assets) <- c("year", "Real Estate", "Private Equity", "Other Alternatives", "Total Equities", "Fixed Income", "Cash Equivalents")
-
-#View(PERSI.assets)
-#Transpose data from long ot wide format (each year contains Variable & Value)
-#PERSI.assets <- melt(PERSI.assets, id.vars="year")
-
-#assets <- ggplot(PERSI.assets) + geom_area(aes(x = year, y = value, fill = variable, group = variable), position="fill")+
-#  scale_fill_manual(values=c(palette_reason$LightRed,palette_reason$Orange, palette_reason$Yellow,
-#                             palette_reason$DarkGrey, palette_reason$LightBlue, palette_reason$SatBlue))+
-#  scale_y_continuous(labels = function(x) paste0(x*100,"%"), name = "% of Investment Portfolio",
-#                     breaks = seq(0, 1, by = 0.1), limits = c(0, 1), expand=c(0,0))+
-#  scale_x_continuous(labels = function(x) paste0(x, ""), name = "",
-#                     breaks = seq(2001, 2019, by = 2), limits = c(2001, 2019), expand=c(0,0))+
-#  ggplot2::theme(axis.text = element_text(size = 12), 
-#                     axis.title = element_text(size = 12, face = "bold"))+
-#  theme_bw()+
-#  plotTheme+
-#  theme(legend.position="bottom")
-
-assets <- assetPlot(data, interactive = FALSE) 
-assets
-```
 
 ### Probability Analysis w/ R (flextable())
 
-```{r table, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project Monte Carlo model based on SCRS asset allocation and reported expected returns by asset class. Forecasts of returns by asset class generally by BNYM, JPMC, BlackRock, Research Affiliates, and Horizon Actuarial Services were matched to the SCRS specific asset class. Probability estimates are approximate as they are based on the aggregated return by asset class. For complete methodology contact Reason Foundation.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r table, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project Monte Carlo model based on Texas TRS asset allocation and reported expected returns by asset class. Forecasts of returns by asset class generally by BNYM, JPMC, BlackRock, Research Affiliates, and Horizon Actuarial Services were matched to the Texas TRS specific asset class. Probability estimates are approximate as they are based on the aggregated return by asset class. For complete methodology contact Reason Foundation.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
 rm(list = ls())
 start_time <- Sys.time()
@@ -2425,8 +3837,8 @@ table <- table %>% select("Return",
                 "BlackRock")
 
 colnames(table) <- c("Possible Rates of Return",
-                     "Based on SCRS Assumptions",
-                     "SCRS Historical Returns",
+                     "Based on Texas TRS Assumptions",
+                     "Texas TRS Historical Returns",
                      "Research Affiliates 10-Year Forecast",
                      "JP Morgan 10-15 Year Forecast",
                      "BNY Mellon 10-Year Forecast",
@@ -2475,523 +3887,7 @@ table <- width(table, j = 1:9, width = 1)
 table
 ```
 
-### Current Contributions Are Actuarially Insufficient (2021-2052) w/ R (linePlot())
-
-```{r crises, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project actuarial forecast of SCRS.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
-
-library(reasontheme)
-library(pensionviewr)
-library(ggplot2)
-library(tidyverse)
-library(tseries)
-library(data.table)
-library(readr)
-library(rsconnect)
-library(dplyr)
-library(plyr)
-
-urlfile <- "https://raw.githubusercontent.com/ANiraula/SCRS_FModel/main/SCRS.FModel_ERC_ADEC.csv"
-stress <- data.frame(
-  read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-)
-
-stress[1:4,2:5] <- seq(0.1556, 0.1856, by = 0.01)
-stress[5:20,2] <- 0.1856
-#stress[21:33,2] <- seq(0.1856, 0.0656, by = -0.01)
-
-DPF.data <- data.table(stress)
-colnames(DPF.data) <- c("year",
-                        "assumption", "model",
-                        "crisis", "2crises")
-#View(DPF.data)
-
-DPF.data <- DPF.data %>% select("year",
-                        "assumption", "model",
-                         "2crises","crisis")
-
-
-linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE, 
-  treasury = FALSE, inv.returns = TRUE, ticks = TRUE, font = NULL, 
-  yaxisMin = 0, yaxisMax = NULL, yaxisSeq = 5, yaxisScale = 100, 
-  format = NULL, str = 20, labelY = NULL, lab1 = NULL, lab2 = NULL, 
-  lab3 = NULL, lab4 = NULL, lab5 = NULL, lab6 = NULL) 
-{
-  reasontheme::set_reason_theme(style = "slide")
-  
-   plotTheme <- ggplot2::theme(   panel.grid.major = element_blank(),
-                                 panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),
-                                 plot.margin = margin(0, 0.5,0,0, "cm"),
-                                 axis.text.y = element_text(size=12, color = "black"),
-                                 axis.text.x = element_text(size=12, color = "black", angle = 0, hjust = 0.5, vjust = -1),
-                                 axis.title = element_text(size = 12, face = "bold"),
-                                 legend.text = element_text(size = 12),
-                                 legend.title = element_blank(),
-                                 text = element_text(family = "Calibri"))
-   
-  x <- length(data$year)
-  data <- data.frame(data) %>% dplyr::mutate_all(as.numeric)
-  if (isTRUE(treasury)) {
-    urlfile <- "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/treasury.csv"
-    treasury <- read_csv(url(urlfile), col_names = TRUE, 
-      na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-    treasury$year <- as.numeric(treasury$year)
-    treasury <- treasury %>% filter(year>2000 & year < 2020)
-    data$year <- as.numeric(data$year)
-    treasury <- data.table(treasury %>% filter(year > min(data$year - 
-      1)))
-    data <- data %>% select(year, arr)
-    data <- data.table(data)
-    data <- cbind(data, treasury[, 2])
-    data <- data.frame(data) %>% dplyr::mutate_all(as.numeric)
-    data <- as.data.table(data)
-    data$alt.discount <- NA
-    diff <- (data[year == min(data$year)]$arr - data[year == 
-      min(data$year)]$X30.treasury)
-    data$alt.discount <- data$X30.treasury + diff
-  }
-  geomean <- function(x) {
-    x <- as.vector(na.omit(x))
-    x <- x + 1
-    exp(mean(log(x))) - 1
-  }
-  if (isTRUE(inv.returns)) {
-    data$return_1yr <- as.numeric(data$return_1yr)
-    returns <- data$return_1yr
-    last <- length(returns)
-    rolling <- matrix(NA, last, 1)
-    rolling[last] <- as.numeric(geomean(returns[(last - 
-      9):last]))
-    for (i in 1:(last - 10)) {
-      rolling[last - i] <- geomean(returns[(last - 9 - 
-        i):(last - i)])
-    }
-    rolling <- data.table(rolling)
-    returns[(last - 9):last]
-    returns[(last - 9 + 1):(last - 1)]
-    data <- data.table(cbind(data, rolling))
-    data <- data %>% select(year, return_1yr, ava_return, 
-      arr, V1)
-  }
-  colnames(data) <- c("year", if (!is_null(lab1)) {
-    paste(lab1)
-  }, if (!is_null(lab2)) {
-    paste(lab2)
-  }, if (!is_null(lab3)) {
-    paste(lab3)
-  }, if (!is_null(lab4)) {
-    paste(lab4)
-  }, if (!is_null(lab5)) {
-    paste(lab5)
-  }, if (!is_null(lab6)) {
-    paste(lab6)
-  })
-  ##Crate line types per variable
-data <- as.data.table(data)
-  graph <- data.table(melt(data, id.vars = "year"))
-  graph <- graph %>% filter(year > 2020)
-  lineColors <- c(
- palette_reason$LightBlue,  palette_reason$SatBlue, palette_reason$LightOrange,palette_reason$LightOrange)#, palette_reason$Yellow, palette_reason$Yellow)
-  options(repr.plot.width = 1, repr.plot.height = 0.75)
-  ggplot2::ggplot(graph, ggplot2::aes(x = year, y = yaxisScale * 
-    value, group = variable, linetype=variable)) + ggplot2::geom_line(ggplot2::aes(colour = str_wrap(factor(variable), 
-    str)), size = 1) + 
-    ggplot2::geom_hline(yintercept = 0, color = "black") + 
-    ggplot2::scale_colour_manual(values = lineColors) + 
-    scale_linetype_manual(values=c("solid", "dashed",  "dashed","solid"))+#Assigns line types set to each line
-    ggplot2::scale_y_continuous(breaks = seq(yaxisMin, if (!is.null(yaxisMax)) {
-      yaxisMax
-    }
-    else {
-      max(graph$value) * yaxisScale * 1.2
-    }, by = yaxisSeq), limits = c(yaxisMin, if (!is.null(yaxisMax)) {
-      yaxisMax
-    } else {
-      max(graph$value) * yaxisScale * 1.2
-    }), labels = function(b) {
-      if (format == "%") {
-        paste0(round(b, 0), "%")
-      }
-      else if (format == "$") {
-        paste0("$", round(b, 0))
-      }
-      else {
-        paste0(format, round(b, 0))
-      }
-    }, expand = c(0, 0)) + ggplot2::scale_x_continuous(breaks = seq(min(graph$year), 
-    max(graph$year), by = 2), expand = c(0, 0)) + labs(x = element_blank(), 
-    y = labelY)+
-    theme(legend.direction = "vertical", legend.box = "horizontal", 
-    legend.position = c(0.9, 0.9)) + labs(title = paste(title), caption = ifelse(isTRUE(caption), 
-    paste("reason.org/pensions"), paste(""))) + ggplot2::theme(axis.ticks = if (isFALSE(ticks)) {
-    ggplot2::element_blank()
-  }
-  else {
-    ggplot2::element_line()
-  }) + ggplot2::theme(axis.ticks.x = element_line(size = 0.5, 
-    color = "black")) + ggplot2::theme(axis.ticks.y = element_line(size = 0.5, 
-    color = "black")) + ggplot2::theme(panel.grid.major.y = element_line(colour = ifelse(isTRUE(grid), 
-    paste(palette_reason$SpaceGrey), "white"), size = (2))) +
-     plotTheme
-}
-
-crises <- linePlot(DPF.data, title = NULL, caption = FALSE, grid = FALSE, 
-                  treasury = FALSE, inv.returns = FALSE, ticks = TRUE, font = "Calibri",
-                  yaxisMin = 0, yaxisMax = 36, yaxisSeq = 4,
-                  yaxisScale = 100, format = "%", str = 80,
-                  labelY = "Employer Contribution (% Payroll)", 
-                  lab1 = "Baseline (Statutory)",
-                  lab2 = "6% Constant Annual Return (ADEC)",
-                  lab3 = "2022-25 Crisis & 2037-40 Crisis & 6% Returns (ADEC)",
-                  lab5 = "2022-25 Crisis & 6% Returns (ADEC)")
-                 
-
-crises
-```
-
-### SCRS Solvency Degrades Under Crisis Scenarios (2021-2052) w/ R (linePlot())
-
-```{r fr.crises, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project actuarial forecast of SCRS.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
-
-library(reasontheme)
-library(pensionviewr)
-library(ggplot2)
-library(tidyverse)
-library(tseries)
-library(data.table)
-library(readr)
-library(rsconnect)
-library(dplyr)
-library(plyr)
-
-urlfile <- "https://raw.githubusercontent.com/ANiraula/SCRS_FModel/main/SCRS.FModel_FR_Statutory.csv"
-stress <- data.frame(
-  read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-)
-#View(stress[3,2:5])
-#View(stress)
-
-DPF.data <- data.table(stress)
-colnames(DPF.data) <- c("year",
-                        "assumption", "model",
-                        "crisis", "2crises")
-#View(DPF.data)
-
-DPF.data <- DPF.data %>% select("year",
-                        "assumption", "model",
-                         "2crises","crisis")
-
-
-
-linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE, 
-  treasury = FALSE, inv.returns = TRUE, ticks = TRUE, font = NULL, 
-  yaxisMin = 0, yaxisMax = NULL, yaxisSeq = 5, yaxisScale = 100, 
-  format = NULL, str = 20, labelY = NULL, lab1 = NULL, lab2 = NULL, 
-  lab3 = NULL, lab4 = NULL, lab5 = NULL, lab6 = NULL) 
-{
-  reasontheme::set_reason_theme(style = "slide")
-  
-   plotTheme <- ggplot2::theme(   panel.grid.major = element_blank(),
-                                 panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),
-                                 plot.margin = margin(0, 0.5,0,0, "cm"),
-                                 axis.text.y = element_text(size=12, color = "black"),
-                                 axis.text.x = element_text(size=12, color = "black", angle = 0, hjust = 0.5, vjust = -1),
-                                 axis.title = element_text(size = 12, face = "bold"),
-                                 legend.text = element_text(size = 12),
-                                 legend.title = element_blank(),
-                                 text = element_text(family = "Calibri"))
-   
-  x <- length(data$year)
-  data <- data.frame(data) %>% dplyr::mutate_all(as.numeric)
-  if (isTRUE(treasury)) {
-    urlfile <- "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/treasury.csv"
-    treasury <- read_csv(url(urlfile), col_names = TRUE, 
-      na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-    treasury$year <- as.numeric(treasury$year)
-    treasury <- treasury %>% filter(year>2000 & year < 2020)
-    data$year <- as.numeric(data$year)
-    treasury <- data.table(treasury %>% filter(year > min(data$year - 
-      1)))
-    data <- data %>% select(year, arr)
-    data <- data.table(data)
-    data <- cbind(data, treasury[, 2])
-    data <- data.frame(data) %>% dplyr::mutate_all(as.numeric)
-    data <- as.data.table(data)
-    data$alt.discount <- NA
-    diff <- (data[year == min(data$year)]$arr - data[year == 
-      min(data$year)]$X30.treasury)
-    data$alt.discount <- data$X30.treasury + diff
-  }
-  geomean <- function(x) {
-    x <- as.vector(na.omit(x))
-    x <- x + 1
-    exp(mean(log(x))) - 1
-  }
-  if (isTRUE(inv.returns)) {
-    data$return_1yr <- as.numeric(data$return_1yr)
-    returns <- data$return_1yr
-    last <- length(returns)
-    rolling <- matrix(NA, last, 1)
-    rolling[last] <- as.numeric(geomean(returns[(last - 
-      9):last]))
-    for (i in 1:(last - 10)) {
-      rolling[last - i] <- geomean(returns[(last - 9 - 
-        i):(last - i)])
-    }
-    rolling <- data.table(rolling)
-    returns[(last - 9):last]
-    returns[(last - 9 + 1):(last - 1)]
-    data <- data.table(cbind(data, rolling))
-    data <- data %>% select(year, return_1yr, ava_return, 
-      arr, V1)
-  }
-  colnames(data) <- c("year", if (!is_null(lab1)) {
-    paste(lab1)
-  }, if (!is_null(lab2)) {
-    paste(lab2)
-  }, if (!is_null(lab3)) {
-    paste(lab3)
-  }, if (!is_null(lab4)) {
-    paste(lab4)
-  }, if (!is_null(lab5)) {
-    paste(lab5)
-  }, if (!is_null(lab6)) {
-    paste(lab6)
-  })
-  ##Crate line types per variable
-data <- as.data.table(data)
-  graph <- data.table(melt(data, id.vars = "year"))
-  graph <- graph %>% filter(year > 2020)
-  lineColors <- c(
-  palette_reason$LightBlue,palette_reason$SatBlue, palette_reason$LightOrange,palette_reason$LightOrange)#, palette_reason$Yellow, palette_reason$Yellow)
-  options(repr.plot.width = 1, repr.plot.height = 0.75)
-  ggplot2::ggplot(graph, ggplot2::aes(x = year, y = yaxisScale * 
-    value, group = variable, linetype=variable)) + ggplot2::geom_line(ggplot2::aes(colour = str_wrap(factor(variable), 
-    str)), size = 1) + 
-    ggplot2::geom_hline(yintercept = 0, color = "black") + 
-    ggplot2::scale_colour_manual(values = lineColors) + 
-    scale_linetype_manual(values=c("solid", "dashed",  "dashed","solid"))+#Assigns line types set to each line
-    ggplot2::scale_y_continuous(breaks = seq(yaxisMin, if (!is.null(yaxisMax)) {
-      yaxisMax
-    }
-    else {
-      max(graph$value) * yaxisScale * 1.2
-    }, by = yaxisSeq), limits = c(yaxisMin, if (!is.null(yaxisMax)) {
-      yaxisMax
-    } else {
-      max(graph$value) * yaxisScale * 1.2
-    }), labels = function(b) {
-      if (format == "%") {
-        paste0(round(b, 0), "%")
-      }
-      else if (format == "$") {
-        paste0("$", round(b, 0))
-      }
-      else {
-        paste0(format, round(b, 0))
-      }
-    }, expand = c(0, 0)) + ggplot2::scale_x_continuous(breaks = seq(min(graph$year), 
-    max(graph$year), by = 2), expand = c(0, 0)) + labs(x = element_blank(), 
-    y = labelY)+
-    theme(legend.direction = "vertical", legend.box = "horizontal", 
-    legend.position = c(1.01, 0.14)) + labs(title = paste(title), caption = ifelse(isTRUE(caption), 
-    paste("reason.org/pensions"), paste(""))) + ggplot2::theme(axis.ticks = if (isFALSE(ticks)) {
-    ggplot2::element_blank()
-  }
-  else {
-    ggplot2::element_line()
-  }) + ggplot2::theme(axis.ticks.x = element_line(size = 0.5, 
-    color = "black")) + ggplot2::theme(axis.ticks.y = element_line(size = 0.5, 
-    color = "black")) + ggplot2::theme(panel.grid.major.y = element_line(colour = ifelse(isTRUE(grid), 
-    paste(palette_reason$SpaceGrey), "white"), size = (2))) +
-     plotTheme
-}
-
-fr.crises <- linePlot(DPF.data, title = NULL, caption = FALSE, grid = FALSE, 
-                  treasury = FALSE, inv.returns = FALSE, ticks = TRUE, font = "Calibri",
-                  yaxisMin = 0, yaxisMax = 120, yaxisSeq = 10,
-                  yaxisScale = 100, format = "%", str = 80,
-                  labelY = "Funded Status (Actuarial Value)", 
-                  lab1 = "Baseline (Statutory)",
-                  lab2 = "6% Constant Annual Return (Statutory)",
-                  lab3 = "2022-25 Crisis & 2037-40 Crisis & 6% Returns (Statutory)",
-                  lab5 = "2022-25 Crisis & 6% Returns (Statutory)")
-                 
-fr.crises
-```
-
-### Pension Debt Will Likely Grow (2021-2052) w/ R (linePlot())
-
-```{r ual, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project actuarial forecast of SCRS.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
-
-library(reasontheme)
-library(pensionviewr)
-library(ggplot2)
-library(tidyverse)
-library(tseries)
-library(data.table)
-library(readr)
-library(rsconnect)
-library(dplyr)
-library(plyr)
-
-urlfile <- "https://raw.githubusercontent.com/ANiraula/SCRS_FModel/main/SCRS.FModel_UAL_Statutory.csv"
-stress <- data.frame(
-  read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-)
-#stress[1:4,2] <- seq(0.1556, 0.1856, by = 0.01)
-#stress[5:20,2] <- 0.1856
-#stress[21:33,2] <- seq(0.1856, 0.0656, by = -0.01)
-
-DPF.data <- data.table(stress)
-colnames(DPF.data) <- c("year",
-                        "assumption", "model",
-                        "crisis", "2crises")
-#View(DPF.data)
-DPF.data <- DPF.data %>% select("year",
-                        "assumption", "model",
-                         "2crises","crisis")
-DPF.data$model[26:34] <- 0
-#View(DPF.data$model[26:34])
-
-linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE, 
-  treasury = FALSE, inv.returns = TRUE, ticks = TRUE, font = NULL, 
-  yaxisMin = 0, yaxisMax = NULL, yaxisSeq = 5, yaxisScale = 100, 
-  format = NULL, str = 20, labelY = NULL, lab1 = NULL, lab2 = NULL, 
-  lab3 = NULL, lab4 = NULL, lab5 = NULL, lab6 = NULL) 
-{
-  reasontheme::set_reason_theme(style = "slide")
-  
-   plotTheme <- ggplot2::theme(   panel.grid.major = element_blank(),
-                                 panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),
-                                 plot.margin = margin(0, 0.5,0,0, "cm"),
-                                 axis.text.y = element_text(size=12, color = "black"),
-                                 axis.text.x = element_text(size=12, color = "black", angle = 0, hjust = 0.5, vjust = -1),
-                                 axis.title = element_text(size = 12, face = "bold"),
-                                 legend.text = element_text(size = 12),
-                                 legend.title = element_blank(),
-                                 text = element_text(family = "Calibri"))
-   
-  x <- length(data$year)
-  data <- data.frame(data) %>% dplyr::mutate_all(as.numeric)
-  if (isTRUE(treasury)) {
-    urlfile <- "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/treasury.csv"
-    treasury <- read_csv(url(urlfile), col_names = TRUE, 
-      na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-    treasury$year <- as.numeric(treasury$year)
-    treasury <- treasury %>% filter(year>2000 & year < 2020)
-    data$year <- as.numeric(data$year)
-    treasury <- data.table(treasury %>% filter(year > min(data$year - 
-      1)))
-    data <- data %>% select(year, arr)
-    data <- data.table(data)
-    data <- cbind(data, treasury[, 2])
-    data <- data.frame(data) %>% dplyr::mutate_all(as.numeric)
-    data <- as.data.table(data)
-    data$alt.discount <- NA
-    diff <- (data[year == min(data$year)]$arr - data[year == 
-      min(data$year)]$X30.treasury)
-    data$alt.discount <- data$X30.treasury + diff
-  }
-  geomean <- function(x) {
-    x <- as.vector(na.omit(x))
-    x <- x + 1
-    exp(mean(log(x))) - 1
-  }
-  if (isTRUE(inv.returns)) {
-    data$return_1yr <- as.numeric(data$return_1yr)
-    returns <- data$return_1yr
-    last <- length(returns)
-    rolling <- matrix(NA, last, 1)
-    rolling[last] <- as.numeric(geomean(returns[(last - 
-      9):last]))
-    for (i in 1:(last - 10)) {
-      rolling[last - i] <- geomean(returns[(last - 9 - 
-        i):(last - i)])
-    }
-    rolling <- data.table(rolling)
-    returns[(last - 9):last]
-    returns[(last - 9 + 1):(last - 1)]
-    data <- data.table(cbind(data, rolling))
-    data <- data %>% select(year, return_1yr, ava_return, 
-      arr, V1)
-  }
-  colnames(data) <- c("year", if (!is_null(lab1)) {
-    paste(lab1)
-  }, if (!is_null(lab2)) {
-    paste(lab2)
-  }, if (!is_null(lab3)) {
-    paste(lab3)
-  }, if (!is_null(lab4)) {
-    paste(lab4)
-  }, if (!is_null(lab5)) {
-    paste(lab5)
-  }, if (!is_null(lab6)) {
-    paste(lab6)
-  })
-  ##Crate line types per variable
-data <- as.data.table(data)
-  graph <- data.table(melt(data, id.vars = "year"))
-  graph <- graph %>% filter(year > 2020)
-   lineColors <- c(
-  palette_reason$LightBlue,palette_reason$SatBlue, palette_reason$LightOrange,palette_reason$LightOrange)#, palette_reason$Yellow, palette_reason$Yellow)
-  options(repr.plot.width = 1, repr.plot.height = 0.75)
-  ggplot2::ggplot(graph, ggplot2::aes(x = year, y = yaxisScale * 
-    value, group = variable, linetype=variable)) + ggplot2::geom_line(ggplot2::aes(colour = str_wrap(factor(variable), 
-    str)), size = 1) + 
-    ggplot2::geom_hline(yintercept = 0, color = "black") + 
-    ggplot2::scale_colour_manual(values = lineColors) + 
-    scale_linetype_manual(values=c("solid", "dashed",  "dashed","solid"))+#Assigns line types set to each line
-    ggplot2::scale_y_continuous(breaks = seq(yaxisMin, if (!is.null(yaxisMax)) {
-      yaxisMax
-    }
-    else {
-      max(graph$value) * yaxisScale * 1.2
-    }, by = yaxisSeq), limits = c(yaxisMin, if (!is.null(yaxisMax)) {
-      yaxisMax
-    } else {
-      max(graph$value) * yaxisScale * 1.2
-    }), labels = function(b) {
-      if (format == "%") {
-        paste0(round(b, 0), "%")
-      }
-      else if (format == "$") {
-        paste0("$", round(b, 0))
-      }
-      else {
-        paste0(format, round(b, 0))
-      }
-    }, expand = c(0, 0)) + ggplot2::scale_x_continuous(breaks = seq(min(graph$year), 
-    max(graph$year), by = 2), expand = c(0, 0)) + labs(x = element_blank(), 
-    y = labelY)+
-    theme(legend.direction = "vertical", legend.box = "horizontal", 
-    legend.position = c(1.5, 1.5)) + labs(title = paste(title), caption = ifelse(isTRUE(caption), 
-    paste("reason.org/pensions"), paste(""))) + ggplot2::theme(axis.ticks = if (isFALSE(ticks)) {
-    ggplot2::element_blank()
-  }
-  else {
-    ggplot2::element_line()
-  }) + ggplot2::theme(axis.ticks.x = element_line(size = 0.5, 
-    color = "black")) + ggplot2::theme(axis.ticks.y = element_line(size = 0.5, 
-    color = "black")) + ggplot2::theme(panel.grid.major.y = element_line(colour = ifelse(isTRUE(grid), 
-    paste(palette_reason$SpaceGrey), "white"), size = (2))) +
-     plotTheme
-}
-
-ual <- linePlot(DPF.data, title = NULL, caption = FALSE, grid = FALSE, 
-                  treasury = FALSE, inv.returns = FALSE, ticks = TRUE, font = "Calibri",
-                  yaxisMin = 0, yaxisMax = 40, yaxisSeq = 4,
-                  yaxisScale = 1/1000, format = "$", str = 80,
-                  labelY = "Unfunded Actuarial Liability (in $Billions)", 
-                  lab1 = "Baseline",
-                  lab2 = "6% Constant Annual Return",
-                  lab3 = "2022-25 Crisis & 2037-40 Crisis & 6% Returns",
-                  lab5 = "2022-25 Crisis & 6% Returns")
-                 
-
-ual
-```
-
-### SCRS Unfunded Liability Sensitivity to DR Changes 2021 w/ R (flextable())
+### Texas TRS Unfunded Liability Sensitivity to DR Changes 2021 w/ R (flextable())
 
 ```{r}
 
@@ -3152,7 +4048,7 @@ filterData2 <- function(Data, fy = 2001,
                             "data_source_name"
                           }, return_1yr = x1_year_investment_return_percentage,
                           ava_return = market_investment_return_mva_basis, actuarial_cost_method_in_gasb_reporting,
-                          funded_ratio = actuarial_funded_ratio_percentage, ava = actuarial_value_of_assets_dollar, #actuarial_value_of_assets_gasb_dollar (PPD)
+                          funded_ratio = actuarial_funded_ratio_percentage, ava = actuarial_value_of_assets_gasb_dollar, #actuarial_value_of_assets_gasb_dollar (PPD)
                           mva = market_value_of_assets_dollar, mva_smooth = market_assets_reported_for_asset_smoothing,
                           aal = actuarially_accrued_liabilities_dollar,
                           adec1 = actuarially_determined_contribution_dollar,
@@ -3250,9 +4146,9 @@ Data <- filterData2(Data,2001)
 Data <- Data %>% filter(year == 2021)
 
 #View(Data)
-Data <- Data %>% filter(plan_name == "South Carolina Retirement Systems")
+Data <- Data %>% filter(plan_name == "Texas Teacher Retirement System")
 #View(Data)
-plan.name <- c("SCRS")
+plan.name <- c("Texas TRS")
 
 Data$year <- as.numeric(Data$year)
 Data$mva <- as.numeric(Data$mva)
@@ -3263,7 +4159,6 @@ Data$unfunded_actuarially_accrued_liabilities_dollar <- as.numeric(Data$unfunded
 Data$ual <- Data$aal - Data$mva
 Data$funded_ratio <- Data$mva/Data$aal
 
-Data$npl_pct_up <- 16067117000
 sensitivity <- Data %>% select(npl_pct_up, npl,npl_pct_down, mva) %>% mutate_all(as.numeric)
 Data <- Data %>% select(year, dr, ual,funded_ratio,aal,mva,total_nc_pct,ee_nc_pct) %>% mutate_all(as.numeric)
 
@@ -3288,11 +4183,12 @@ reDiscount <- function(data, sensitivity){
 }
 
 redisc <- reDiscount(Data, sensitivity)
+
 #Create table skeleton
 table <- matrix(NA,4,4)
 
 #Use database numbers to populate/calculate needed values
-table[1:4,1] <- c(seq(as.numeric(Data$dr),0.04, by = -0.01))
+table[1:4,1] <- c(seq(as.numeric(Data$dr),0.0425, by = -0.01))
 table[1:4,4] <- c(redisc$aal, redisc$aal.dr1,redisc$aal.dr2,redisc$aal.dr3)
 table[1:4,3] <- c(as.numeric(table[1:4,4])-Data$mva)
 table[1:4,2] <- c(as.numeric(Data$mva)/as.numeric(table[1:4,4]))
@@ -3365,311 +4261,9 @@ table <-  table[1:4,1:4] %>%
 table
 ```
 
-### 30-Year Funded Ratio Forecast - Statutory (Assumed) w/ R (barPlot())
-
-```{r stochasticFR, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project actuarial forecast of SCRS.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
-
-rm(list=ls())
-
-library(reasontheme)
-library(pensionviewr)
-library(ggplot2)
-library(tidyverse)
-library(tseries)
-library(data.table)
-library(readr)
-library(rsconnect)
-library(dplyr)
-library(plyr)
-library(DT)
-library(scales)
-
-######################
-####### BARPLOT ######
-######################
-
-barPlot <- function (data = NULL, net.amo = FALSE, contributions = FALSE, 
-  compound.gl = TRUE, gl.url = "https://raw.githubusercontent.com/ReasonFoundation/GraphicsR/master/PERSI_GL2.csv", 
-  str = 25, stochastic = FALSE, stochastic.url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/perctest2.csv", 
-  stochastic.alpha = 0.4, Ymax = 25, Ymin = 0, Ybreak = 5, 
-  yaxisScale = 1/1e+09, interactive = FALSE, font = "Calibri", 
-  lab1 = "Investment Experience", lab2 = "Benefit Changes", 
-  lab3 = "Changes to Actuarial Methods & Assumptions", lab4 = "Deviations from Demographic Assumptions", 
-  lab5 = "Negative Amortization", lab6 = "Gains From Pay Increases Not Given", 
-  lab7 = "Net Change to Unfunded Liability", lab8 = NULL, 
-  lab9 = NULL) 
-{
-  if (!is.null(data)) {
-    reason.data <- data
-  }
-  plotTheme <- ggplot2::theme(panel.grid.major = element_blank(), 
-    panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), 
-    plot.margin = margin(0.5, 0.5, 0, 0, "cm"), axis.text.y = element_text(size = 12, 
-      color = "black"), axis.text.x = element_text(size = 12, 
-      color = "black", angle = 0, hjust = 0.5, vjust = -1), 
-      legend.spacing.x = unit(0.1, 'cm'),
-    axis.title = element_text(size = 12, face = "bold"), 
-    legend.text = element_text(size = 12,margin = margin(t = 1)), legend.title = element_blank(), 
-    text = element_text(family = "Calibri"))
-  
-  if (isTRUE(net.amo)) {
-    if (is_null(reason.data$interest_on_debt_dollar)) {
-      reason.data$interest_on_debt_dollar <- 0
-      n <- length(reason.data$interest_on_debt_dollar)
-      for (i in (1:n)) {
-        reason.data$interest_on_debt_dollar[i] <- (reason.data$unfunded_actuarially_accrued_liabilities_dollar[i] + 
-          reason.data$total_nc[i]) * reason.data$investment_return_assumption_for_gasb_reporting[i] - 
-          (reason.data$total_contribution_dollar[i] * 
-            reason.data$investment_return_assumption_for_gasb_reporting[i]) * 
-            0.5
-      }
-    }
-    reason.data$total_amortization_payment_percentage <- as.numeric(reason.data$total_amortization_payment_percentage)
-    reason.data$payroll2 <- as.numeric(reason.data$payroll2)
-    reason.data$interest_on_debt_dollar <- as.numeric(reason.data$interest_on_debt_dollar)
-    reason.data$net.amo <- 0
-    reason.data$amo.payments <- 0
-    reason.data$amo.payments <- if (sum(!is.na(reason.data$amortization_payment_total_amount) != 0)) {
-      reason.data$amortization_payment_total_amount
-    }
-    else {
-      reason.data$total_amortization_payment_percentage * 
-        reason.data$payroll2
-    }
-    
-    
-    reason.data$net.amo <- -(reason.data$amo.payments+
-      reason.data$interest_on_debt_dollar)
-    
-
-    reason.data <- data.table(reason.data %>% select(year, 
-      interest_on_debt_dollar, amo.payments, net.amo))
-    # reason.data$over <- ifelse(reason.data$net.amo > 0, 
-    #   reason.data$net.amo, NA)
-    # reason.data$net.amo <- ifelse(reason.data$net.amo < 
-    #   0, reason.data$net.amo, NA)
-    reason.data$amo.payments <- -(reason.data$amo.payments)
-    reason.data <- data.table(reason.data)
-
-    colnames(reason.data) <- c("year", "Interest Accrued on Unfunded Liabilities", 
-      "Contributions Towards Unfunded Liabilities", "Net Amortization: Contributions Above/Below Interest on Unfunded Liabilities")
-    
-    reason.data <- melt(reason.data, vars = "Net Amortization: Contributions Above/Below Interest on Unfunded Liabilities")
-    
-    reason.data <- data.frame(reason.data[22:84, ])
-
-    x <- data.table(seq(2001, 2021, by = 1))
-    x <- rbind(x, x, x)
-    reason.data <- cbind(x, reason.data)
-    reason.data <- data.frame(reason.data)
-    graph <- ggplot(reason.data, aes(x = V1, y = value, 
-      fill = variable)) + geom_bar(stat = "identity", 
-      position = position_dodge(width = 0.9), width = 0.8) + 
-      theme(panel.grid.major.y = element_line(colour = "white", 
-        size = 3)) + scale_y_continuous(labels = function(x) paste0("$", 
-      x/yaxisScale), name = if (isTRUE(net.amo)) {
-      "Unfunded Liability Payments (in $Millions)"
-    }
-    else {
-      "Employer Contributions v. ADC (in $Millions)"
-    }, breaks = seq(Ymin, Ymax, by = Ybreak), limits = c(Ymin, 
-      Ymax), expand = c(0, 0)) + ggplot2::geom_hline(yintercept = 0, 
-      color = "black") + scale_fill_manual(values = c(palette_reason$SatBlue, 
-      palette_reason$Orange, palette_reason$LightBlue, palette_reason$Green)) + 
-      ggplot2::theme(axis.ticks.x = element_line(size = 0.5, 
-        color = "black")) + ggplot2::theme(axis.ticks.y = element_line(size = 0.5, 
-      color = "black")) + scale_x_continuous(labels = function(x) paste0(x, 
-      ""), name = "", breaks = seq(2001, 2022, by = 2), 
-      limits = c(2001, 2022), expand = c(0, 0)) + theme_bw() + theme(axis.line = element_line(), panel.grid.major = element_blank(), 
-      panel.grid.minor = element_blank(), panel.border = element_blank(), 
-      panel.background = element_blank()) + theme(legend.position = c(0.45, 
-      0.9)) + plotTheme 
-  }
-  else if (isTRUE(contributions)) {
-    reason.data <- reason.data %>% select(year, actuarially_required_contribution_dollar, 
-      actuarially_required_contribution_paid_percentage, 
-      employer_contribution_regular_dollar)
-    reason.data <- reason.data %>% transmute(year = year, 
-      adec = actuarially_required_contribution_dollar, 
-      adec_paid = actuarially_required_contribution_dollar * 
-        actuarially_required_contribution_paid_percentage, 
-      adec_unpaid = actuarially_required_contribution_dollar - 
-        (actuarially_required_contribution_dollar * 
-          actuarially_required_contribution_paid_percentage))
-    reason.data <- data.frame(reason.data)
-    graph <- ggplot(reason.data) + 
-      
-      geom_col(aes(x = year, 
-      y = adec, fill = "Contributions Not Made"), position = "stack", width = 0.5) + 
-      
-      geom_col(aes(x = year, y = ifelse((adec_paid > adec), 
-        adec_paid, 0), fill = "Excess Contributions"), 
-        position = "stack", width = 0.5) + 
-      
-      geom_col(aes(x = year, 
-      y = ifelse((adec_paid <= adec), adec_paid, adec), 
-      fill = "Actual Contributions"), position = "stack", width = 0.5) + 
-      
-      geom_line(aes(x = year, y = adec, color = "Actuarially Determined Contribution"), 
-        fill = palette_reason$Yellow, size = 1) + theme(panel.grid.major.y = element_line(colour = "white", 
-      size = 3)) + scale_y_continuous(labels = function(x) paste0("$", 
-      x/yaxisScale), name = if (isTRUE(net.amo)) {
-      "Unfunded Liability Payments (in $Millions)"
-    }
-    else {
-      "Employer Contributions v. ADC (in $Millions)"
-    }, breaks = seq(Ymin, Ymax, by = Ybreak), limits = c(Ymin, 
-      Ymax), expand = c(0, 0)) + scale_fill_manual(values = c(palette_reason$SpaceGrey, 
-      palette_reason$Red, palette_reason$Green, palette_reason$Yellow)) + 
-      scale_color_manual(values = c(palette_reason$Yellow)) + 
-      ggplot2::theme(axis.ticks.x = element_line(size = 0.5, 
-        color = "black")) + ggplot2::theme(axis.ticks.y = element_line(size = 0.5, 
-      color = "black")) + scale_x_continuous(labels = function(x) paste0(x, 
-      ""), name = "", breaks = seq(2001, 2020, by = 2), 
-      limits = c(2000, 2021), expand = c(0, 0)) + theme_bw() + theme(axis.line = element_line(), panel.grid.major = element_blank(), 
-      panel.grid.minor = element_blank(), panel.border = element_blank(), 
-      panel.background = element_blank()) + theme(legend.position = c(0.25, 
-      0.8))+ plotTheme 
-  }
-  else if (isTRUE(stochastic)) {
-    data_perc <- read_csv(url(stochastic.url), col_names = TRUE, 
-      na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-    data_perc <- data.frame(data_perc)
-    data_perc[, 2:4] <- data_perc[, 2:4] * 100
-    colnames(data_perc)[1] <- "year"
-    data_perc <- data.frame(data_perc)
-
-    graph <- ggplot(data_perc, aes(x = year, y = `X25`)) + 
-      geom_col(aes(x = year, y = `X75`, fill = "Range of Reasonable Outcomes"), 
-        alpha = stochastic.alpha) + 
-      geom_col(aes(x = year, y = `X25`), fill = "white") + 
-      geom_line(aes(x = year, y = `X50`, color = "Median"), size = 2) + 
-      scale_fill_manual(values = c(palette_reason$DarkBlue, "white", palette_reason$Orange)) + 
-      theme(panel.grid.major.y = element_line(colour = "white", 
-      size = 3)) + scale_y_continuous(labels = function(x) paste0(x, 
-      "%"), breaks = seq(Ymin, Ymax, by = Ybreak), limits = c(Ymin, 
-      Ymax), name = "Funded Ratio (Actuarial Value)", 
-      expand = c(0, 0)) + scale_color_manual(values = c(palette_reason$Orange)) + 
-      ggplot2::theme(axis.ticks.x = element_line(size = 0.5, 
-        color = "black")) + ggplot2::theme(axis.ticks.y = element_line(size = 0.5, 
-      color = "black")) + scale_x_continuous(labels = function(x) paste0(x, 
-      ""), name = "", breaks = seq(2020, 2053, by = 2), 
-      limits = c(2020, 2053), expand = c(0, 0)) + theme_bw() +
-      theme(axis.line = element_line(), panel.grid.major = element_blank(), 
-      panel.grid.minor = element_blank(), panel.border = element_blank(), 
-      panel.background = element_blank()) + theme(legend.position = c(0.25, 
-      0.8))+ plotTheme 
-  }
-  else if (isTRUE(compound.gl)) {
-    urlfile = gl.url
-    data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), 
-      skip_empty_rows = TRUE, col_types = NULL)
-    data <- as.data.table(data)
-    data <- data %>% replace(is.na(.), 0)
-    data <- data.frame(data)
-    data2 <- data.frame(data)
-    for (i in (2:(length(data[, 1])))) {
-      data2[i, 2:length(data)] <- data2[i, 2:length(data)] + 
-        data2[(i - 1), 2:length(data)]
-    }
-    data2 <- data.table(data2 %>% mutate_all(as.numeric))
-    reason.data <- data.frame(data2)
-    colnames(reason.data) <- c("year", lab1, lab2, lab3, 
-      lab4, lab5, lab6, if (!is_null(lab7)) {
-        paste(lab7)
-      }, if (!is_null(lab8)) {
-        paste(lab8)
-      }, if (!is_null(lab9)) {
-        paste(lab9)
-      })
-    names <- colnames(reason.data)
-    graph <- ggplot(reason.data) + geom_col(aes(x = year, 
-      y = reason.data[, 2] * yaxisScale, fill = str_wrap(as.character(names[2]), 
-        str)), position = "stack") + geom_col(aes(x = year, 
-      y = reason.data[, 3] * yaxisScale, fill = str_wrap(as.character(names[3]), 
-        str)), position = "stack") + geom_col(aes(x = year, 
-      y = reason.data[, 4] * yaxisScale, fill = str_wrap(as.character(names[4]), 
-        str)), position = "stack") + geom_col(aes(x = year, 
-      y = reason.data[, 5] * yaxisScale, fill = str_wrap(as.character(names[5]), 
-        str)), position = "stack") + geom_col(aes(x = year, 
-      y = reason.data[, 6] * yaxisScale, fill = str_wrap(as.character(names[6]), 
-        str)), position = "stack") + geom_line(aes(x = year, 
-      y = reason.data[, length(names)] * yaxisScale, color = str_wrap(paste(last(names)), 
-        str)), size = 1.25) + ggplot2::geom_hline(yintercept = 0, 
-      color = "black") + scale_fill_manual(values = c(palette_reason$LightRed, 
-      palette_reason$Orange, palette_reason$LightOrange, 
-      palette_reason$Green, palette_reason$Red, palette_reason$Yellow, 
-      palette_reason$SatBlue)) + scale_color_manual(values = c("black")) + 
-      theme_bw() + theme(axis.line = element_line(), 
-      panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-      panel.border = element_blank(), panel.background = element_blank()) + 
-      theme(legend.position = "right") + theme(legend.title = element_blank()) + 
-      labs(x = element_blank(), y = "Compound Unfunded Actuarial Liability (in $ Billions)") + 
-      ggplot2::scale_x_continuous(breaks = seq(min(reason.data$year), 
-        max(reason.data$year), by = 2), expand = c(0, 
-        0)) + ggplot2::scale_y_continuous(labels = function(x) paste0("$", 
-      x), breaks = seq(Ymin, Ymax, by = Ybreak), limits = c(Ymin, 
-      Ymax), expand = c(0, 0)) + if (!is.null(lab7)) {
-      geom_col(aes(x = year, y = reason.data[, 7] * yaxisScale, 
-        fill = str_wrap(as.character(names[7]), str)), 
-        position = "stack") + plotTheme
-    }
-    else if (!is.null(lab7) & !is.null(lab8)) {
-      geom_col(aes(x = year, y = reason.data[, 7] * yaxisScale, 
-        fill = str_wrap(as.character(names[7]), str)), 
-        position = "stack") + geom_col(aes(x = year, 
-        y = reason.data[, 8] * yaxisScale, fill = str_wrap(as.character(names[8]), 
-          str)), position = "stack")
-    }
-    else if (!is.null(lab7) & !is.null(lab8) & !is.null(lab9)) {
-      geom_col(aes(x = year, y = reason.data[, 7] * yaxisScale, 
-        fill = str_wrap(as.character(names[7]), str)), 
-        position = "stack") + geom_col(aes(x = year, 
-        y = reason.data[, 8] * yaxisScale, fill = str_wrap(as.character(names[8]), 
-          str)), position = "stack") + geom_col(aes(x = year, 
-        y = reason.data[, 9] * yaxisScale, fill = str_wrap(as.character(names[9]), 
-          str)), position = "stack")
-    }
-  }
-  if (isTRUE((interactive))) {
-    graph <- ggplotly(graph)
-  }
-  graph
-}
-
-###################
-
-stochasticFR <- barPlot(
-  data = NULL, 
-  net.amo = FALSE, 
-  contributions = FALSE, 
-  compound.gl = FALSE,
-  gl.url = "https://raw.githubusercontent.com/ReasonFoundation/GraphicsR/master/PERSI_GL2.csv",
-  str = 25,
-  stochastic = TRUE, 
-  stochastic.url = "https://raw.githubusercontent.com/ANiraula/SCRS_FModel/main/SCRS.FModel_FR_Statutory_Stoch.csv",
-  Ymax = 180,
-  Ymin = 0,
-  Ybreak = 10,
-  yaxisScale = 1/1000000000, 
-  stochastic.alpha = 0.95,
-  interactive = FALSE,
-  lab1 = "Investment Experience", 
-  lab2 = "Benefit Changes",
-  lab3 = "Changes to Actuarial Methods & Assumptions",
-  lab4 = "Deviations from Demographic Assumptions",
-  lab5 = "Negative Amortization",
-  lab6 = "Gains From Pay Increases Not Given",
-  lab7 = "Net Change to Unfunded Liability",
-  lab8 = NULL,
-  lab9 = NULL)
-
-stochasticFR
-```
-
 ### Debt Interest vs. Unfunded Liability Payments (2001-2021) w/ R (w/ barPlot())
 
-```{r net.amo, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r net.amo, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
 barPlot <- function (data = NULL, net.amo = FALSE, contributions = FALSE, 
   compound.gl = TRUE, gl.url = "https://raw.githubusercontent.com/ReasonFoundation/GraphicsR/master/PERSI_GL2.csv", 
@@ -3969,7 +4563,7 @@ library(vip)
 
 #Pull plan-specific data from the database
 pl <- planList()
-reason.data <- pullData(pl, "South Carolina Retirement Systems") %>% filter(year > 2000 & !duplicated(year))
+reason.data <- pullData(pl, "Texas Teacher Retirement System") %>% filter(year > 2000 & !duplicated(year))
 #View(reason.data)
 #(2002-2020)
 
@@ -3987,7 +4581,6 @@ reason.data <- data.table(reason.data)
 ## Make sure all column numbers are numeric
 reason.data[,4:(length(reason.data)-1)] <- data.table(reason.data[,4:(length(reason.data)-1)]) %>% dplyr::mutate_all(as.numeric)
 reason.data$year <- as.numeric(reason.data$year)
-reason.data$contribution_rate_effective_fy[1:3] <- 2003:2005
 reason.data$fiscal_year_of_contribution <- reason.data$contribution_rate_effective_fy
 
 #### Add Net Amortization ####
@@ -3999,7 +4592,6 @@ reason.data$fiscal_year_of_contribution <- reason.data$contribution_rate_effecti
 
 ####### Estimate Future Payroll
 future.payroll <- reason.data[year >= fiscal_year_of_contribution[1]]$covered_payroll_dollar
-future.payroll <- t(cbind(t(future.payroll),reason.data[year == 2020]$covered_payroll_dollar*(1+0.03)))#Use assumed payroll growth rate
 future.payroll <- t(cbind(t(future.payroll),reason.data[year == 2021]$covered_payroll_dollar*(1+0.03)))#Use assumed payroll growth rate
 reason.data$payroll2 <- future.payroll
 
@@ -4043,7 +4635,7 @@ net.amo
 
 ### ADEC Contribution History (2001-2021) w/ R (barPlot())
 
-```{r contributions, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r contributions, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
 barPlot <- function (data = NULL, net.amo = FALSE, contributions = FALSE, 
   compound.gl = TRUE, gl.url = "https://raw.githubusercontent.com/ReasonFoundation/GraphicsR/master/PERSI_GL2.csv", 
@@ -4395,9 +4987,9 @@ contributions <- barPlot(
 contributions
 ```
 
-### SCRS Amortization Period (2001-2021) custom R
+### Texas TRS Amortization Period (2001-2021) custom R
 
-```{r amo.period, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r amo.period, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
 rm(list = ls())
 
@@ -4486,7 +5078,7 @@ amo.period
 
 ### Change in Risk-Free Rate vs. Discount Rate (2001-2021) w/ R (linePlot())
 
-```{r treasury, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r treasury, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
 rm(list=ls())
 ###Load/install packages
@@ -4692,7 +5284,7 @@ treasury
 
 ### Actual Change in Payroll vs. Assumption (2001-2021) w/ R (linePlot())
 
-```{r payroll, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports. Actual payroll does not include payroll for members in ORP or working retirees.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r payroll, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial valuation reports. Actual payroll does not include payroll for members in ORP or working retirees.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
 pl <- planList()
 
@@ -4861,7 +5453,7 @@ payroll
 
 ### Actual Inflation vs. Assumption (2001-2020) w/ R (linePlot())
 
-```{r inflation, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r inflation, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
 rm(list=ls())
 ###Load/install packages
@@ -5102,7 +5694,7 @@ inflation <- linePlot(Data, title = NULL, caption = FALSE, grid = FALSE,
                   treasury = FALSE, inv.returns = FALSE, ticks = TRUE, font = "Calibri",
                   yaxisMin = -1, yaxisMax = 6, yaxisSeq = 1,
                   yaxisScale = 100, format = "%", str = 60,
-                  labelY = "Inflation %", lab1 = "Assumed Inflation (by SCRS)",
+                  labelY = "Inflation %", lab1 = "Assumed Inflation (by Texas TRS)",
                   lab2 = "Actual inflation (CPI-U)")
 
 inflation
@@ -5110,7 +5702,7 @@ inflation
 
 ### Interest on Debt 2001-2021 w/ R (custom)
 
-```{r int.debt, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r int.debt, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
 rm(list = ls())
 
@@ -5202,10 +5794,9 @@ reason.data <- data.table(melt(reason.data, id.vars = "year"))
   int.debt
 ```
 
-### Benefit Accrual & Retention for an Average New SCRS Employee (Age 27)  w/ R (custom)
+### Benefit Accrual & Retention for an Average New Texas TRS Employee (Age 27)  w/ R (custom)
 
-```{r pwealth, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial reports and CAFRs. Illustration is based on plan’s Class Three assumptions and a hypothetical analysis of an average new member hired at the age of 27", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
-
+```{r pwealth, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial reports and CAFRs. Illustration is based on plan’s Class Three assumptions and a hypothetical analysis of an average new member hired at the age of 27", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
 rm(list=ls())
 ###Load/install packages
@@ -5227,8 +5818,11 @@ library(rsconnect)
 library(dplyr)
 library(plyr)
 
-
-SalaryData2 <- read_csv("SCRS_BModel.csv")
+ urlfile2 = "https://raw.githubusercontent.com/ANiraula/SCRS.deck/main/SCRS_BModel.csv"
+  
+SalaryData2 <- data.table(
+    read_csv(url(urlfile2), col_names = TRUE, na = c(""), 
+                    skip_empty_rows = TRUE, col_types = NULL))
 
 e.age <- unique(SalaryData2$entry_age)
 SalaryData2 <- data.frame(SalaryData2)
@@ -5288,9 +5882,9 @@ pwealth <- ggplot(SalaryData2, aes(YOS,PVPenWealth/1000))+
 pwealth
 ```
 
-### Delaying Eligibility for Full Benefits Backloads `r entry` Age New SCRS Hires' Benefits
+### Delaying Eligibility for Full Benefits Backloads `r entry` Age New Texas TRS Hires' Benefits
 
-Only **$`r pw.28`K** is what new Age `r entry` (Class Three) SCRS members will accrue after 28 years on the job (accrued benefits valued at retirement).
+Only **$`r pw.28`K** is what new Age `r entry` (Class Three) Texas TRS members will accrue after 28 years on the job (accrued benefits valued at retirement).
 
 </p>
 </p>
@@ -5307,12 +5901,17 @@ Value of accrued benefits jumps to **$`r pw.32`K** (or by **`r pw.32.p`%**) just
 
 </p>
 
-### Retention Rates for a New SCRS Employee  w/ R (custom)
+### Retention Rates for a New Texas TRS Employee  w/ R (custom)
 
-```{r ret, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial reports and CAFRs. Illustration is based on plan’s Class Three assumptions and a hypothetical analysis of an average new member hired at the age of 27", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r ret, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial reports and CAFRs. Illustration is based on plan’s Class Three assumptions and a hypothetical analysis of an average new member hired at the age of 27", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
 library(data.table)
-SalaryData2 <- read_csv("SCRS_BModel.csv")
+
+urlfile2 = "https://raw.githubusercontent.com/ANiraula/SCRS.deck/main/SCRS_BModel.csv"
+  
+SalaryData2 <- data.table(
+    read_csv(url(urlfile2), col_names = TRUE, na = c(""), 
+                    skip_empty_rows = TRUE, col_types = NULL))
 
 e.age <- unique(SalaryData2$entry_age)
 SalaryData2 <- data.frame(SalaryData2)
@@ -5370,9 +5969,9 @@ ret <- ggplot(SalaryData2)+
 ret
 ```
 
-### Retention: Only Few of `r entry` Age New SCRS Hires Receive Benefits
+### Retention: Only Few of `r entry` Age New Texas TRS Hires Receive Benefits
 
-Only **`r vest.prob*100`%** of new Age `r entry` (Class Three) SCRS members will stay for 8 years.
+Only **`r vest.prob*100`%** of new Age `r entry` (Class Three) Texas TRS members will stay for 8 years.
 
 </p>
 </p>
