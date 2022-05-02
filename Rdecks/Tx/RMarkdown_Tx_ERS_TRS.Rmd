@@ -4290,33 +4290,15 @@ barPlot <- function (data = NULL, net.amo = FALSE, contributions = FALSE,
     text = element_text(family = "Calibri"))
   
   if (isTRUE(net.amo)) {
-    if (is_null(reason.data$interest_on_debt_dollar)) {
-      reason.data$interest_on_debt_dollar <- 0
-      n <- length(reason.data$interest_on_debt_dollar)
-      for (i in (1:n)) {
-        reason.data$interest_on_debt_dollar[i] <- (reason.data$unfunded_actuarially_accrued_liabilities_dollar[i] + 
-          reason.data$total_nc[i]) * reason.data$investment_return_assumption_for_gasb_reporting[i] - 
-          (reason.data$total_contribution_dollar[i] * 
-            reason.data$investment_return_assumption_for_gasb_reporting[i]) * 
-            0.5
-      }
-    }
-    reason.data$total_amortization_payment_percentage <- as.numeric(reason.data$total_amortization_payment_percentage)
-    reason.data$payroll2 <- as.numeric(reason.data$payroll2)
-    reason.data$interest_on_debt_dollar <- as.numeric(reason.data$interest_on_debt_dollar)
+   
+    
+    reason.data$interest_on_debt_dollar <- as.numeric(reason.data$interest_on_debt_dollar)+as.numeric(reason.data$gain_or_loss_due_to_other_interest)
     reason.data$net.amo <- 0
     reason.data$amo.payments <- 0
-    reason.data$amo.payments <- if (sum(!is.na(reason.data$amortization_payment_total_amount) != 0)) {
-      reason.data$amortization_payment_total_amount
-    }
-    else {
-      reason.data$total_amortization_payment_percentage * 
-        reason.data$payroll2
-    }
+    reason.data$amo.payments <- as.numeric(reason.data$total_contribution_dollar) - as.numeric(reason.data$gain_or_loss_due_to_normal_cost_prior_year)
     
-    
-    reason.data$net.amo <- -(reason.data$amo.payments+
-      reason.data$interest_on_debt_dollar)
+    reason.data$net.amo <- reason.data$amo.payments-
+      reason.data$interest_on_debt_dollar
     
 
     reason.data <- data.table(reason.data %>% select(year, 
@@ -4325,7 +4307,7 @@ barPlot <- function (data = NULL, net.amo = FALSE, contributions = FALSE,
     #   reason.data$net.amo, NA)
     # reason.data$net.amo <- ifelse(reason.data$net.amo < 
     #   0, reason.data$net.amo, NA)
-    reason.data$amo.payments <- -(reason.data$amo.payments)
+   
     reason.data <- data.table(reason.data)
 
     colnames(reason.data) <- c("year", "Interest Accrued on Unfunded Liabilities", 
@@ -4339,6 +4321,7 @@ barPlot <- function (data = NULL, net.amo = FALSE, contributions = FALSE,
     x <- rbind(x, x, x)
     reason.data <- cbind(x, reason.data)
     reason.data <- data.frame(reason.data)
+
     graph <- ggplot(reason.data, aes(x = V1, y = value, 
       fill = variable)) + geom_bar(stat = "identity", 
       position = position_dodge(width = 0.9), width = 0.8) + 
@@ -4611,9 +4594,9 @@ net.amo <- barPlot(
   str = 25,
   stochastic = FALSE, 
   stochastic.url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/perctest2.csv",
-  Ymax = 2000000000,
-  Ymin = -500000000,
-  Ybreak = 250000000,
+  Ymax = 4500000000,
+  Ymin = -1500000000,
+  Ybreak = 500000000,
   yaxisScale = 1000000, 
   interactive = FALSE,
   lab1 = "Investment Experience", 
@@ -5020,7 +5003,7 @@ library(dplyr)
 ##Load list of plans
 
 pl <- planList()
-reason.data <- pullData(pl, "South Carolina Retirement Systems") %>% filter(year > 2000 & !duplicated(year))
+reason.data <- pullData(pl, "Texas Teacher Retirement System") %>% filter(year > 2000 & !duplicated(year))
 
 Data <- data.frame(
   reason.data %>% select(year, number_of_years_remaining_on_amortization_schedule)
@@ -5029,6 +5012,9 @@ Data <- data.frame(
 colnames(Data)[2] <- "amo.period"
 Data$amo.period <- as.numeric(Data$amo.period)
 Data$year <- as.numeric(Data$year)
+
+Data$amo.period[20:21] <- c(27,23)
+Data$amo.period[4] <- 50#2001-2004 period is 100 (lowering it to see the amo line)
 
 ########areaPlot
 
@@ -5057,7 +5043,7 @@ Data$year <- as.numeric(Data$year)
   
   amo.period <- ggplot2::ggplot(data, ggplot2::aes(x = year)) + 
     ggplot2::geom_line(ggplot2::aes(y = amo.period), color = palette_reason$SatBlue, size = 1, linetype =  "dashed") + 
-    ggplot2::scale_y_continuous(breaks = seq(0, 40, by = 4),limits = c(0, 40.5), expand = c(0, 0))+
+    ggplot2::scale_y_continuous(breaks = seq(0, 50, by = 5),limits = c(0, 50.5), expand = c(0, 0))+
     ggplot2::theme(axis.ticks.x = element_line(size = 0.5, color = "black")) +
     ggplot2::theme(panel.border = element_blank(), axis.ticks.y = element_line(size = 0.5, color = "black")) + 
     ggplot2::theme(axis.text = element_text(size = 12), 
