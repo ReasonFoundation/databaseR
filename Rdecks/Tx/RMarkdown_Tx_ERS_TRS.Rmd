@@ -1830,9 +1830,10 @@ rm(list = ls())
 #library(devtools)
 #devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
 #devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
-#devtools::install_github(
-#  "ANiraula/pensionviewr_private",
-#   ref = "master", auth_token = "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")
+# devtools::install_github(
+#   "ANiraula/pensionviewr_private",
+#    ref = "master", auth_token = "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")
+
 library(reasontheme)
 library(pensionviewr)
 library(ggplot2)
@@ -1849,6 +1850,7 @@ library(dplyr)
 ##Load list of plans
 pl <- planList()
 
+#############
 
 pl <- planList()
 
@@ -2008,7 +2010,7 @@ filterData2 <- function(Data, fy = 2001,
                        "Maryland State Employees’ Retirement System")
     Data <- data.frame(Data)
     Data <- Data %>% mutate(type_of_employees_covered = case_when(display_name %in%
-                                                                  blended.teach ~ "Plan covers state, local and teachers",
+                                                                    blended.teach ~ "Plan covers state, local and teachers",
                                                                   TRUE ~ type_of_employees_covered))
   }
   Data <- data.frame(Data)
@@ -2274,22 +2276,16 @@ filterData2 <- function(Data, fy = 2001,
 
 #PULL DATA
 Data <- pullStateData(2001)
-Data <- filterData2(Data, 2001)
-#View(Data)
+Data <- data.table(filterData2(Data, 2001))
+
 Data <-
   data.table(Data %>% filter(plan_name == "Texas Teacher Retirement System"))
 
+
+Data$year <- as.numeric(Data$year)
+Data$ava <- as.numeric(Data$ava)
+Data$aal <- as.numeric(Data$aal)
 Data$unfunded_actuarially_accrued_liabilities_dollar <- as.numeric(Data$unfunded_actuarially_accrued_liabilities_dollar)
-
-#Manually calculating 2021 AVA (AAL - UAL)
-#Data$ava[21] <- Data$aal[21] - Data$unfunded_actuarially_accrued_liabilities_dollar[21]
-
-#Data<- Data %>% 
-#  group_by(year) %>%
-#  filter(!is.na(ava) & !is.na(aal)) %>%
-#  transmute(ava = sum(ava),
-#            aal = sum(aal)) %>%
-#filter(year < 2020 & !duplicated(year))
        
 Data$year <- as.numeric(Data$year)
 Data <- Data %>% select(year, ava, aal)
@@ -2395,8 +2391,8 @@ ualPlot <- function (data, title = NULL, caption = FALSE, grid = FALSE, ticks = 
 #View(Data$actuarial_value_of_assets_gasb_dollar)
 area.ual <- ualPlot(Data, title = NULL, caption = FALSE, grid = FALSE,
                  ticks = TRUE, font = "Calibri",
-                  yaxisMin = 0, yaxisMax = 25, yaxisSeq = 2.5,
-                  yaxisScale = 1/10000000000, format = "$", str = 60,
+                  yaxisMin = 0, yaxisMax = 250, yaxisSeq = 25,
+                  yaxisScale = 1/1000000000, format = "$", str = 60,
                   labelY = "Actuarial Liability & Actuarial Assets (in $Billions)")
 
 area.ual
@@ -3583,6 +3579,272 @@ The "new normal" for the institutional investing, despite the post-COVID rebound
 
 3.  As Texas TRS waits for the continual "rebound" its unfunded liabilities continue to grow.
 
+### TxTRS Asset Allocation (2001-2021) w/ R (custom)
+
+```{r assets2, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of Texas TRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+
+library(reasontheme)
+library(pensionviewr)
+library(ggplot2)
+library(tidyverse)
+library(tseries)
+library(data.table)
+library(readr)
+library(rsconnect)
+library(dplyr)
+library(plyr)
+
+###
+##Pull PERSI data
+##Load list of plans
+pl <- planList()
+
+filterAssets2 <- function (data, fy = 2001, plan = NULL) {
+  data <- data.frame(data)
+
+  data[, 5:75] <- data[, 5:75] %>% mutate_all(as.numeric)
+  data <- data %>% replace(is.na(.), 0)
+  data$year <- as.numeric(data$year)
+
+  assets <- data %>% select(year, display_name, state, contains("percent")) %>%
+
+    mutate(private.equity = percent_of_assets_invested_in_private_equity,
+           real.estate =  percent_of_assets_invested_in_real_estate,
+           hedge = percent_of_assets_invested_in_hedge_funds,
+           commodities = percent_of_assets_invested_in_commodities,
+           other.alternatives = percent_of_assets_invested_in_misc_alternatives + percent_of_assets_invested_in_other_investments,
+           equity = percent_of_assets_invested_in_equity_investments_total,
+           fixed = percent_of_assets_invested_in_fixed_income,
+           cash = percent_of_assets_invested_in_cash) %>%
+    select( -contains("percent")
+    )
+
+
+  if (!is.null(plan)) {
+    assets <- assets %>% filter(display_name == plan)
+  }
+  assets$total <- 0
+  y <- as.numeric(length(assets$total))
+  assets[, 4:11] <- assets[, 4:11] %>% mutate_all(as.numeric)
+  for (i in (1:y)) {
+    assets$total[i] <- sum(assets[i, 4:11])
+  }
+
+  assets$total <- as.numeric(assets$total)
+
+
+  colnames(assets) <- c("year", "Plan", "State", "Private Equity",
+                        "Real Estate", "Hedge Funds", "Commodities", "Other Alternatives",
+                        "Total Equity", "Fixed Income", "Cash Equivalents",
+                        "Total")
+
+  assets <- assets %>%
+    filter(year >= fy) %>%
+    select(-Total)
+
+  assets
+}
+ # 
+# 
+plotTheme <- ggplot2::theme(    panel.grid.major = element_blank(),
+                                 panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),
+                                 plot.margin = margin(0.5,1,0,0, "cm"),
+                                 axis.text.y = element_text(size=12, color = "black"),
+                                 axis.text.x = element_text(size=12, color = "black", angle = 0, hjust = 0.5, vjust = -1),
+                                 axis.title = element_text(size = 12, face = "bold"),
+                                 legend.text = element_text(size = 12),
+                                 legend.title = element_blank(),
+                                 text = element_text(family = "Calibri"))
+# 
+#
+#
+#
+#
+pullAssetData <- function (fy, mva = FALSE)
+{
+
+  con <- RPostgres::dbConnect(
+    RPostgres::Postgres(),
+    dbname = "d629vjn37pbl3l",
+    host = "ec2-3-209-200-73.compute-1.amazonaws.com",
+    port = 5432,
+    user = "reason_readonly",
+    password = "p88088bd28ea68027ee96c65996f7ea3b56db0e27d7c9928c05edc6c23ef2bc27",
+    sslmode = "require")
+
+  query <- paste("select * from pull_data_state_allocations()\nwhere year > '",
+                 paste(fy - 1), "'", if(isTRUE(mva)){paste(",\n'Market Value of Assets Dollar'")})
+  result <- RPostgres::dbSendQuery(con, query)
+  all_data <- RPostgres::dbFetch(result) %>% janitor::clean_names()
+  RPostgres::dbClearResult(result)
+  RPostgres::dbDisconnect(con)
+
+  all_data %>% dplyr::group_by_at(dplyr::vars(-.data$attribute_value)) %>%
+    dplyr::mutate(row_id = 1:dplyr::n()) %>% dplyr::ungroup() %>%
+    tidyr::pivot_wider(names_from = attribute_name, values_from = attribute_value) %>%
+    dplyr::select(-.data$row_id) %>% dplyr::arrange(display_name,
+                                                    year) %>% janitor::clean_names()
+}
+# #Load Asset Allocation data for PERSI
+# #urlfile2="https://raw.githubusercontent.com/ReasonFoundation/GraphicsR/master/R/PERSI.Asset.Alloc.csv"
+# #PERSI.assets <- data.table(read_csv(url(urlfile2), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = cols(.default = "n")))
+# 
+# ###pullAssetData()
+#  
+# ################ Pulling all asset data
+assets <- data.table(
+ pullAssetData(fy = 2001, mva = FALSE)
+)
+# 
+# ################# Renaming plans
+# #################
+assets <- data.frame(assets)
+#View(colnames(assets))
+# 
+# ##### filterAssets()
+# 
+# ####### filtering data & selecting only PERSI
+# 
+
+assets <- filterAssets2(data = assets, fy = 2001, plan = "Texas Teacher Retirement System")
+
+# #colnames(assets)[2] <- "plan_name"
+# #View(assets[,45:74])
+# #View(assets %>% filter(display_name == "Idaho Public Employee Retirement System (PERS)"))
+# 
+# #assets <-  assets %>% select(-Total)
+# 
+# # colnames(assets) <- c("year", 
+# #                       "plan_name", 
+# #                       "state",
+# #                       "Private.Equity",
+# #                       "Real.Estate",
+# #                       "Hedge.Funds",
+# #                       "Infrastructure",
+# #                       "Other.Alternatives",
+# #                       "Total.Public.Equity",
+# #                       "Fixed.Income",
+# #                       "Cash.Equivalents")
+# #View(assets)
+# #data <- read_csv(url(
+# #          "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/Maryland_Allocation.csv"), 
+# #          col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+# 
+# #assets$year <- as.numeric(assets$year)
+# #assets$plan_name <- as.character(assets$plan_name)
+# #View(assets)           
+# 
+# 
+# data <- 
+#   pullAssetData(fy = 2001, mva = FALSE)
+# 
+# data <- filterAssets2(data, plan = "South Carolina Retirement Systems")
+
+
+#data <- read_csv("data.csv")
+#write_csv(data, "data.csv")
+
+#assets2 <- assets %>% filter(year == 2020) %>% 
+#                select(year, contains("fixed_income"), -contains("domestic")) %>%
+#                mutate_all(as.numeric) %>% replace(is.na(.), 0)
+#View(round(colMeans(assets2, na.rm = TRUE),3)*100)
+#View(assets2 %>% filter(emerging_fixed_income_actual_allocation > 0 ))
+
+#View(assets %>% filter(display_name == "New Jersey Public Employees Retirement System (PERS)"))
+#assets <- filterAssets2(data = assets, fy = 2001)
+
+# 
+# data <- read_csv(url(
+#           "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/SCRS_Allocation.csv"), 
+#           col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+
+assets <- data.table(assets)
+
+# #### Assigning any gap w/ 100% to Equities
+# data <- read_csv(url(
+#           "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/TxERS_Allocation_PrEquity.csv"), 
+#           col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+#         
+#         data <- data.frame(data)
+#    data <- data %>% replace(is.na(.), 0)
+#   
+# #### Removing unnecessary columns
+#  assets$`Fixed Income` <- data$Fixed.Income
+#         assets$`Hedge Funds` <- data$Hedge.Funds
+#         assets$`Real Estate` <- data$Real.Estate
+#         assets$`Other Alternatives` <- data$Other.Alternatives
+#         assets$`Total Equity` <- data$Total.Equity
+#         assets$`Cash Equivalents` <- data$Cash.Equivalents
+#         assets$`Private Equity` <- data$Private.Equity
+#         assets$Commodities <- data$Commodities
+#         
+
+
+#data <- data %>% select(year, plan_name, state, Private.Equity, Real.Estate, Hedge.Funds, Infrastructure, Other.Alternatives, Total.Public.Equity, Fixed.Income, Cash.Equivalents)
+
+############# assetPlot()
+#View(data)
+ 
+assetPlot <- function (data, interactive = FALSE) 
+{
+  data <- data.table(data)
+  alloc <- data.table(melt(data, id.vars = "year"))
+  alloc$value <- as.numeric(alloc$value)
+  alloc$value <- round(alloc$value * 100, 1)
+
+  
+  
+  colors <- c(palette_reason$Red, palette_reason$LightRed, 
+    palette_reason$Orange, palette_reason$LightOrange, palette_reason$Yellow, 
+    palette_reason$DarkGrey, palette_reason$SatBlue, palette_reason$LightBlue)
+  graph <- ggplot(alloc, aes(x = year, y = value, fill = variable, 
+    group = variable, text = paste0("Fiscal Year: ", year, 
+      "<br>", "Class: ", variable, "<br>", "Allocation: ", 
+      value, "%"))) + geom_area(cposition = "stack", stat = "identity") + 
+    scale_y_continuous(breaks = seq(0, 100, by = 10),labels = function(x) paste0(x, "%"), 
+      name = "% of Total Portfolio", expand = c(0,0)) + scale_fill_manual(values = colors) + 
+     ggplot2::scale_x_continuous(breaks = seq(min(data$year), 
+    max(data$year), by = 2), expand = c(0, 0))+
+    theme_bw() + theme(panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(), 
+    panel.border = element_blank(),
+    axis.title.x = element_blank(), 
+    axis.line = element_line(colour = "black"), legend.title = element_blank(),
+    legend.position="bottom")+
+    plotTheme + 
+  if (isTRUE(interactive)) {
+    graph <- ggplotly(graph, tooltip = "text")
+  }
+  graph
+}
+
+
+## Changing "Alternatives" to "Private Equity" and renaming "Other" to "Other Laternatives"
+#PERSI.assets <- PERSI.assets %>% select(year, real.estate, alternatives, other, equity, fixed.income, cash)
+#colnames(PERSI.assets) <- c("year", "Real Estate", "Private Equity", "Other Alternatives", "Total Equities", "Fixed Income", "Cash Equivalents")
+
+#View(PERSI.assets)
+#Transpose data from long ot wide format (each year contains Variable & Value)
+#PERSI.assets <- melt(PERSI.assets, id.vars="year")
+
+#assets <- ggplot(PERSI.assets) + geom_area(aes(x = year, y = value, fill = variable, group = variable), position="fill")+
+#  scale_fill_manual(values=c(palette_reason$LightRed,palette_reason$Orange, palette_reason$Yellow,
+#                             palette_reason$DarkGrey, palette_reason$LightBlue, palette_reason$SatBlue))+
+#  scale_y_continuous(labels = function(x) paste0(x*100,"%"), name = "% of Investment Portfolio",
+#                     breaks = seq(0, 1, by = 0.1), limits = c(0, 1), expand=c(0,0))+
+#  scale_x_continuous(labels = function(x) paste0(x, ""), name = "",
+#                     breaks = seq(2001, 2019, by = 2), limits = c(2001, 2019), expand=c(0,0))+
+#  ggplot2::theme(axis.text = element_text(size = 12), 
+#                     axis.title = element_text(size = 12, face = "bold"))+
+#  theme_bw()+
+#  plotTheme+
+#  theme(legend.position="bottom")
+
+#View(assets)
+assets2 <- assetPlot(assets, interactive = FALSE) 
+#View(assets)
+assets2
+```
 
 ### Probability Analysis w/ R (flextable())
 
@@ -3612,13 +3874,13 @@ palette_reason <- list(Orange="#FF6633",
 
 ##############
 #user can change these values
-FileName <- "SCRS_Return_Data.xlsx"
-NumberofYears <- 20
+FileName <- "TxTRS_Return_Data.xlsx"
+NumberofYears <- 20 
 NumberofSimulations <- 100000
 
 Percentiles <- c(5,10,25,50,75,90,95)
-Probabilities <- c(9,8,7.0,6.5,6,5.5,5)
-FundARR <- 0.07
+Probabilities <- c(9,8,7.25,7,6.5,6,5)
+FundARR <- 0.0725
 #
 #Field List has list of asset classes for each bank to look up for returns and correlations
 TemplateData <- read_excel(FileName, sheet = "FieldList")
@@ -3702,6 +3964,7 @@ for (i in 2:(length(Tabs))){
   if((Tabs[i] != 'Plan Assumptions') && (Tabs[i] != 'Historical')){
     #initialize the return matrix and get fieldlist for each bank
     FieldList <- TemplateData[,grep(Tabs[i],colnames(TemplateData))]
+
     ReturnMatrix[,1] <- FieldList
     
     for (j in 1:nrow(FieldList)){
@@ -3797,7 +4060,7 @@ SimulationData <- SimulationData %>%
   arrange(`Mean Return`) %>% 
   mutate(`Plan Name` = factor(`Plan Name`, levels = unique(`Plan Name`), ordered = T)) 
 #Plot the distribution of simulated expected returns
-
+#View(SummaryTab)
 #ggsave("AvgReturn Distribution.png", width = 6, height = 4, dpi = 800)  
 
 #Write to csv file
@@ -4161,7 +4424,7 @@ Data$funded_ratio <- Data$mva/Data$aal
 
 sensitivity <- Data %>% select(npl_pct_up, npl,npl_pct_down, mva) %>% mutate_all(as.numeric)
 Data <- Data %>% select(year, dr, ual,funded_ratio,aal,mva,total_nc_pct,ee_nc_pct) %>% mutate_all(as.numeric)
-
+sensitivity$npl_pct_up <- 979861293
 ### Rediscount function
 reDiscount <- function(data, sensitivity){
   
@@ -4188,7 +4451,7 @@ redisc <- reDiscount(Data, sensitivity)
 table <- matrix(NA,4,4)
 
 #Use database numbers to populate/calculate needed values
-table[1:4,1] <- c(seq(as.numeric(Data$dr),0.0425, by = -0.01))
+table[1:4,1] <- c(seq(0.0725,0.065, by = -0.0025))
 table[1:4,4] <- c(redisc$aal, redisc$aal.dr1,redisc$aal.dr2,redisc$aal.dr3)
 table[1:4,3] <- c(as.numeric(table[1:4,4])-Data$mva)
 table[1:4,2] <- c(as.numeric(Data$mva)/as.numeric(table[1:4,4]))
@@ -4197,11 +4460,11 @@ table <- data.frame(table)
 
 colnames(table) <- c("Discount Rate", 
                   "Funded Ratio (MVA)", 
-                  "Unfunded Liability (MVA)", 
-                  "Actuarial Accrued Liability")
+                  "Unfunded Liability (MVA) in $Billions", 
+                  "Actuarial Accrued Liability in $Billions")
 
 #Format data to %/$ for appearance
-table[1:4,1] <- scales::percent(table$`Discount Rate`, accuracy = 0.1)
+table[1:4,1] <- scales::percent(table$`Discount Rate`, accuracy = 0.01)
 table[1:4,2] <- scales::percent(table$`Funded Ratio (MVA)`, accuracy = 0.1)
 table[1:4,3] <- scales::dollar(round(table$`Unfunded Liability (MVA)`/1000000000,1))
 table[1:4,4] <- scales::dollar(round(table$`Actuarial Accrued Liability`/1000000000,1))
@@ -4716,7 +4979,7 @@ barPlot <- function (data = NULL, net.amo = FALSE, contributions = FALSE,
       adec_unpaid = (adec - adec_paid))
 
  
-reason.data[1:3,3:4] <-  reason.data[1:3,2]
+#reason.data[1:3,3:4] <-  reason.data[1:3,2]
  
     reason.data <- data.frame(reason.data)
    
@@ -4738,7 +5001,7 @@ reason.data[1:3,3:4] <-  reason.data[1:3,2]
         fill = palette_reason$Yellow, size = 1) + theme(panel.grid.major.y = element_line(colour = "white", 
       size = 3)) + scale_y_continuous(labels = function(x) paste0("$", 
       x/yaxisScale), name = if (isTRUE(net.amo)) {
-      "Unfunded Liability Payments (in $Millions)"
+      "Unfunded Liability Payments (in $Billions)"
     }
     else {
       "Employer Contributions v. ADC (in $Millions)"
@@ -4749,8 +5012,8 @@ reason.data[1:3,3:4] <-  reason.data[1:3,2]
       ggplot2::theme(axis.ticks.x = element_line(size = 0.5, 
         color = "black")) + ggplot2::theme(axis.ticks.y = element_line(size = 0.5, 
       color = "black")) + scale_x_continuous(labels = function(x) paste0(x, 
-      ""), name = "", breaks = seq(2001, 2022, by = 2), 
-      limits = c(2000, 2022), expand = c(0, 0)) + theme_bw() + theme(axis.line = element_line(), panel.grid.major = element_blank(), 
+      ""), name = "", breaks = seq(1996, 2022, by = 2), 
+      limits = c(1995, 2022), expand = c(0, 0)) + theme_bw() + theme(axis.line = element_line(), panel.grid.major = element_blank(), 
       panel.grid.minor = element_blank(), panel.border = element_blank(), 
       panel.background = element_blank()) + theme(legend.position = c(0.25, 
       0.8))+ plotTheme 
@@ -4904,7 +5167,7 @@ library(vip)
 
 #Pull plan-specific data from the database
 pl <- planList()
-reason.data <- pullData(pl, "South Carolina Retirement Systems") %>% filter(year > 2000 & !duplicated(year))# (2002-2020)
+reason.data <- pullData(pl, "Texas Teacher Retirement System") %>% filter(year > 2000 & !duplicated(year))# (2002-2020)
 
 #reason.data <- pullData(pl, "Louisiana State Employees Retirement System")# (2002-2019)
 #reason.data <- pullData(pl, "New Mexico Public Employees Retirement Association")# (2002-2019)
@@ -4939,6 +5202,73 @@ Data <- data.table(Data)
 Data[,4:(length(Data)-1)] <- data.table(Data[,4:(length(Data)-1)]) %>% dplyr::mutate_all(as.numeric)
 Data$year <- as.numeric(Data$year)
 
+data <- data.frame(year = seq(1996, 2017, by = 1),
+                   arc_adec_paid_dollar = 
+c(899129,
+956667,
+1022713,
+1086238,
+1209777,
+1279040,
+1359039,
+1423028,
+1430815,
+1477401,
+1587658,
+1739244,
+2060433,
+2169954,
+2289190,
+2345837,
+2057922,
+2244912,
+2515176,
+2969456,
+3159021,
+3286272),
+
+arc_adec_dollar =
+  c(899129,
+956667,
+1022713,
+1086238,
+1209777,
+1279040,
+1359039,
+1694081,
+1766438,
+1801709,
+1912840,
+2046170,
+2020032,
+2009217,
+2661848,
+2727717,
+2780976,
+3033665,
+3177927,
+3171970,
+3226832,
+3343623))
+
+x <- Data %>% full_join(data, by = c("year"))
+
+
+Data <- x
+
+
+Data <- Data %>% transmute( year = year,
+      arc_adec_dollar = arc_adec_dollar.y, 
+      statutory = arc_adec_paid_dollar.y,
+      adec_paid = arc_adec_paid_dollar.y,
+      adec_unpaid = (arc_adec_dollar - adec_paid)) %>%
+  arrange(year)
+
+Data$arc_adec_dollar[23:26] <- x$arc_adec_dollar.x[18:21]/1000
+Data$adec_paid[23:26] <- x$statutory[18:21]/1000
+Data$statutory <- Data$adec_paid
+Data$adec_unpaid[23:26] <- as.numeric(Data$arc_adec_dollar[23:26]) - as.numeric(Data$adec_paid[23:26])
+
 # reason.data$employer_contribution_regular_dollar <- 0
 #        reason.data[year > 2000]$employer_contribution_regular_dollar <-
 #          PPD[PlanName == "Oklahoma PERS" & fy > 2000]$contrib_ER_regular
@@ -4952,9 +5282,9 @@ contributions <- barPlot(
   str = 25,
   stochastic = FALSE, 
   stochastic.url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/perctest2.csv",
-  Ymax = 2000000000,
+  Ymax = 6000000,
   Ymin = 0,
-  Ybreak = 200000000,
+  Ybreak = 1000000,
   yaxisScale = 1000000, 
   interactive = FALSE,
   lab1 = "Investment Experience", 
@@ -5014,7 +5344,8 @@ Data$amo.period <- as.numeric(Data$amo.period)
 Data$year <- as.numeric(Data$year)
 
 Data$amo.period[20:21] <- c(27,23)
-Data$amo.period[4] <- 50#2001-2004 period is 100 (lowering it to see the amo line)
+Data$amo.period[2:4] <- 50#2001-2004 period is 100 (lowering it to see the amo line)
+Data$amo.period[1] <- 0
 
 ########areaPlot
 
@@ -5108,7 +5439,7 @@ Data <- filterData(Data, 2001)
 
 pl <- planList()
 #filter for PERSI
-Data<- Data %>% filter (plan_name == "South Carolina Retirement Systems")
+Data<- Data %>% filter (plan_name == "Texas Teacher Retirement System")
 #View(Data)
 
 Data$year <- as.numeric(Data$year)
@@ -5283,7 +5614,7 @@ Data <- filterData(Data, 2001)
 
 pl <- planList()
 #filter for PERSI
-Data<- Data %>% filter (plan_name == "South Carolina Retirement Systems")
+Data<- Data %>% filter (plan_name == "Texas Teacher Retirement System")
 
 Data$payroll <- as.numeric(Data$payroll)
 Data$payroll_growth_assumption <- as.numeric(Data$payroll_growth_assumption)
@@ -5380,7 +5711,7 @@ linePlot <- function(data, title = NULL, caption = FALSE, grid = FALSE,
   
   data <- as.data.table(data)
   graph <- data.table(melt(data, id.vars = "year"))
-  lineColors <- c(palette_reason$Yellow, palette_reason$SatBlue, 
+  lineColors <- c(palette_reason$SatBlue, palette_reason$Yellow, 
     palette_reason$SatBlue, palette_reason$LightGrey, palette_reason$LightGreen)
   options(repr.plot.width = 1, repr.plot.height = 0.75)
   ggplot2::ggplot(graph, ggplot2::aes(x = year, y = yaxisScale * 
@@ -5429,8 +5760,8 @@ linePlot <- function(data, title = NULL, caption = FALSE, grid = FALSE,
 
 payroll <- linePlot(Data, title = NULL, caption = FALSE, grid = FALSE, 
                   treasury = FALSE, inv.returns = FALSE, ticks = TRUE, font = "Calibri",
-                  yaxisMin = 0, yaxisMax = 14000, yaxisSeq = 1400,
-                  yaxisScale = 1/1000000, format = "$", str = 60,
+                  yaxisMin = 0, yaxisMax = 60, yaxisSeq = 6,
+                  yaxisScale = 1/1000000000, format = "$", str = 60,
                   labelY = "Payroll in $Millions", lab1 = "Actual Payroll Growth",
                   lab2 = "Projected Payroll Growth Based on 2001 Assumption")
 
@@ -5468,7 +5799,7 @@ pl <- planList()
 Data <- pullStateData(2001)
 Data <- filterData(Data, 2001)
 
-Data<- Data %>% filter(plan_name == "South Carolina Retirement Systems") %>% filter(!duplicated(year))
+Data<- Data %>% filter(plan_name == "Texas Teacher Retirement System") %>% filter(!duplicated(year))
 Data$year <- as.numeric(Data$year)
 Data <- data.frame(Data)
 
@@ -5622,7 +5953,7 @@ linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE,
   
   data <- as.data.table(data)
   graph <- data.table(melt(data, id.vars = "year"))
-  lineColors <- c(palette_reason$Yellow, palette_reason$SatBlue, 
+  lineColors <- c(palette_reason$SatBlue, palette_reason$Yellow, 
     palette_reason$SatBlue, palette_reason$LightGrey, palette_reason$LightGreen)
   options(repr.plot.width = 1, repr.plot.height = 0.75)
   ggplot2::ggplot(graph, ggplot2::aes(x = year, y = yaxisScale * 
@@ -5719,11 +6050,17 @@ library(plyr)
 ##Load list of plans
 
 pl <- planList()
-reason.data <- pullData(pl, "South Carolina Retirement Systems") %>% filter(year > 2000 & !duplicated(year))
-
+reason.data <- pullData(pl, "Texas Teacher Retirement System") %>% filter(year > 2000 & !duplicated(year))
 ### Net Amo
-reason.data$net.amo <- c(reason.data$interest_on_debt_dollar+reason.data$amortization_payment_total_amount)
-reason.data$net.amo[1:3] <- c(-26000000,-6000000,-17000000)
+reason.data$x1_year_investment_return_percentage
+
+ reason.data$interest_on_debt_dollar <- -(as.numeric(reason.data$interest_on_debt_dollar)+as.numeric(reason.data$gain_or_loss_due_to_other_interest))
+    reason.data$net.amo <- 0
+    reason.data$amo.payments <- 0
+    reason.data$amo.payments <- as.numeric(reason.data$gain_or_loss_due_to_normal_cost_prior_year)-as.numeric(reason.data$total_contribution_dollar)
+    
+    reason.data$net.amo <- reason.data$amo.payments-
+      reason.data$interest_on_debt_dollar
 
 ### UAL
 reason.data$ual <- c(reason.data$actuarially_accrued_liabilities_dollar -
@@ -5732,9 +6069,9 @@ reason.data$actuarial_value_of_assets_dollar)
 ### Compound Net Amo
 reason.data <- reason.data %>% select(year, net.amo,ual)
 reason.data$compound <- 0
-reason.data$compound[4] <- reason.data$net.amo[4]+reason.data$net.amo[3]
+reason.data$compound[2] <- reason.data$net.amo[2]
   
-for (i in (5:21)){
+for (i in (3:21)){
   reason.data$compound[i] <- reason.data$net.amo[i]+reason.data$compound[i-1]
 }
 
@@ -5748,6 +6085,7 @@ colnames(reason.data)[2:3] <- c("Unpaid Interest on Unfunded Liabilities (Cumula
                                 "Unfunded Liability from Other Sources")
 reason.data <- data.table(reason.data)
 reason.data <- data.table(melt(reason.data, id.vars = "year"))
+View(reason.data)
 
 #### GGPLOT
  plotTheme <- ggplot2::theme(   panel.grid = element_blank(),
