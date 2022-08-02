@@ -63,10 +63,72 @@ all.columns <- colnames(all_data)
 transport.data <- transport.data %>% select(state, year, rank_overall_performance, rank_maint_as_a_pct_of_bdgt)
 
 ###
-View(transport.data)
+#View(transport.data)
 
 #Create shiny app w/:
 #1. Filter by state
 #2. Filter by year
 #3. Select columns
 #4. Download excel/csv
+
+
+
+############
+######Shiny app[ui] #######
+
+ui <- fluidPage(
+  br(),
+  img(src = base64enc::dataURI(file = "https://raw.githubusercontent.com/ANiraula/PublicPlansData/master/reason_logo.png"), width = 200, height = 55),
+  titlePanel("Transportation Data Viewer V1.0"),
+  # CODE BELOW: Add select inputs on state and plan_names to choose between different pension plans in Reason database
+  theme = shinythemes::shinytheme("spacelab"),
+  
+  mainPanel(
+    ###Remove error messages
+    tags$style(type="text/css",
+               ".shiny-output-error { visibility: hidden; }",
+               ".shiny-output-error:before { visibility: hidden; }"
+    ),    
+    tabsetPanel(
+      tabPanel("2001-20 Return Distribution", 
+               sliderInput('year', 'Select Starting Year', min = 2001, max = 2021, value = 2001, sep = ""),
+               prettyRadioButtons("lines", "Add Lines", 
+                                  choices = c("None", "Median Assumed Rate of Return (ARR)","30Y Treasury Yield"), selected = "None", status = "warning"),
+               DT::DTOutput("plot_InvReturns")),
+      
+      #https://community.rstudio.com/t/color-cells-in-dt-datatable-in-shiny/2288),
+      tabPanel("Year-By-Year Return Distribution", 
+               sliderInput('year2', 'Select Year', min = 2001, max = 2020, value = 2020, sep = ""),
+               switchInput(
+                 inputId = "perc",
+                 label = "Percentiles", 
+                 labelWidth = "70px",
+               ),
+               plotly::plotlyOutput("plot_Return_Distribution")),
+      
+      tags$div(htmlOutput("text1")),
+      
+      
+      id = "tabset"
+    ), 
+    id="main"
+    
+  )
+)
+
+
+##########################
+######Shiny app[server] -------------------------------------------------
+
+server <- function(input, output, session){
+ 
+  output$plot_InvReturns <- DT::renderDT({
+    
+    
+    transport.data <- DT::datatable( transport.data)
+    transport.data
+  })
+   
+}
+####
+shinyApp(ui = ui, server = server)
