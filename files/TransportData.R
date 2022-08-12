@@ -57,19 +57,24 @@ RPostgres::dbDisconnect(con)
 transport.data <- all_data
 
 ### all column names
-all.columns <- colnames(all_data)
+variables <- colnames(all_data)
 
 ### Filter specifica columns
-transport.data <- transport.data %>% select(state, year, rank_overall_performance, rank_maint_as_a_pct_of_bdgt)
-
+#transport.data <- transport.data %>% select(state, year, rank_overall_performance, rank_maint_as_a_pct_of_bdgt)
+#on
 ###
 #View(transport.data)
 
 #Create shiny app w/:
-#1. Filter by state
-#2. Filter by year
+#1. Select/Filter by state [*]
+#2. Filter by year [*]
 #3. Select columns
-#4. Download excel/csv
+#4. Download excel/csv [*]
+#5. Visualize (Rankings, etc)
+#6. Merge w/ pension data (inflation, etc) by state 
+#-> admin exp. adjusted for inflation*
+#-> admin exp. adjusted for population*
+#7. post [*]
 
 
 
@@ -90,15 +95,22 @@ ui <- fluidPage(
                ".shiny-output-error:before { visibility: hidden; }"
     ),    
     tabsetPanel(
-      tabPanel("2001-20 Return Distribution", 
-               sliderInput('year', 'Select Starting Year', min = 2001, max = 2021, value = 2001, sep = ""),
-               prettyRadioButtons("lines", "Add Lines", 
-                                  choices = c("None", "Median Assumed Rate of Return (ARR)","30Y Treasury Yield"), selected = "None", status = "warning"),
-               DT::DTOutput("plot_InvReturns")),
+      tabPanel("2001-21 Data", 
+               sliderInput('year', 'Select Starting Year', min = 2001, max = 2021, value = 2005, sep = ""),
+               downloadButton("downloadData", "Download Data"),#, width = 3,
+               pickerInput("pk.state", "Select States", 
+                           choices = c(as.character(unique(transport.data$state))),
+                           selected = c(as.character(unique(transport.data$state))),
+                           multiple = T,
+                           options = list(`actions-box` = TRUE)),
+               radioGroupButtons("filter", "Select Columns", choices = c("Yes", "No"), selected = "No",
+                                 status = "primary"),
+               uiOutput("second"),
+               DT::DTOutput("plot_TranspData")),
       
       #https://community.rstudio.com/t/color-cells-in-dt-datatable-in-shiny/2288),
-      tabPanel("Year-By-Year Return Distribution", 
-               sliderInput('year2', 'Select Year', min = 2001, max = 2020, value = 2020, sep = ""),
+      tabPanel("Aggregate Ranking", 
+               sliderInput('year2', 'Select Year', min = 2001, max = 2021, value = 2021, sep = ""),
                switchInput(
                  inputId = "perc",
                  label = "Percentiles", 
@@ -121,14 +133,53 @@ ui <- fluidPage(
 ######Shiny app[server] -------------------------------------------------
 
 server <- function(input, output, session){
- 
-  output$plot_InvReturns <- DT::renderDT({
+  
+  output$plot_TranspData <- DT::renderDT({
     
     
-    transport.data <- DT::datatable( transport.data)
-    transport.data
+    transport.data <- DT::datatable( transport.data 
+                                     %>% filter(year >= input$year, state %in% input$pk.state) 
+                                     %>% select(state, year, report_edition,  if(input$filter == "Yes"){input$pk}else{c(variables)})
+                                     %>% arrange(year, state))
+    transport.data   })
+  
+  
+  
+  datasetInput <- reactive({
+    x <-  (transport.data 
+    %>% filter(year >= input$year, state %in% input$pk.state) 
+    %>% select(state, year, report_edition,  if(input$filter == "Yes"){input$pk}else{c(variables)}) 
+    %>% arrange(year, state))
+    x
   })
-   
+  
+  #### show column picke rupon pressing "Yes"
+  output$second  <- renderUI({
+    
+    if(input$filter == "Yes"){
+      
+      pickerInput("pk", "Select Columns", 
+                  choices = c(variables),
+                  selected = c(variables),
+                  multiple = T,
+                  options = list(`actions-box` = TRUE))
+      
+    } else {
+      NULL
+    }
+  })
+  
+  
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("Transportation Data Download_",input$year, ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(datasetInput(), file, row.names = FALSE)
+    }
+  )
+  
 }
 ####
 shinyApp(ui = ui, server = server)
+###
